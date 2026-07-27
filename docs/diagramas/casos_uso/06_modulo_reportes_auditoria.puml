@@ -1,0 +1,30 @@
+@startuml
+skinparam usecase {
+    BackgroundColor LightCyan
+    BorderColor DarkSlateGray
+}
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Supervisor / Auditor" as Sup
+
+package "Módulo de Reportes y Auditoría" {
+    usecase "Consultar historial\npor rango de fechas" as UC_Rep1
+    usecase "Generar documento\ndescargable" as UC_Rep2
+    usecase "Agrupar accesos\npor departamento" as UC_Rep3
+    usecase "Generar archivo\nde intercambio" as UC_Rep4
+
+    UC_Rep2 ..> UC_Rep1 : <<include>>
+    UC_Rep4 ..> UC_Rep3 : <<include>>
+}
+
+Sup --> UC_Rep1
+Sup --> UC_Rep2
+Sup --> UC_Rep3
+Sup --> UC_Rep4
+UC_Rep1 ..> UC_Login : <<include>>
+UC_Rep2 ..> UC_Login : <<include>>
+UC_Rep3 ..> UC_Login : <<include>>
+UC_Rep4 ..> UC_Login : <<include>>
+
+@enduml

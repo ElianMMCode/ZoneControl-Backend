@@ -1,0 +1,49 @@
+@startuml
+title Flujo CU-06: Revocar Acceso
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Acceder a "Gestionar Permisos";
+
+:Buscar empleado por ID o nombre;
+
+|Backend|
+:Consultar PostgreSQL;
+
+:Retornar resultados;
+
+|Gestor de Personal|
+:Seleccionar empleado;
+
+:Seleccionar "Revocar Acceso";
+
+|Frontend|
+:Pantalla: Permisos activos del empleado;
+
+|Gestor de Personal|
+:Seleccionar permiso a revocar;
+
+|Frontend|
+:Confirmar revocación;
+
+:Enviar DELETE;
+
+|Backend|
+:Eliminar permiso en PostgreSQL;
+
+:Retornar HTTP 200;
+
+|Gestor de Personal|
+:Confirmar revocación;
+
+stop
+
+@enduml

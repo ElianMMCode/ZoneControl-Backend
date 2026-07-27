@@ -1,0 +1,72 @@
+@startuml
+title Flujo CU-09: Generar Documento
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Supervisor / Auditor|
+start
+:Consultar historial (CU-08);
+
+:Seleccionar "Exportar";
+
+|Frontend|
+:Mostrar opciones de formato;
+
+|Supervisor / Auditor|
+split
+  :Seleccionar formato PDF;
+
+split again
+  :Seleccionar formato CSV;
+
+split again
+  :Seleccionar formato Excel;
+
+end split
+
+  :Enviar POST;
+
+|Backend|
+:Recibir solicitud de exportación;
+
+:Obtener datos del historial;
+
+:Construir documento;
+
+note right
+  Estructura del documento:
+  • Encabezado del reporte
+  • Fecha de generación
+  • Filtros aplicados
+  • Tabla de datos
+  • Resumen estadístico
+end note
+
+:Generar archivo;
+
+if (¿Formato PDF?) then (Sí)
+  :Generar PDF con librería iText/PDFBox;
+elseif (¿Formato CSV?) then (CSV)
+  :Generar CSV con separador comma;
+else (Excel)
+  :Generar XLSX con Apache POI;
+endif
+
+:Retornar archivo como descarga;
+
+|Frontend|
+:Recibir archivo;
+
+:Navegador descarga el archivo;
+
+:Confirmar descarga al;
+
+stop
+
+@enduml

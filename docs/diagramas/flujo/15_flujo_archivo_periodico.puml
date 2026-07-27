@@ -1,0 +1,82 @@
+@startuml
+title Flujo CU-10: Archivo Periódico
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Supervisor / Auditor|
+start
+:Acceder a "Reportes y Auditoría";
+
+:Seleccionar "Archivo Periódico";
+
+|Frontend|
+:Mostrar configuración del reporte;
+
+|Supervisor / Auditor|
+:Seleccionar período (Mes/Año);
+
+:Seleccionar departamentos a incluir;
+
+:Seleccionar formato de salida\n(CSV o Excel);
+
+:Presionar "Generar Archivo";
+
+|Frontend|
+:Enviar POST;
+
+|Backend|
+:Recibir configuración del reporte;
+
+:Consultar historial de accesos\ndel período seleccionado;
+
+:Agrupar accesos por departamento;
+
+:Calcular estadísticas agregadas\npor departamento (total, autorizados,\ndenegados, no registrados, suspendidos);
+
+note right
+  EXCLUSIÓN DE DATOS SENSIBLES:
+  El archivo NO debe incluir:
+  • Nombres de empleados
+  • Apellidos de empleados
+  • Tipo de documento de identidad
+  • Número de documento de identidad
+  • Número de identificación interno
+
+  Columnas del archivo:
+  Departamento, Período, Total Accesos,
+  Autorizados, Denegados,
+  No Registrados, Suspendidos
+end note
+
+:Generar archivo anonimizado;
+
+:Retornar archivo;
+
+|Frontend|
+:Recibir archivo;
+
+:Mostrar opciones de envío;
+
+|Supervisor / Auditor|
+split
+  :Descargar archivo localmente;
+
+split again
+  :Enviar a socio internacional;
+
+  |Backend|
+  :Registrar envío en log\nde auditoría (fecha, hora,\nusuario, período, departamentos);
+
+end split
+
+:Confirmar generación;
+
+stop
+
+@enduml

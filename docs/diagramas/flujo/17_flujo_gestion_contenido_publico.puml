@@ -1,0 +1,110 @@
+@startuml
+title Flujo CU-03b: Gestionar Contenido del Módulo Público
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Administrador|
+start
+:Iniciar sesión (CU-02);
+
+:Acceder a "Gestionar Contenido Público";
+
+|Frontend|
+:Pantalla: Panel de contenido público;
+
+|Administrador|
+split
+  :Seleccionar "Información Institucional";
+
+  :Editar misión, visión,
+  descripción, áreas;
+
+  :Guardar cambios;
+
+split again
+  :Seleccionar "Datos de Contacto";
+
+  :Editar teléfonos, email,
+  redes sociales;
+
+  :Guardar cambios;
+
+split again
+  :Seleccionar "Ubicación de Sedes";
+
+  :Editar direcciones, mapa,
+  horarios;
+
+  :Guardar cambios;
+
+split again
+  :Seleccionar "Catálogo de Productos";
+
+  :Agregar/Editar/Eliminar
+  medicamentos;
+
+  :Guardar cambios;
+
+split again
+  :Seleccionar "Folleto Informativo";
+
+  |Frontend|
+  :Mostrar folleto actual o
+  indicar que no hay folleto;
+
+  |Administrador|
+  if (¿Cargar nuevo folleto?) then (Sí)
+    :Seleccionar archivo PDF;
+
+    |Frontend|
+    :Validar extensión (.pdf);
+
+    if (¿Extensión válida?) then (Sí)
+      :Validar tamaño (máx 10MB);
+
+      if (¿Tamaño válido?) then (Sí)
+        :Enviar POST (multipart);
+
+        |Backend|
+        :Recibir archivo PDF;
+        :Almacenar en servidor;
+        :Actualizar referencia en BD;
+        :Retornar HTTP 200;
+
+        |Frontend|
+        :Mostrar confirmación;
+        :Habilitar botón descarga
+        en módulo público;
+
+      else (No)
+        :Mostrar error "Archivo
+        excede 10MB";
+      endif
+    else (No)
+      :Mostrar error "Solo se
+      permiten archivos PDF";
+    endif
+  else (¿Eliminar folleto?)
+    |Backend|
+    :Eliminar archivo del servidor;
+    :Retornar HTTP 200;
+
+    |Frontend|
+    :Ocultar botón descarga
+    en módulo público;
+  endif
+
+end split
+
+|Frontend|
+:Pantalla: Notificación de éxito;
+
+stop
+
+@enduml

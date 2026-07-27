@@ -1,0 +1,60 @@
+@startuml
+title Flujo CU-06: Otorgar Acceso
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Acceder a "Gestionar Permisos";
+
+:Buscar empleado por ID o nombre;
+
+|Backend|
+:Consultar PostgreSQL;
+
+:Retornar resultados;
+
+|Gestor de Personal|
+:Seleccionar empleado;
+
+:Seleccionar "Otorgar Acceso";
+
+:Seleccionar áreas/zonas permitidas;
+
+:Definir horarios de acceso;
+
+:Definir fecha de inicio y expiración;
+
+|Frontend|
+:Enviar POST;
+
+|Backend|
+:Validar que empleado esté activo;
+
+:Verificar conflictos de permisos;
+
+if (¿Sin conflictos?) then (Sí)
+  :Guardar en tabla permisos;
+
+  :Retornar HTTP 201;
+
+  |Gestor de Personal|
+  :Confirmar permisos otorgados;
+
+else (No)
+  :Retornar HTTP 409;
+
+  |Gestor de Personal|
+  :Pantalla: Error "Conflicto de permisos";
+
+endif
+
+stop
+
+@enduml

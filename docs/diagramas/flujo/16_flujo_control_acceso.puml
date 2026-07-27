@@ -1,0 +1,79 @@
+@startuml
+title Flujo CU-11: Control de Acceso
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Dispositivo / Terminal|
+start
+:Empleado presenta credencial;
+
+:Ingresar número de identificación;
+
+|Frontend|
+:Validar formato de identificación;
+
+:Enviar POST;
+
+|Backend|
+:Recibir petición de acceso;
+
+:Registrar timestamp del intento;
+
+:Consultar PostgreSQL por ID de usuario;
+
+if (¿Usuario encontrado?) then (Sí)
+  :Obtener estado del usuario;
+
+  if (¿Estado == "Activo"?) then (Sí)
+    :Verificar permisos de acceso vigentes;
+
+    if (¿Permiso vigente?) then (Sí)
+      :Establecer resultado: "INGRESO AUTORIZADO";
+
+    else (No)
+      :Establecer resultado: "ACCESO SUSPENDIDO";
+
+    endif
+
+  else (No)
+    :Establecer resultado: "INGRESO DENEGADO";
+
+  endif
+
+else (No)
+  :Establecer resultado: "NO REGISTRADO";
+
+endif
+
+:Registrar en tabla historial_accesos;
+
+:Retornar HTTP 200 con resultado;
+
+|Frontend|
+:Recibir respuesta;
+
+if (¿Autorizado?) then (Sí)
+  :Mostrar alerta VERDE;
+
+  :Activar mecanismo de apertura;
+
+else (No)
+  if (¿No Registrado?) then (Sí)
+    :Mostrar alerta AMARILLA;
+
+  else (No)
+    :Mostrar alerta ROJA;
+
+  endif
+
+endif
+
+stop
+
+@enduml

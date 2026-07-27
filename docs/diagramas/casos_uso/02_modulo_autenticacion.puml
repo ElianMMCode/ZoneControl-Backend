@@ -1,0 +1,19 @@
+@startuml
+skinparam usecase {
+    BackgroundColor LightCyan
+    BorderColor DarkSlateGray
+}
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Usuario Interno" as User
+
+package "Módulo de Autenticación" {
+    usecase "Iniciar sesión en el sistema" as UC_Login
+}
+
+User --> UC_Login
+
+note top of UC_Login : Módulo transversal:\nrequerido por todos los\nmódulos internos
+
+@enduml

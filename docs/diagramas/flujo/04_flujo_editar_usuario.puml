@@ -1,0 +1,73 @@
+@startuml
+title Flujo CU-03: Editar Usuario
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Administrador|
+start
+:Iniciar sesión (CU-02);
+
+:Acceder al módulo de administración;
+
+:Seleccionar "Gestionar Usuarios";
+
+|Frontend|
+:Pantalla: Lista de usuarios;
+
+|Administrador|
+:Buscar y seleccionar usuario;
+
+:Hacer clic en "Editar";
+
+|Frontend|
+:Pantalla: Formulario de edición;
+
+:Cargar datos actuales del usuario;
+
+|Administrador|
+:Modificar campos requeridos;
+
+|Frontend|
+:Validar cambios;
+
+:Enviar PUT /api/admin/usuarios/{id};
+
+|Backend|
+:Recibir actualización;
+
+:Validar email duplicado;
+
+if (¿Email disponible?) then (Sí)
+  :Actualizar en PostgreSQL;
+
+  :Retornar HTTP 200;
+
+  |Frontend|
+  :Pantalla: Notificación de éxito;
+
+  :Cerrar formulario;
+
+  :Actualizar fila en tabla;
+
+  |Administrador|
+  :Confirmar edición;
+
+else (No)
+  :Retornar HTTP 409;
+
+  |Frontend|
+  :Pantalla: Error "Email en uso";
+
+  |Administrador|
+  :Corregir email;
+endif
+
+stop
+
+@enduml

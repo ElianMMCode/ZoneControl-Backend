@@ -1,0 +1,62 @@
+@startuml
+title Flujo CU-01: Módulo Público
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+
+|Visitante|
+start
+:Acceder a la página principal del sitio;
+
+:Visualizar menú;
+
+:Consultar información institucional;
+
+split
+
+  |Frontend|
+  :Consultar datos de contacto;
+
+  :Cargar información de contacto;
+
+  :Mostrar teléfonos, email, redes sociales;
+
+split again
+  :Consultar ubicación de sedes;
+
+  :Cargar datos de ubicación;
+
+  :Mostrar direcciones; 
+
+split again
+  :Consultar catálogo de\nservicios/productos;
+
+  :Cargar listado de productos;
+
+  :Mostrar nombre, descripción,\nprincipio activo, presentación;
+
+split again
+  :Descargar folleto informativo;
+
+  |Backend|
+  :Recibir solicitud de descarga;
+
+  :Buscar archivo PDF en servidor;
+
+  if (¿Archivo existe?) then (Sí)
+    :Enviar archivo PDF;
+  else (No)
+    :Generar error;
+  endif
+
+  |Frontend|
+  :Iniciar descarga;
+
+end split
+
+:Fin de la navegación;
+
+stop
+
+@enduml

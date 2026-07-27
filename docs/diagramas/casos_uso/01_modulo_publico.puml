@@ -1,0 +1,29 @@
+@startuml
+skinparam usecase {
+    BackgroundColor LightCyan
+    BorderColor DarkSlateGray
+}
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Público General" as Pub
+
+package "Módulo Público" {
+    usecase "Consultar información institucional" as UC_Pub1
+    usecase "Consultar datos de contacto" as UC_Pub2
+    usecase "Consultar ubicación de sedes" as UC_Pub3
+    usecase "Descargar folleto informativo" as UC_Pub4
+    usecase "Consultar catálogo de\nservicios/productos" as UC_Pub5
+
+    UC_Pub4 ..> UC_Pub1 : <<extend>>
+}
+
+Pub --> UC_Pub1
+Pub --> UC_Pub2
+Pub --> UC_Pub3
+Pub --> UC_Pub4
+Pub --> UC_Pub5
+
+note top of UC_Pub1 : Sin precondiciones\nAcceso libre (sin autenticación)\nActor: Público General
+
+@enduml

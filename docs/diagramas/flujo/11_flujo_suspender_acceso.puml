@@ -1,0 +1,50 @@
+@startuml
+title Flujo CU-06: Suspender Acceso
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Acceder a "Gestionar Permisos";
+
+:Buscar empleado por ID o nombre;
+
+|Backend|
+:Consultar PostgreSQL;
+
+:Retornar resultados;
+
+|Gestor de Personal|
+:Seleccionar empleado;
+
+:Seleccionar "Suspender Acceso";
+
+|Frontend|
+:Pantalla: Permisos activos del empleado;
+
+|Gestor de Personal|
+:Seleccionar permiso a suspender;
+
+:Definir fecha de reactivación;
+
+:Enviar PATCH /api/permisos/{id}/suspender;
+
+|Backend|
+:Actualizar estado a "suspendido";
+
+:Guardar fecha de reactivación;
+
+:Retornar HTTP 200;
+
+|Gestor de Personal|
+:Confirmar suspensión;
+
+stop
+
+@enduml

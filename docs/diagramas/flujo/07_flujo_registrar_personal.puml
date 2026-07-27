@@ -1,0 +1,75 @@
+@startuml
+title Flujo CU-04: Registrar Personal
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Iniciar sesión (CU-02);
+
+:Acceder a "Gestionar Personal";
+
+:Seleccionar "Registrar Personal";
+
+|Frontend|
+:Pantalla: Formulario de registro;
+
+|Gestor de Personal|
+:Completar datos del empleado\n(tipo documento, nro. documento,\nnombres, apellidos, cargo,\ndepartamento, estado);
+
+|Frontend|
+:Validar campos obligatorios;
+
+:Validar tipo de documento\n(CC, CE, TI, PA, RC);
+
+:Validar longitud mínima\nnombres y apellidos;
+
+if (¿Formulario válido?) then (Sí)
+  :Enviar POST;
+
+  |Backend|
+  :Recibir datos del empleado\n(sin ID interno);
+
+  :Validar tipo de documento\ncontra lista de documentos\ncolombianos válidos;
+
+  :Verificar unicidad de\ncombinación tipo documento\n+ número documento;
+
+  if (¿Documento disponible?) then (Sí)
+    :Generar ID interno\nautomáticamente\n(EMP-XXXXXX secuencial);
+
+    :Guardar en PostgreSQL;
+
+    :Retornar HTTP 201\ncon ID interno generado;
+
+    |Frontend|
+    :Pantalla: Notificación de éxito\nmostrando ID interno asignado;
+
+    |Gestor de Personal|
+    :Confirmar registro;
+
+  else (No)
+    :Retornar HTTP 409;
+
+    |Frontend|
+    :Pantalla: Error\n"Ya existe un empleado\ncon ese documento";
+
+    |Gestor de Personal|
+    :Corregir tipo o número\nde documento;
+
+  endif
+else (No)
+  :Pantalla: Errores de validación;
+
+  |Gestor de Personal|
+  :Corregir campos inválidos;
+endif
+
+stop
+
+@enduml

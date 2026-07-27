@@ -1,0 +1,81 @@
+@startuml
+title Flujo CU-03: Crear Usuario
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Administrador|
+start
+:Acceder al módulo de administración;
+
+:Seleccionar "Crear Usuario";
+
+|Frontend|
+:Pantalla: Formulario de creación;
+
+|Administrador|
+:Completar datos del formulario\n(nombre, email, contraseña,\nconfirmar contraseña, rol, estado);
+
+|Frontend|
+:Validar campos obligatorios;
+
+:Validar formato de email;
+
+:Validar coincidencia de\ncontraseña y confirmación;
+
+:Validar requisitos de contraseña\n(mín 8 caracteres, 1 mayúscula,\n1 minúscula, 1 dígito,\n1 carácter especial @$!%*?&);
+
+if (¿Formulario válido?) then (Sí)
+  :Enviar POST;
+
+  |Backend|
+  :Recibir datos;
+
+  :Validar requisitos de\ncontraseña en backend;
+
+  :Validar email duplicado;
+
+  if (¿Email disponible?) then (Sí)
+    :Encriptar contraseña\ncon BCrypt;
+
+    :Guardar en PostgreSQL;
+
+    :Retornar HTTP 201;
+
+    |Frontend|
+    :Pantalla: Notificación de éxito;
+
+    :Actualizar lista de usuarios;
+
+    |Administrador|
+    :Confirmar creación;
+
+  else (No)
+    :Retornar HTTP 409;
+
+    |Frontend|
+    :Pantalla: Error\n"Email ya registrado";
+
+    |Administrador|
+    :Corregir email;
+
+  endif
+else (No)
+  if (¿Error de contraseña?) then (Sí)
+    :Pantalla: "La contraseña debe\ntener mínimo 8 caracteres,\n1 mayúscula, 1 minúscula,\n1 número y 1 carácter especial\n(@$!%*?&)";
+  else (No)
+    :Pantalla: Errores\nde validación;
+  endif
+
+  |Administrador|
+  :Corregir campos inválidos;
+endif
+
+stop
+
+@enduml

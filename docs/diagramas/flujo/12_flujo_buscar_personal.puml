@@ -1,0 +1,73 @@
+@startuml
+title Flujo CU-07: Buscar Personal
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Acceder a "Buscar Personal";
+
+|Frontend|
+:Mostrar formulario de búsqueda;
+
+|Gestor de Personal|
+:Ingresar filtros de búsqueda;
+
+:Seleccionar al menos un filtro;
+
+:Presionar "Buscar";
+
+|Frontend|
+:Validar que haya al menos un filtro;
+
+:Enviar GET;
+
+|Backend|
+:Recibir parámetros de consulta;
+
+:Consultar PostgreSQL con filtros;
+
+:Retornar resultados;
+
+|Frontend|
+:Renderizar tabla de resultados;
+
+split
+  :Mostrar resultados paginados;
+
+  :Navegar entre páginas;
+
+split again
+  :Ordenar por columna;
+
+  :Re-consultar con nuevo orden;
+
+split again
+  :Exportar resultados;
+
+  :Descargar CSV/Excel;
+
+end split
+
+|Gestor de Personal|
+:Seleccionar empleado de la lista;
+
+split
+  :Ver detalle del empleado;
+split again
+  :Editar empleado;
+split again
+  :Gestionar permisos;
+end split
+
+:Fin de búsqueda;
+
+stop
+
+@enduml

@@ -1,0 +1,100 @@
+@startuml
+title Flujo CU-05: Carga Masiva
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Acceder a "Carga Masiva";
+
+|Frontend|
+:Mostrar interfaz de carga;
+
+|Gestor de Personal|
+split
+  :Descargar plantilla CSV\ncon formato admitido;
+
+  |Backend|
+  :Servir archivo\nplantilla_carga_masiva_personal.csv\ncon encabezados y fila de ejemplo;
+
+  |Gestor de Personal|
+  :Llenar la plantilla con\nlos datos del personal;
+
+split again
+  :Seleccionar archivo\npreviamente preparado;
+
+end split
+
+:Subir archivo;
+
+|Backend|
+:Recibir archivo;
+
+:Validar extensión del archivo\n(.csv o .txt);
+
+if (¿Extensión válida?) then (Sí)
+  :Leer contenido del archivo;
+
+  :Validar estructura\ny encabezados\n(tipo_documento, documento_identidad,\nnombres, apellidos, cargo,\ndepartamento, estado);
+
+  if (¿Encabezados correctos?) then (Sí)
+    :Iniciar validación fila por fila;
+
+    while (¿Quedan filas?) is (Sí)
+      :Obtener siguiente fila;
+
+      :Validar tipo documento\n(CC, CE, TI, PA, RC);
+
+      :Validar documento identidad\nno duplicado en BD ni en archivo;
+
+      :Validar campos obligatorios;
+
+      :Validar departamento existente;
+
+      if (¿Fila válida?) then (Sí)
+        :Marcar como válida;
+      else (No)
+        :Marcar como inválida;
+        :Registrar error\n(fila, campo, motivo);
+      endif
+
+    endwhile (No)
+
+    :Consolidar resultados;
+    :Separar filas válidas e inválidas;
+
+    if (¿Filas válidas?) then (Sí)
+      :Generar ID interno para\ncada registro válido\n(EMP-XXXXXX secuencial);
+
+      :INSERT múltiple en PostgreSQL;
+
+      :Registrar operación en log;
+    endif
+
+    :Retornar HTTP 200 con resumen\ny reporte de errores descargable;
+
+    |Gestor de Personal|
+    :Pantalla: Resumen de carga\n(éxitos, errores, total);
+
+    :Descargar detalle de errores\nsi existen;
+
+  else (No)
+    :Retornar HTTP 400
+    "Encabezados incorrectos.
+    Descargue la plantilla";
+  endif
+else (No)
+  :Retornar HTTP 415
+  "Solo se permiten
+  archivos .csv y .txt";
+endif
+
+stop
+
+@enduml

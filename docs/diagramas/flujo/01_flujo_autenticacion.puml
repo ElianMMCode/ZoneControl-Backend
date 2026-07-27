@@ -1,0 +1,81 @@
+@startuml
+title Flujo CU-02: Autenticación
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Frontend|
+start
+:Mostrar formulario de login;
+
+:Ingresar correo electrónico;
+
+:Ingresar contraseña;
+
+:Validar campos obligatorios en frontend;
+
+if (¿Campos válidos?) then (Sí)
+  :Enviar POST;
+else (No)
+  :Mostrar errores de validación;
+  :Permitir corrección;
+  stop
+endif
+
+|Backend|
+:Recibir petición de login;
+
+:Validar formato del email;
+
+:Consultar PostgreSQL - Usuarios;
+
+if (¿Usuario encontrado?) then (Sí)
+  :Comparar contraseña;
+
+  if (¿Contraseña válida?) then (Sí)
+    if (¿Usuario activo?) then (Sí)
+
+      :Generar token con clave secreta;
+
+      :Registrar intento exitoso en logs;
+
+      :Retornar HTTP 200;
+      :Body: { token, usuario: { id, nombre, email, rol } };
+
+      |Frontend|
+
+      :Redirigir según rol;
+
+      |Frontend - Dashboard|
+      if (Rol == "Administrador") then (Admin)
+        :Mostrar panel de administración;
+      elseif (Rol == "Gestor de Personal") then (Gestor)
+        :Mostrar panel de gestión de personal;
+      elseif (Rol == "Supervisor") then (Supervisor)
+        :Mostrar panel de reportes;
+      endif
+
+      stop
+    else (No)
+      :Retornar HTTP 403 - "Cuenta desactivada";
+    endif
+  else (No)
+    :Retornar HTTP 401 - "Contraseña incorrecta";
+  endif
+else (No)
+  :Retornar HTTP 404 - "Usuario no registrado";
+endif
+
+|Frontend|
+:Mostrar mensaje de error;
+
+:Permitir corrección contraseña;
+
+stop
+
+@enduml

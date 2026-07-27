@@ -1,0 +1,21 @@
+@startuml
+skinparam usecase {
+    BackgroundColor LightCyan
+    BorderColor DarkSlateGray
+}
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Administrador" as Admin
+
+package "Módulo de Administración" {
+    usecase "Administrar sistema y usuarios (CRUD)" as UC_Admin1
+    usecase "Gestionar contenido\ndel módulo público" as UC_Admin2
+}
+
+Admin --> UC_Admin1
+Admin --> UC_Admin2
+UC_Admin1 ..> UC_Login : <<include>>
+UC_Admin2 ..> UC_Login : <<include>>
+
+@enduml

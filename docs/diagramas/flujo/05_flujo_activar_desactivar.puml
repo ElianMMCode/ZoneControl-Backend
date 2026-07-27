@@ -1,0 +1,59 @@
+@startuml
+title Flujo CU-03: Activar / Desactivar Usuario
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Administrador|
+start
+:Acceder al módulo de administración;
+
+:Seleccionar "Gestionar Usuarios";
+
+|Frontend|
+:Pantalla: Lista de usuarios;
+
+|Administrador|
+:Ubicar usuario a modificar;
+
+:Hacer clic en el toggle;
+
+|Frontend|
+:Enviar PATCH;
+
+|Backend|
+:Recibir cambio de estado;
+
+:Validar que no se desactive a sí mismo;
+
+if (¿Cambio válido?) then (Sí)
+  :Actualizar estado en PostgreSQL;
+
+  :Retornar HTTP 200;
+
+  |Frontend|
+  :Actualizar estado en tabla;
+
+  :Pantalla: Notificación de éxito;
+
+  |Administrador|
+  :Confirmar cambio;
+
+else (No)
+  :Retornar HTTP 400;
+
+  |Frontend|
+  :Revertir toggle;
+
+  :Pantalla: Error;
+
+endif
+
+stop
+
+@enduml

@@ -1,0 +1,24 @@
+@startuml
+skinparam usecase {
+    BackgroundColor LightCyan
+    BorderColor DarkSlateGray
+}
+skinparam packageStyle rectangle
+left to right direction
+
+actor "Personal de Seguridad" as Seg
+
+package "Módulo de Control de Acceso\nFísico (Simulación)" {
+    usecase "Simular lectura\nde credencial" as UC_Acc1
+    usecase "Validar estado\n(autorizado/denegado/\nno registrado)" as UC_Acc2
+    usecase "Registrar historial\ndel intento" as UC_Acc3
+
+    UC_Acc1 ..> UC_Acc2 : <<include>>
+    UC_Acc1 ..> UC_Acc3 : <<include>>
+}
+
+Seg --> UC_Acc1
+
+note bottom of UC_Acc1 : Sin dependencia de autenticación:\nes una simulación transaccional
+
+@enduml

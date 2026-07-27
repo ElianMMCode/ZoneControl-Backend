@@ -1,0 +1,45 @@
+@startuml
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Frontend (React / Vue)|
+start
+:Ingresar número de identificación;
+:Enviar petición (POST /api/access/simulate);
+
+|Backend (Spring Boot)|
+:Recibir petición;
+:Consultar estado del usuario;
+
+|Base de Datos (PostgreSQL)|
+:Buscar usuario por ID;
+
+|Backend (Spring Boot)|
+if (¿El usuario existe?) then (Sí)
+  if (¿Estado == 'Autorizado'?) then (Sí)
+    :Establecer resultado: "Ingreso Autorizado";
+  else (No)
+    :Establecer resultado: "Ingreso Denegado";
+  endif
+else (No)
+  :Establecer resultado: "No Registrado";
+endif
+
+:Construir objeto de auditoría (Log);
+
+|Base de Datos (PostgreSQL)|
+:Insertar registro en tabla Historial;
+
+|Backend (Spring Boot)|
+:Retornar código HTTP y mensaje;
+
+|Frontend (React / Vue)|
+:Renderizar alerta visual en pantalla;
+stop
+@enduml

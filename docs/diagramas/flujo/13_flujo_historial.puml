@@ -1,0 +1,53 @@
+@startuml
+title Flujo CU-08: Consultar Historial
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Supervisor / Auditor|
+start
+:Iniciar sesión (CU-02);
+
+:Acceder a "Reportes y Auditoría";
+
+:Seleccionar "Consultar Historial";
+
+|Frontend|
+:Pantalla: Formulario de consulta;
+
+|Supervisor / Auditor|
+:Seleccionar rango de fechas;
+
+:Aplicar filtros opcionales;
+
+:Presionar "Consultar";
+
+|Frontend|
+:Validar rango de fechas;
+
+if (¿Fechas válidas?) then (Sí)
+  :Enviar GET;
+
+  |Backend|
+  :Consultar historial en PostgreSQL;
+
+  :Retornar registros;
+
+  |Frontend|
+  :Pantalla: Tabla de historial;
+
+  :Opción: Exportar;
+
+else (No)
+  :Pantalla: Error "Rango inválido";
+
+endif
+
+stop
+
+@enduml
