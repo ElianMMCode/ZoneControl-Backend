@@ -31,3 +31,20 @@ build/
 
 ### VS Code ###
 .vscode/
+
+### AI Agents ###
+.opencode/
+opencode.json
+opencode.jsonc
+.claude/
+CLAUDE.md
+CLAUDE.txt
+AGENTS.md
+.cursor/
+.continue/
+.windsurf/
+.copilot/
+.github/copilot-instructions.md
+.ai/
+.anthropic/
+.prompt/
