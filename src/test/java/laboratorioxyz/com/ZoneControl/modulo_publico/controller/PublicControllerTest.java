@@ -18,7 +18,7 @@ class PublicControllerTest {
 
     @Test
     void getInstitutional_returns200() throws Exception {
-        mockMvc.perform(get("/api/public/institucional"))
+        mockMvc.perform(get("/public/institucional"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.info").isMap())
                 .andExpect(jsonPath("$.info.companyName").exists())
@@ -30,7 +30,7 @@ class PublicControllerTest {
 
     @Test
     void getContact_returns200() throws Exception {
-        mockMvc.perform(get("/api/public/contacto"))
+        mockMvc.perform(get("/public/contacto"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.contact").isMap())
                 .andExpect(jsonPath("$.contact.phone").exists())
@@ -40,7 +40,7 @@ class PublicControllerTest {
 
     @Test
     void getOffices_returns200() throws Exception {
-        mockMvc.perform(get("/api/public/sedes"))
+        mockMvc.perform(get("/public/sedes"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].name").exists())
@@ -51,7 +51,7 @@ class PublicControllerTest {
 
     @Test
     void getCatalog_returns200() throws Exception {
-        mockMvc.perform(get("/api/public/catalogo"))
+        mockMvc.perform(get("/public/catalogo"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$").isArray())
                 .andExpect(jsonPath("$[0].name").exists())
@@ -62,7 +62,7 @@ class PublicControllerTest {
 
     @Test
     void getBrochure_notFound_returns404() throws Exception {
-        mockMvc.perform(get("/api/public/folleto"))
+        mockMvc.perform(get("/public/folleto"))
                 .andExpect(status().isNotFound());
     }
 }
