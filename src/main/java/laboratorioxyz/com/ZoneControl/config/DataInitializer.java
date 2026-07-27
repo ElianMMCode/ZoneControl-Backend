@@ -1,13 +1,20 @@
 package laboratorioxyz.com.ZoneControl.config;
 
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
+import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
+import laboratorioxyz.com.ZoneControl.model.enums.ContentSection;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
+import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCatalogRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.PublicContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.boot.CommandLineRunner;
@@ -22,23 +29,28 @@ public class DataInitializer implements CommandLineRunner {
     private final DepartmentRepository departmentRepository;
     private final ProductionAreaRepository productionAreaRepository;
     private final UserRepository userRepository;
+    private final PublicContentRepository publicContentRepository;
+    private final OfficeRepository officeRepository;
+    private final ProductCatalogRepository productCatalogRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     @Override
     public void run(String... args) {
-        if (departmentRepository.count() > 0) {
-            log.info("Database already contains data — skipping seed");
-            return;
-        }
-
         log.info("Seeding initial data...");
         seedDepartments();
         seedProductionAreas();
         seedAdminUser();
+        seedPublicContent();
+        seedOffices();
+        seedProductCatalog();
         log.info("Seed completed successfully");
     }
 
     private void seedDepartments() {
+        if (departmentRepository.count() > 0) {
+            log.info("Departments already exist — skipping");
+            return;
+        }
         String[] names = {
             "Control de Calidad",
             "Producción Sólidos",
@@ -57,6 +69,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedProductionAreas() {
+        if (productionAreaRepository.count() > 0) {
+            log.info("Production areas already exist — skipping");
+            return;
+        }
         String[] names = {
             "Sala Blanca A",
             "Sala Blanca B",
@@ -74,6 +90,10 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedAdminUser() {
+        if (userRepository.count() > 0) {
+            log.info("Users already exist — skipping");
+            return;
+        }
         User admin = User.builder()
                 .firstName("Admin")
                 .lastName("ZoneControl")
@@ -86,5 +106,76 @@ public class DataInitializer implements CommandLineRunner {
 
         userRepository.save(admin);
         log.info("Seeded admin user: admin@zonecontrol.com");
+    }
+
+    private void seedPublicContent() {
+        if (publicContentRepository.count() > 0) {
+            log.info("Public content already exists — skipping");
+            return;
+        }
+        publicContentRepository.save(PublicContent.builder()
+                .section(ContentSection.INSTITUTIONAL).key("mission")
+                .value("Proveer medicamentos de alta calidad que mejoren la calidad de vida de los pacientes colombianos").build());
+        publicContentRepository.save(PublicContent.builder()
+                .section(ContentSection.INSTITUTIONAL).key("vision")
+                .value("Ser líderes en la producción farmacéutica en Latinoamérica para 2030").build());
+        publicContentRepository.save(PublicContent.builder()
+                .section(ContentSection.INSTITUTIONAL).key("description")
+                .value("Laboratorio XYZ es una compañía farmacéutica colombiana especializada en la producción de medicamentos de alto costo para enfermedades crónicas y huérfanas").build());
+
+        publicContentRepository.save(PublicContent.builder()
+                .section(ContentSection.CONTACT).key("phone")
+                .value("+57 601 234 5678").build());
+        publicContentRepository.save(PublicContent.builder()
+                .section(ContentSection.CONTACT).key("email")
+                .value("contacto@laboratoriosxyz.com").build());
+        publicContentRepository.save(PublicContent.builder()
+                .section(ContentSection.CONTACT).key("socialMedia")
+                .value("@LaboratorioXYZ").build());
+        log.info("Seeded public content");
+    }
+
+    private void seedOffices() {
+        if (officeRepository.count() > 0) {
+            log.info("Offices already exist — skipping");
+            return;
+        }
+        officeRepository.save(Office.builder()
+                .name("Sede Principal Bogotá")
+                .address("Cra 45 # 26-85, Bogotá D.C.")
+                .openingHours("Lun-Vie 8:00-18:00")
+                .latitude(4.7110)
+                .longitude(-74.0721)
+                .build());
+        officeRepository.save(Office.builder()
+                .name("Planta de Producción Medellín")
+                .address("Cl 10 # 20-30, Medellín, Antioquia")
+                .openingHours("Lun-Sáb 6:00-20:00")
+                .latitude(6.2476)
+                .longitude(-75.5658)
+                .build());
+        log.info("Seeded {} offices", 2);
+    }
+
+    private void seedProductCatalog() {
+        if (productCatalogRepository.count() > 0) {
+            log.info("Product catalog already exists — skipping");
+            return;
+        }
+        productCatalogRepository.save(ProductCatalog.builder()
+                .name("Ácido Acetilsalicílico Genfar")
+                .description("Analgésico y antiinflamatorio no esteroideo")
+                .activeIngredient("Ácido Acetilsalicílico")
+                .presentation("Tabletas 500mg x 30")
+                .productionArea("Sala Blanca A")
+                .build());
+        productCatalogRepository.save(ProductCatalog.builder()
+                .name("Omeprazol MK")
+                .description("Inhibidor de la bomba de protones para tratamiento de acidez gástrica")
+                .activeIngredient("Omeprazol")
+                .presentation("Cápsulas 20mg x 14")
+                .productionArea("Sala Blanca B")
+                .build());
+        log.info("Seeded {} products", 2);
     }
 }

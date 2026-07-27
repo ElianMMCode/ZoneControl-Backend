@@ -33,7 +33,6 @@ public class PublicContent {
     @Column(length = 80, nullable = false)
     private String key;
 
-    @Lob
     @Column(columnDefinition = "TEXT", nullable = false)
     private String value;
 }

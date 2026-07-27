@@ -26,7 +26,6 @@ public class ProductCatalog {
     @Column(length = 80, nullable = false)
     private String name;
 
-    @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
 
