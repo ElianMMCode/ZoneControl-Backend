@@ -492,16 +492,19 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 
 ---
 
-## 6. Orden de Implementación Recomendado
+## 6. Orden de Implementación (actualizado)
+
+Se construye toda la lógica de negocio primero con seguridad abierta (`permitAll`). La autenticación JWT se agrega al final como capa transversal.
 
 ```
-Fase 0: Schema BD + DataInitializer + proyecto frontend base
-Fase 1: HU-01 → HU-02 (módulo público, sin auth)
-Fase 2: HU-03 (autenticación JWT + seguridad)
-Fase 3: HU-19 → HU-05 → HU-06 → HU-07 → HU-08 (admin)
-Fase 4: HU-09 → HU-14 → HU-10 → HU-11 → HU-12 → HU-13 (gestión personal)
-Fase 5: HU-18 (control acceso físico)
+Fase 0: Schema BD + DataInitializer                          ✓
+Fase 1: HU-01 → HU-02 (módulo público, sin auth)            ✓
+Fase 2: HU-09 → HU-14 → HU-10 (gestión personal)
+Fase 3: HU-11 → HU-12 → HU-13 (permisos de acceso)
+Fase 4: HU-18 (control acceso físico)
+Fase 5: HU-05 → HU-06 → HU-07 → HU-08 → HU-19 (admin usuarios + contenido)
 Fase 6: HU-15 → HU-16 → HU-17 (reportes y auditoría)
+Fase 7: HU-03 (autenticación JWT + seguridad y roles)
 ```
 
 Cada HU = al menos 1 commit atómico. Cada HU completa sus tests TDD antes de pasar a la siguiente.

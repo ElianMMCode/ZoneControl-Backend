@@ -27,7 +27,7 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false, length = 9)
+    @Column(unique = true, nullable = false, length = 10)
     private String employeeCode;
 
     @Enumerated(EnumType.STRING)
