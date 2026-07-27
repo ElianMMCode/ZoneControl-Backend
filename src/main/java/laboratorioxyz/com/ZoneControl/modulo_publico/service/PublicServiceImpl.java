@@ -24,6 +24,18 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+/**
+ * Implementación del servicio público.
+ * Los datos se sirven desde la tabla public_contents (clave-valor por sección),
+ * offices y product_catalog. Se usa caché por nombre separado para evitar
+ * que un tipo de respuesta invalide o sobrescriba a otro
+ * (cada @Cacheable tiene su propio espacio de nombres).
+ *
+ * La información institucional incluye companyName y productionAreas como
+ * valores por defecto si no están configurados explícitamente en la BD.
+ * productionAreas se obtiene desde la tabla production_areas para mantener
+ * sincronizadas las áreas activas sin duplicación de datos.
+ */
 @Service
 @RequiredArgsConstructor
 public class PublicServiceImpl implements PublicService {
@@ -36,6 +48,7 @@ public class PublicServiceImpl implements PublicService {
     @Value("${app.brochure.path:uploads/folleto}")
     private String brochurePath;
 
+    @Override
     @Cacheable("institutional")
     public InstitutionalResponse getInstitutionalInfo() {
         List<PublicContent> contents = publicContentRepository.findBySection(ContentSection.INSTITUTIONAL);
@@ -53,6 +66,7 @@ public class PublicServiceImpl implements PublicService {
         return InstitutionalResponse.builder().info(info).build();
     }
 
+    @Override
     @Cacheable("contact")
     public ContactResponse getContactInfo() {
         List<PublicContent> contents = publicContentRepository.findBySection(ContentSection.CONTACT);
@@ -61,6 +75,7 @@ public class PublicServiceImpl implements PublicService {
         return ContactResponse.builder().contact(contact).build();
     }
 
+    @Override
     @Cacheable("offices")
     public List<OfficeResponse> getOffices() {
         List<Office> offices = officeRepository.findAll();
@@ -75,6 +90,7 @@ public class PublicServiceImpl implements PublicService {
                 .collect(Collectors.toList());
     }
 
+    @Override
     @Cacheable("catalog")
     public List<CatalogResponse> getCatalog() {
         List<ProductCatalog> products = productCatalogRepository.findAll();
@@ -89,6 +105,12 @@ public class PublicServiceImpl implements PublicService {
                 .collect(Collectors.toList());
     }
 
+    /**
+     * Sirve el archivo PDF del folleto si existe en el directorio configurado.
+     * Retorna null si no hay folleto cargado, y el controller responde 404.
+     * El folleto lo gestiona el administrador vía HU-19.
+     */
+    @Override
     public Resource getBrochure() {
         File file = new File(brochurePath, "Folleto_Laboratorio_XYZ.pdf");
         if (!file.exists()) {

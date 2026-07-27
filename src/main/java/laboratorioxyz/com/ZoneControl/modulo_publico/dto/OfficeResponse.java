@@ -4,6 +4,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
+/**
+ * Respuesta individual en GET /public/sedes.
+ * Representa una sede física con su ubicación y horario.
+ * latitud/longitud permiten integrar mapas en el frontend.
+ */
 @Data
 @AllArgsConstructor
 @Builder

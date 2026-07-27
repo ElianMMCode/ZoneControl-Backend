@@ -21,6 +21,19 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+/**
+ * Inicializador de datos semilla para la base de datos.
+ * Se ejecuta al arrancar la aplicación y siembra datos iniciales
+ * solo si las tablas correspondientes están vacías.
+ *
+ * Incluye:
+ * - 6 departamentos de producción
+ * - 5 áreas restringidas de producción
+ * - 1 usuario administrador por defecto
+ * - Contenido público de ejemplo (misión, visión, contacto)
+ * - 2 sedes físicas
+ * - 2 productos del catálogo
+ */
 @Component
 @RequiredArgsConstructor
 @Slf4j
@@ -34,6 +47,10 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductCatalogRepository productCatalogRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
+    /**
+     * Cada método de seed verifica si ya existen datos antes de insertar,
+     * permitiendo reinicios del servidor sin duplicar registros.
+     */
     @Override
     public void run(String... args) {
         log.info("Seeding initial data...");
@@ -89,6 +106,10 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Seeded {} production areas", names.length);
     }
 
+    /**
+     * Crea el usuario administrador por defecto.
+     * Contraseña encriptada con BCrypt (costo 10 por defecto).
+     */
     private void seedAdminUser() {
         if (userRepository.count() > 0) {
             log.info("Users already exist — skipping");

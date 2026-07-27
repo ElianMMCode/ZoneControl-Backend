@@ -13,6 +13,22 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
+/**
+ * Implementación del servicio de empleados.
+ *
+ * Flujo de registro:
+ * 1. Validar que el tipo de documento exista
+ * 2. Validar unicidad de (tipoDocumento + numeroDocumento)
+ * 3. Validar que el departamento exista
+ * 4. Generar código EMP-XXXXXX secuencial
+ * 5. Persistir y retornar respuesta con el código generado
+ *
+ * La generación del código EMP-XXXXXX usa MAX(employeeCode) en vez de
+ * una secuencia de base de datos porque el formato alfanumérico no se
+ * presta para secuencias nativas de PostgreSQL. Se prioriza la simplicidad
+ * sobre la concurrencia, ya que el registro de personal no es una
+ * operación de alta concurrencia.
+ */
 @Service
 @RequiredArgsConstructor
 public class EmployeeServiceImpl implements EmployeeService {
@@ -61,6 +77,13 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
     }
 
+    /**
+     * Genera el siguiente código EMP-XXXXXX.
+     * Obtiene el máximo código existente en BD y lo incrementa.
+     * Si no hay empleados, empieza desde EMP-000001.
+     * Se usa formato de 6 dígitos para legibilidad humana
+     * (vs UUID que no es amigable para identificación visual).
+     */
     private String generateEmployeeCode() {
         String maxCode = employeeRepository.findMaxEmployeeCode();
         int nextNumber = 1;

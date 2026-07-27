@@ -10,6 +10,12 @@ import lombok.NoArgsConstructor;
 
 import java.util.UUID;
 
+/**
+ * DTO de entrada para POST /personal.
+ * Las validaciones con Jakarta Validation (@NotNull, @Size)
+ * producen HTTP 400 automáticamente cuando los campos no cumplen
+ * las restricciones, sin necesidad de validación manual en el servicio.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor

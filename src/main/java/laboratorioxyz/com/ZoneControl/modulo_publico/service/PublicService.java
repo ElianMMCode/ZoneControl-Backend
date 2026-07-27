@@ -8,6 +8,13 @@ import org.springframework.core.io.Resource;
 
 import java.util.List;
 
+/**
+ * Servicio del módulo público.
+ * Define los contratos para consultar información institucional,
+ * datos de contacto, sedes, catálogo de productos y folleto PDF.
+ * Todos los métodos GET son cacheados para optimizar la carga
+ * de contenido estático (ver @Cacheable en la implementación).
+ */
 public interface PublicService {
     InstitutionalResponse getInstitutionalInfo();
     ContactResponse getContactInfo();

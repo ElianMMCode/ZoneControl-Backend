@@ -12,6 +12,16 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+/**
+ * Controlador de gestión de personal.
+ * POST /personal para registrar un nuevo empleado con generación
+ * automática de código EMP-XXXXXX.
+ *
+ * Respuestas:
+ * - 201 Created + { id, employeeCode, firstName, lastName }
+ * - 400 Bad Request si faltan campos obligatorios o tipo documento inválido
+ * - 409 Conflict si ya existe la combinación tipo+número de documento
+ */
 @RestController
 @RequestMapping("/personal")
 @RequiredArgsConstructor

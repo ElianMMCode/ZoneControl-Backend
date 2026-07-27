@@ -16,6 +16,12 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
 
+/**
+ * Controlador del módulo público.
+ * Expone endpoints GET sin autenticación para que el público general
+ * pueda consultar información institucional, contacto, sedes, catálogo
+ * de productos y descargar el folleto PDF de Laboratorio XYZ.
+ */
 @RestController
 @RequestMapping("/public")
 @RequiredArgsConstructor
