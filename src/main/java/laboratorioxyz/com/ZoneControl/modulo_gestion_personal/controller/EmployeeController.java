@@ -2,6 +2,7 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 
 import jakarta.validation.Valid;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.BulkUploadResult;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeResponse;
@@ -11,9 +12,12 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
@@ -52,6 +56,23 @@ public class EmployeeController {
             @PageableDefault(size = 10) Pageable pageable) {
         Page<EmployeeSearchResponse> result = employeeService.search(
                 documentType, documentNumber, firstName, lastName, departmentId, status, pageable);
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/bulk/plantilla")
+    public ResponseEntity<byte[]> downloadTemplate() {
+        byte[] template = employeeService.generateTemplate();
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.parseMediaType("text/csv"));
+        headers.set(HttpHeaders.CONTENT_DISPOSITION,
+                "attachment; filename=plantilla_carga_masiva_personal.csv");
+        return ResponseEntity.ok().headers(headers).body(template);
+    }
+
+    @PostMapping("/bulk")
+    public ResponseEntity<BulkUploadResult> uploadBulk(
+            @RequestParam("file") MultipartFile file) {
+        BulkUploadResult result = employeeService.processBulkUpload(file);
         return ResponseEntity.ok(result);
     }
 
