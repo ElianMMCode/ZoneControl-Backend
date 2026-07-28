@@ -1,16 +1,19 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 
 import jakarta.validation.Valid;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.UUID;
 
 /**
  * Controlador de gestión de personal.
@@ -34,5 +37,18 @@ public class EmployeeController {
             @Valid @RequestBody RegisterEmployeeRequest request) {
         RegisterEmployeeResponse response = employeeService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<Page<EmployeeSearchResponse>> search(
+            @RequestParam(required = false) String documentType,
+            @RequestParam(required = false) String documentNumber,
+            @RequestParam(required = false) String firstName,
+            @RequestParam(required = false) String lastName,
+            @RequestParam(required = false) UUID departmentId,
+            @PageableDefault(size = 10) Pageable pageable) {
+        Page<EmployeeSearchResponse> result = employeeService.search(
+                documentType, documentNumber, firstName, lastName, departmentId, pageable);
+        return ResponseEntity.ok(result);
     }
 }

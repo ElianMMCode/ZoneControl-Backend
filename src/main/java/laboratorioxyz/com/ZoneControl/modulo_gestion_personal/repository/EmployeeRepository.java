@@ -3,6 +3,7 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
 
 import java.util.Optional;
@@ -13,7 +14,7 @@ import java.util.UUID;
  * Provee métodos para validar unicidad de documento de identidad
  * (tipo + número) y para generar el código EMP-XXXXXX secuencial.
  */
-public interface EmployeeRepository extends JpaRepository<Employee, UUID> {
+public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSpecificationExecutor<Employee> {
     Optional<Employee> findByEmployeeCode(String employeeCode);
     boolean existsByEmployeeCode(String employeeCode);
     boolean existsByDocumentTypeAndDocumentNumber(DocumentType documentType, String documentNumber);
