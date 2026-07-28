@@ -149,29 +149,33 @@ Crear en orden de dependencia:
 
 | Campo | Tipo | Restricción |
 |-------|------|-------------|
-| id | Long (PK) | Autogenerado |
-| nombreCompleto | String | Not null |
+| id | UUID (PK) | Autogenerado |
+| firstName | String | Not null |
+| lastName | String | Not null |
 | email | String | Único, not null |
 | password | String | BCrypt, not null |
-| rol | Enum(ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR) | Not null |
+| rol | Enum(ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR, SEGURIDAD) | Not null |
 | estado | Enum(ACTIVO, INACTIVO) | Default ACTIVO |
 | requiereCambioPassword | boolean | Default false |
+| employee | @OneToOne(Employee) | Not null, unique |
 
 ### 2.3 `Personal` (Empleado)
 
 | Campo | Tipo | Restricción |
 |-------|------|-------------|
-| id | Long (PK) | Autogenerado |
+| id | UUID (PK) | Autogenerado |
 | identificacionInterna | String | Único, formato EMP-XXXXXX, generado automáticamente |
 | tipoDocumento | Enum(CC, CE, TI, PA, RC) | Not null |
 | numeroDocumento | String | Not null |
 | nombres | String | Not null, min 2 chars |
 | apellidos | String | Not null, min 2 chars |
 | cargo | String | Not null |
-| estado | Enum(ACTIVO, INACTIVO) | Default ACTIVO |
+| estado | Enum(ACTIVO, INACTIVO, SUSPENDIDO) | Default ACTIVO |
 | departamento | @ManyToOne(Departamento) | Not null |
 
 Unique constraint: (tipoDocumento, numeroDocumento)
+
+**Nota:** El estado del empleado usa `EmployeeStatus` (ACTIVO, INACTIVO, SUSPENDIDO), distinto de `UserStatus` que solo tiene ACTIVO/INACTIVO. Si un empleado pasa a INACTIVO o SUSPENDIDO, sus permisos de acceso se marcan como SUSPENDIDO y su usuario de sistema (si existe) se marca como INACTIVO en cascada.
 
 ### 2.4 `AreaProduccion`
 
@@ -480,6 +484,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | POST | /api/personal | Gestor/Admin | Gestión Personal | 09 |
 | GET | /api/personal | Gestor/Admin | Gestión Personal | 14 |
 | GET | /api/personal/{id} | Gestor/Admin | Gestión Personal | 14 |
+| PATCH | /api/personal/{id} | Gestor/Admin | Gestión Personal | 14 |
 | GET | /api/personal/bulk/plantilla | Gestor/Admin | Gestión Personal | 10 |
 | POST | /api/personal/bulk | Gestor/Admin | Gestión Personal | 10 |
 | POST | /api/permisos | Gestor/Admin | Gestión Personal | 11 |

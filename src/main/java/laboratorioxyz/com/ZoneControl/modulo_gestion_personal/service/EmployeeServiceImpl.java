@@ -3,13 +3,19 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service;
 import jakarta.persistence.criteria.Predicate;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
+import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
+import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
+import laboratorioxyz.com.ZoneControl.modulo_autenticacion.service.UserService;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeResponse;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdateEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
@@ -20,28 +26,15 @@ import org.springframework.web.server.ResponseStatusException;
 
 import java.util.UUID;
 
-/**
- * Implementación del servicio de empleados.
- *
- * Flujo de registro:
- * 1. Validar que el tipo de documento exista
- * 2. Validar unicidad de (tipoDocumento + numeroDocumento)
- * 3. Validar que el departamento exista
- * 4. Generar código EMP-XXXXXX secuencial
- * 5. Persistir y retornar respuesta con el código generado
- *
- * La generación del código EMP-XXXXXX usa MAX(employeeCode) en vez de
- * una secuencia de base de datos porque el formato alfanumérico no se
- * presta para secuencias nativas de PostgreSQL. Se prioriza la simplicidad
- * sobre la concurrencia, ya que el registro de personal no es una
- * operación de alta concurrencia.
- */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final AccessPermissionRepository accessPermissionRepository;
+    private final UserService userService;
 
     @Override
     @Transactional
@@ -84,13 +77,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .build();
     }
 
-    /**
-     * Genera el siguiente código EMP-XXXXXX.
-     * Obtiene el máximo código existente en BD y lo incrementa.
-     * Si no hay empleados, empieza desde EMP-000001.
-     * Se usa formato de 6 dígitos para legibilidad humana
-     * (vs UUID que no es amigable para identificación visual).
-     */
     private String generateEmployeeCode() {
         String maxCode = employeeRepository.findMaxEmployeeCode();
         int nextNumber = 1;
@@ -104,9 +90,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(readOnly = true)
     public Page<EmployeeSearchResponse> search(String documentType, String documentNumber,
                                                 String firstName, String lastName,
-                                                UUID departmentId, Pageable pageable) {
+                                                UUID departmentId, EmployeeStatus status,
+                                                Pageable pageable) {
         if (documentType == null && documentNumber == null && firstName == null
-                && lastName == null && departmentId == null) {
+                && lastName == null && departmentId == null && status == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Debe seleccionar al menos un filtro de búsqueda");
         }
@@ -133,10 +120,82 @@ public class EmployeeServiceImpl implements EmployeeService {
                 predicate = cb.and(predicate,
                         cb.equal(root.get("department").get("id"), departmentId));
             }
+            if (status != null) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("status"), status));
+            }
             return predicate;
         };
 
         return employeeRepository.findAll(spec, pageable).map(this::toSearchResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public EmployeeSearchResponse findById(UUID id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Empleado no encontrado"));
+        return toSearchResponse(employee);
+    }
+
+    @Override
+    @Transactional
+    public EmployeeSearchResponse update(UUID id, UpdateEmployeeRequest request) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Empleado no encontrado"));
+
+        if (request.getFirstName() != null) {
+            employee.setFirstName(request.getFirstName());
+        }
+        if (request.getLastName() != null) {
+            employee.setLastName(request.getLastName());
+        }
+        if (request.getPosition() != null) {
+            employee.setPosition(request.getPosition());
+        }
+        if (request.getDocumentType() != null || request.getDocumentNumber() != null) {
+            DocumentType newType = request.getDocumentType() != null
+                    ? request.getDocumentType() : employee.getDocumentType();
+            String newNumber = request.getDocumentNumber() != null
+                    ? request.getDocumentNumber() : employee.getDocumentNumber();
+            if (!newType.equals(employee.getDocumentType())
+                    || !newNumber.equals(employee.getDocumentNumber())) {
+                if (employeeRepository.existsByDocumentTypeAndDocumentNumber(newType, newNumber)) {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT,
+                            "Ya existe un empleado con el documento " + newType + " número " + newNumber);
+                }
+                employee.setDocumentType(newType);
+                employee.setDocumentNumber(newNumber);
+            }
+        }
+        if (request.getDepartmentId() != null) {
+            Department department = departmentRepository.findById(request.getDepartmentId())
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                            "Departamento no encontrado"));
+            employee.setDepartment(department);
+        }
+        if (request.getStatus() != null) {
+            EmployeeStatus previousStatus = employee.getStatus();
+            employee.setStatus(request.getStatus());
+            if (request.getStatus() == EmployeeStatus.INACTIVO
+                    || request.getStatus() == EmployeeStatus.SUSPENDIDO) {
+                cascadeDeactivate(employee.getId());
+            }
+        }
+
+        employee = employeeRepository.save(employee);
+        return toSearchResponse(employee);
+    }
+
+    private void cascadeDeactivate(UUID employeeId) {
+        int updatedPermissions = accessPermissionRepository.updateStatusByEmployeeId(
+                employeeId, PermissionStatus.SUSPENDIDO);
+        if (updatedPermissions > 0) {
+            log.info("Suspended {} permissions for employee {}", updatedPermissions, employeeId);
+        }
+        userService.deactivateByEmployeeId(employeeId);
     }
 
     private EmployeeSearchResponse toSearchResponse(Employee employee) {

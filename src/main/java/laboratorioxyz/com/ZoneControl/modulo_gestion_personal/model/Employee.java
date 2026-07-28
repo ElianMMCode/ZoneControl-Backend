@@ -4,7 +4,7 @@ import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
-import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import lombok.*;
 
 import java.util.UUID;
@@ -27,7 +27,7 @@ public class Employee {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID id;
 
-    @Column(unique = true, nullable = false, length = 10)
+    @Column(unique = true, nullable = false, length = 12)
     private String employeeCode;
 
     @Enumerated(EnumType.STRING)
@@ -51,9 +51,9 @@ public class Employee {
     private String position;
 
     @Enumerated(EnumType.STRING)
-    @Column(length = 10, nullable = false)
+    @Column(length = 11, nullable = false)
     @Builder.Default
-    private UserStatus status = UserStatus.ACTIVO;
+    private EmployeeStatus status = EmployeeStatus.ACTIVO;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)

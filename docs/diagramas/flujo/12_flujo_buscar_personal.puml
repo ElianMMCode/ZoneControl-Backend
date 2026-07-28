@@ -17,7 +17,7 @@ start
 :Mostrar formulario de búsqueda;
 
 |Gestor de Personal|
-:Ingresar filtros de búsqueda;
+:Ingresar filtros de búsqueda\n(tipo doc, nro. doc., nombre,\napellido, departamento, estado);
 
 :Seleccionar al menos un filtro;
 
@@ -62,6 +62,7 @@ split
   :Ver detalle del empleado;
 split again
   :Editar empleado;
+  note right: PATCH /personal/{id}\n(cambio de datos\ny/o estado)
 split again
   :Gestionar permisos;
 end split

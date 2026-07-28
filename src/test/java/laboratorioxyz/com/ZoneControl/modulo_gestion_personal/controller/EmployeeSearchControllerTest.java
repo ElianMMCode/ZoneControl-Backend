@@ -3,8 +3,12 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
+import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdateEmployeeRequest;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,8 +19,9 @@ import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import java.util.UUID;
+
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -34,29 +39,29 @@ class EmployeeSearchControllerTest {
     @Autowired
     private DepartmentRepository departmentRepository;
 
+    @Autowired
+    private EmployeeRepository employeeRepository;
+
     private Department department;
+    private Employee seedEmployee;
 
     @BeforeEach
     void setUp() {
         department = departmentRepository.findByName("Control de Calidad").orElseThrow();
-    }
-
-    @Test
-    void searchEmployees_withFilters_returnsPaginatedResults() throws Exception {
-        var empReq = RegisterEmployeeRequest.builder()
+        seedEmployee = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-TEST-01")
                 .documentType(DocumentType.CC)
                 .documentNumber("1111111111")
                 .firstName("Carlos")
                 .lastName("Mendoza")
                 .position("Técnico")
-                .departmentId(department.getId())
-                .build();
+                .department(department)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+    }
 
-        mockMvc.perform(post("/personal")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(empReq)))
-                .andExpect(status().isCreated());
-
+    @Test
+    void searchEmployees_withFilters_returnsPaginatedResults() throws Exception {
         mockMvc.perform(get("/personal")
                         .param("firstName", "Carlos")
                         .param("page", "0")
@@ -88,33 +93,16 @@ class EmployeeSearchControllerTest {
 
     @Test
     void searchEmployees_byDocumentNumber_returnsResults() throws Exception {
-        var emp1 = RegisterEmployeeRequest.builder()
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-TEST-02")
                 .documentType(DocumentType.CC)
                 .documentNumber("2222222222")
                 .firstName("Ana")
                 .lastName("López")
                 .position("Analista")
-                .departmentId(department.getId())
-                .build();
-
-        var emp2 = RegisterEmployeeRequest.builder()
-                .documentType(DocumentType.CC)
-                .documentNumber("3333333333")
-                .firstName("Luis")
-                .lastName("García")
-                .position("Técnico")
-                .departmentId(department.getId())
-                .build();
-
-        mockMvc.perform(post("/personal")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emp1)))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(post("/personal")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emp2)))
-                .andExpect(status().isCreated());
+                .department(department)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
 
         mockMvc.perform(get("/personal")
                         .param("documentNumber", "222")
@@ -127,33 +115,26 @@ class EmployeeSearchControllerTest {
 
     @Test
     void searchEmployees_multipleFiltersAnd_returnsIntersection() throws Exception {
-        var emp1 = RegisterEmployeeRequest.builder()
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-TEST-03")
                 .documentType(DocumentType.CC)
                 .documentNumber("4444444444")
                 .firstName("Pedro")
                 .lastName("Ramírez")
                 .position("Técnico")
-                .departmentId(department.getId())
-                .build();
-
-        var emp2 = RegisterEmployeeRequest.builder()
+                .department(department)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-TEST-04")
                 .documentType(DocumentType.CC)
                 .documentNumber("5555555555")
                 .firstName("Pedro")
                 .lastName("Pérez")
-                .position("Técnico")
-                .departmentId(department.getId())
-                .build();
-
-        mockMvc.perform(post("/personal")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emp1)))
-                .andExpect(status().isCreated());
-
-        mockMvc.perform(post("/personal")
-                        .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(emp2)))
-                .andExpect(status().isCreated());
+                .position("Analista")
+                .department(department)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
 
         mockMvc.perform(get("/personal")
                         .param("firstName", "Pedro")
@@ -163,5 +144,111 @@ class EmployeeSearchControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalElements").value(1))
                 .andExpect(jsonPath("$.content[0].documentNumber").value("4444444444"));
+    }
+
+    @Test
+    void searchEmployees_byStatus_returnsFilteredResults() throws Exception {
+        mockMvc.perform(get("/personal")
+                        .param("status", "ACTIVO")
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").isNumber());
+    }
+
+    @Test
+    void getEmployeeById_exists_returns200() throws Exception {
+        mockMvc.perform(get("/personal/{id}", seedEmployee.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Carlos"))
+                .andExpect(jsonPath("$.lastName").value("Mendoza"))
+                .andExpect(jsonPath("$.employeeCode").value("EMP-TEST-01"));
+    }
+
+    @Test
+    void getEmployeeById_notFound_returns404() throws Exception {
+        mockMvc.perform(get("/personal/{id}", UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Empleado no encontrado"));
+    }
+
+    @Test
+    void updateEmployee_validFields_returns200() throws Exception {
+        var updateReq = UpdateEmployeeRequest.builder()
+                .firstName("Carlos Alberto")
+                .position("Senior")
+                .build();
+
+        mockMvc.perform(patch("/personal/{id}", seedEmployee.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Carlos Alberto"))
+                .andExpect(jsonPath("$.position").value("Senior"))
+                .andExpect(jsonPath("$.lastName").value("Mendoza"));
+    }
+
+    @Test
+    void updateEmployee_statusToInactive_returns200() throws Exception {
+        var updateReq = UpdateEmployeeRequest.builder()
+                .status(EmployeeStatus.INACTIVO)
+                .build();
+
+        mockMvc.perform(patch("/personal/{id}", seedEmployee.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("INACTIVO"));
+    }
+
+    @Test
+    void updateEmployee_statusToSuspended_returns200() throws Exception {
+        var updateReq = UpdateEmployeeRequest.builder()
+                .status(EmployeeStatus.SUSPENDIDO)
+                .build();
+
+        mockMvc.perform(patch("/personal/{id}", seedEmployee.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUSPENDIDO"));
+    }
+
+    @Test
+    void updateEmployee_nonExistent_returns404() throws Exception {
+        var updateReq = UpdateEmployeeRequest.builder()
+                .firstName("Test")
+                .build();
+
+        mockMvc.perform(patch("/personal/{id}", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Empleado no encontrado"));
+    }
+
+    @Test
+    void updateEmployee_duplicateDocument_returns409() throws Exception {
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-TEST-05")
+                .documentType(DocumentType.CC)
+                .documentNumber("6666666666")
+                .firstName("Otro")
+                .lastName("Empleado")
+                .position("Analista")
+                .department(department)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+
+        var updateReq = UpdateEmployeeRequest.builder()
+                .documentNumber("6666666666")
+                .build();
+
+        mockMvc.perform(patch("/personal/{id}", seedEmployee.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(updateReq)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value(
+                        "Ya existe un empleado con el documento CC número 6666666666"));
     }
 }

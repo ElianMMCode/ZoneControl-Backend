@@ -12,8 +12,9 @@ package "Módulo de Gestión de Personal" {
     usecase "Registrar personal individual\ny asignar departamento" as UC_Gest1
     usecase "Carga masiva\n(Archivo plano)" as UC_Gest2
     usecase "Validar estructura\ne información" as UC_Gest3
-    usecase "Actualizar estado del personal\n(otorgar/revocar/suspender)" as UC_Gest4
-    usecase "Buscar personal\n(identificación, nombre,\napellido, departamento)" as UC_Gest5
+    usecase "Gestionar permisos de acceso\n(otorgar/revocar/suspender)" as UC_Gest4
+    usecase "Buscar personal\n(identificación, nombre,\napellido, departamento,\nestado)" as UC_Gest5
+    usecase "Editar datos del empleado\ny cambiar estado\n(ACTIVO/INACTIVO/SUSPENDIDO)" as UC_Gest6
 
     UC_Gest2 ..> UC_Gest3 : <<include>>
 }
@@ -22,9 +23,11 @@ Gestor --> UC_Gest1
 Gestor --> UC_Gest2
 Gestor --> UC_Gest4
 Gestor --> UC_Gest5
+Gestor --> UC_Gest6
 UC_Gest1 ..> UC_Login : <<include>>
 UC_Gest2 ..> UC_Login : <<include>>
 UC_Gest4 ..> UC_Login : <<include>>
 UC_Gest5 ..> UC_Login : <<include>>
+UC_Gest6 ..> UC_Login : <<include>>
 
 @enduml

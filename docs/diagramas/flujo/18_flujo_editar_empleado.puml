@@ -1,0 +1,87 @@
+@startuml
+title Flujo CU-07a: Editar Empleado
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal|
+start
+:Seleccionar empleado\nde resultados de búsqueda;
+
+:Hacer clic en "Editar";
+
+|Frontend|
+:Mostrar formulario de edición\ncon datos actuales del empleado\ny selector de estado\n(ACTIVO/INACTIVO/SUSPENDIDO);
+
+|Gestor de Personal|
+:Modificar campos requeridos\n(nombre, apellido, cargo,\ntipo doc, nro. doc.,\ndepartamento, estado);
+
+:Presionar "Guardar";
+
+|Frontend|
+:Validar campos;
+
+:Enviar PATCH /personal/{id};
+
+|Backend|
+:Recibir actualización;
+
+if (¿Empleado existe?) then (Sí)
+  :Actualizar campos\nsolo si fueron enviados\n(patch parcial);
+
+  if (¿Cambió tipo/número documento?) then (Sí)
+    :Verificar unicidad\ntipo doc + nro. doc.;
+
+    if (¿Documento disponible?) then (Sí)
+      :Actualizar documento;
+    else (No)
+      :Retornar HTTP 409\n"Ya existe un empleado\ncon ese documento";
+      |Frontend|
+      :Pantalla: Error de documento duplicado;
+      stop
+    endif
+  endif
+
+  if (¿Cambió departamento?) then (Sí)
+    :Verificar que exista;
+    if (¿Departamento existe?) then (Sí)
+      :Actualizar departamento;
+    else (No)
+      :Retornar HTTP 400\n"Departamento no encontrado";
+      stop
+    endif
+  endif
+
+  if (¿Status nuevo = INACTIVO o SUSPENDIDO?) then (Sí)
+    :CASCADE a permisos:\n→ AccessPermission.status = SUSPENDIDO;
+
+    :CASCADE a User:\n→ User.status = INACTIVO\n(si existe User vinculado);
+  endif
+
+  :Guardar en PostgreSQL;
+
+  :Retornar HTTP 200\ncon datos actualizados;
+
+  |Frontend|
+  :Pantalla: Notificación de éxito;
+
+  :Actualizar fila en tabla;
+
+  |Gestor de Personal|
+  :Confirmar edición;
+
+else (No)
+  :Retornar HTTP 404\n"Empleado no encontrado";
+
+  |Frontend|
+  :Pantalla: Error\n"Empleado no encontrado";
+endif
+
+stop
+
+@enduml

@@ -5,6 +5,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import lombok.*;
 
 import java.util.UUID;
@@ -54,4 +55,8 @@ public class User {
     @Column(nullable = false)
     @Builder.Default
     private boolean requirePasswordChange = false;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "employee_id", nullable = false, unique = true)
+    private Employee employee;
 }

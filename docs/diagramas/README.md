@@ -8,7 +8,7 @@
 | `01_modulo_publico.puml` | Módulo público - información institucional | Público General |
 | `02_modulo_autenticacion.puml` | Módulo de autenticación (login) | Usuarios Internos |
 | `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador |
-| `04_modulo_gestion_personal.puml` | Gestión de personal (CRUD, permisos, búsqueda) | Gestor de Personal |
+| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición con cascade) | Gestor de Personal |
 | `05_modulo_control_acceso_fisico.puml` | Control de acceso físico (simulación) | Seguridad |
 | `06_modulo_reportes_auditoria.puml` | Reportes y auditoría | Supervisor/Auditor |
 
@@ -34,6 +34,8 @@
 | 14 | `14_flujo_documento_descargable.puml` | CU-09 | Generar Documento |
 | 15 | `15_flujo_archivo_periodico.puml` | CU-10 | Archivo Periódico |
 | 16 | `16_flujo_control_acceso.puml` | CU-11 | Control de Acceso |
+| 17 | `17_flujo_gestion_contenido_publico.puml` | CU-03b | Gestionar Contenido Público |
+| 18 | `18_flujo_editar_empleado.puml` | CU-07a | Editar Empleado |
 
 ---
 

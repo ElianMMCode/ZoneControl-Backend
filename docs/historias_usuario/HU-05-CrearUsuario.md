@@ -16,7 +16,7 @@
 
 ## Requerimiento
 
-El sistema debe permitir al administrador crear usuarios internos del sistema, asignándoles un rol (Administrador, Gestor de Personal o Supervisor/Auditor) y un estado inicial (Activo/Inactivo). El email debe ser único en el sistema y la contraseña debe cumplir con los siguientes requisitos de seguridad antes de ser encriptada y almacenada: mínimo 8 caracteres de longitud, al menos una letra mayúscula (A-Z), al menos una letra minúscula (a-z), al menos un dígito numérico (0-9) y al menos un carácter especial (@$!%*?&).
+El sistema debe permitir al administrador crear usuarios internos del sistema, asignándoles un rol (Administrador, Gestor de Personal o Supervisor/Auditor) y un estado inicial (Activo/Inactivo). Cada usuario debe estar vinculado a un empleado existente (relación @OneToOne obligatoria), garantizando que todo usuario del sistema es también personal de la empresa. El email debe ser único en el sistema y la contraseña debe cumplir con los siguientes requisitos de seguridad antes de ser encriptada y almacenada: mínimo 8 caracteres de longitud, al menos una letra mayúscula (A-Z), al menos una letra minúscula (a-z), al menos un dígito numérico (0-9) y al menos un carácter especial (@$!%*?&).
 
 ## Criterios de Aceptación
 
@@ -56,14 +56,15 @@ Entonces: el sistema muestra los mensajes de error específicos debajo de cada c
 
 | No | Descripción |
 |---|---|
-| 1 | Diseñar formulario de creación de usuario con campos: nombre completo, email, contraseña, confirmar contraseña, rol (select), estado (select) |
+| 1 | Diseñar formulario de creación de usuario con campos: nombre completo, email, contraseña, confirmar contraseña, rol (select), empleado (selector que busca empleados existentes), estado (select) |
 | 2 | Implementar validación de requisitos de contraseña en frontend: mínimo 8 caracteres, al menos 1 mayúscula, 1 minúscula, 1 dígito, 1 carácter especial (@$!%*?&) |
 | 3 | Implementar validación de coincidencia entre contraseña y confirmar contraseña en frontend |
-| 4 | Implementar endpoint POST /api/admin/users en Spring Boot con validación de requisitos de contraseña en backend |
+| 4 | Implementar endpoint POST /admin/users en Spring Boot con validación de requisitos de contraseña en backend |
 | 5 | Validar unicidad del email consultando PostgreSQL antes de la inserción |
-| 6 | Encriptar la contraseña con BCrypt una vez superadas todas las validaciones |
-| 7 | Retornar HTTP 201 con datos del usuario creado y mostrar notificación de éxito en el frontend |
-| 8 | Manejar respuestas de error: 409 para email duplicado y 400 para contraseña inválida o campos faltantes |
+| 6 | Validar que el employeeId enviado exista y no esté vinculado a otro usuario |
+| 7 | Encriptar la contraseña con BCrypt una vez superadas todas las validaciones |
+| 8 | Retornar HTTP 201 con ID del usuario creado y mostrar notificación de éxito en el frontend |
+| 9 | Manejar respuestas de error: 409 para email duplicado o empleado ya vinculado, 400 para contraseña inválida, campos faltantes o empleado inexistente |
 
 ## Control de Versiones
 

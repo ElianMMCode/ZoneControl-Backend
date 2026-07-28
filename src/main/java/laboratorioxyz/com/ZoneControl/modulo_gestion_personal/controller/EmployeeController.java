@@ -1,9 +1,11 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 
 import jakarta.validation.Valid;
+import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeResponse;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdateEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -46,9 +48,24 @@ public class EmployeeController {
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) UUID departmentId,
+            @RequestParam(required = false) EmployeeStatus status,
             @PageableDefault(size = 10) Pageable pageable) {
         Page<EmployeeSearchResponse> result = employeeService.search(
-                documentType, documentNumber, firstName, lastName, departmentId, pageable);
+                documentType, documentNumber, firstName, lastName, departmentId, status, pageable);
         return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<EmployeeSearchResponse> getById(@PathVariable UUID id) {
+        EmployeeSearchResponse response = employeeService.findById(id);
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{id}")
+    public ResponseEntity<EmployeeSearchResponse> update(
+            @PathVariable UUID id,
+            @RequestBody UpdateEmployeeRequest request) {
+        EmployeeSearchResponse response = employeeService.update(id, request);
+        return ResponseEntity.ok(response);
     }
 }

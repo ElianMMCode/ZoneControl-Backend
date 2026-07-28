@@ -60,6 +60,7 @@ package "Módulo de Gestión de Personal" #F3E5F5 {
   usecase "CU-05: Realizar carga masiva\n(Archivo plano)" as UC05
   usecase "CU-06: Gestionar permisos\n(Otorgar/Revocar/Suspender)" as UC06
   usecase "CU-07: Buscar personal\npor filtros" as UC07
+  usecase "CU-07a: Editar empleado\ny cambiar estado\n(ACTIVO/INACTIVO/SUSPENDIDO)" as UC07a
   usecase "CU-05a: Validar estructura\ne información" as UC05a
 }
 
@@ -106,6 +107,7 @@ Gestor --> UC04
 Gestor --> UC05
 Gestor --> UC06
 Gestor --> UC07
+Gestor --> UC07a
 
 ' Supervisor / Auditor
 Supervisor --> UC02
