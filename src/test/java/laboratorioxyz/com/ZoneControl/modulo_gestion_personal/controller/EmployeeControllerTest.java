@@ -1,9 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
-import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -30,14 +28,8 @@ class EmployeeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
-    @Autowired
-    private DepartmentRepository departmentRepository;
-
-    private Department department;
-
     @BeforeEach
     void setUp() {
-        department = departmentRepository.findByName("Control de Calidad").orElseThrow();
     }
 
     @Test
@@ -48,7 +40,7 @@ class EmployeeControllerTest {
                 .firstName("Carlos")
                 .lastName("Mendoza")
                 .position("Técnico")
-                .departmentId(department.getId())
+                .departmentName("Control de Calidad")
                 .build();
 
         mockMvc.perform(post("/personal")
@@ -69,7 +61,7 @@ class EmployeeControllerTest {
                 .firstName("Ana")
                 .lastName("López")
                 .position("Analista")
-                .departmentId(department.getId())
+                .departmentName("Control de Calidad")
                 .build();
 
         mockMvc.perform(post("/personal")
@@ -93,7 +85,7 @@ class EmployeeControllerTest {
                 .firstName("")
                 .lastName("")
                 .position("")
-                .departmentId(null)
+                .departmentName(null)
                 .build();
 
         mockMvc.perform(post("/personal")

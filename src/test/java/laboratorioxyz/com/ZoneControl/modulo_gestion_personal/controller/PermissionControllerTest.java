@@ -21,7 +21,6 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
-import java.time.LocalTime;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -49,7 +48,6 @@ class PermissionControllerTest {
     private ProductionAreaRepository productionAreaRepository;
 
     private Employee activeEmployee;
-    private UUID areaId;
 
     @BeforeEach
     void setUp() {
@@ -64,15 +62,13 @@ class PermissionControllerTest {
                 .department(dept)
                 .status(EmployeeStatus.ACTIVO)
                 .build());
-        ProductionArea area = productionAreaRepository.findByName("Sala Blanca A").orElseThrow();
-        areaId = area.getId();
     }
 
     @Test
     void grantPermission_validRequest_returns201() throws Exception {
         var request = new Object() {
-            public UUID employeeId = activeEmployee.getId();
-            public UUID productionAreaId = areaId;
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
             public String startDate = LocalDate.now().toString();
             public String expirationDate = LocalDate.now().plusMonths(1).toString();
             public String startTime = "08:00";
@@ -93,8 +89,8 @@ class PermissionControllerTest {
         employeeRepository.save(activeEmployee);
 
         var request = new Object() {
-            public UUID employeeId = activeEmployee.getId();
-            public UUID productionAreaId = areaId;
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
             public String startDate = LocalDate.now().toString();
             public String expirationDate = LocalDate.now().plusMonths(1).toString();
             public String startTime = "08:00";
@@ -111,8 +107,8 @@ class PermissionControllerTest {
     @Test
     void grantPermission_conflict_returns409() throws Exception {
         var request = new Object() {
-            public UUID employeeId = activeEmployee.getId();
-            public UUID productionAreaId = areaId;
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
             public String startDate = LocalDate.now().toString();
             public String expirationDate = LocalDate.now().plusMonths(1).toString();
             public String startTime = "08:00";
@@ -134,8 +130,8 @@ class PermissionControllerTest {
     @Test
     void grantPermission_nonExistentEmployee_returns404() throws Exception {
         var request = new Object() {
-            public UUID employeeId = UUID.randomUUID();
-            public UUID productionAreaId = areaId;
+            public String employeeCode = "EMP-999999";
+            public String productionAreaName = "Sala Blanca A";
             public String startDate = LocalDate.now().toString();
             public String expirationDate = LocalDate.now().plusMonths(1).toString();
             public String startTime = "08:00";
@@ -146,14 +142,14 @@ class PermissionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
-                .andExpect(jsonPath("$.error").value("Empleado no encontrado"));
+                .andExpect(jsonPath("$.error").value("Empleado no encontrado: EMP-999999"));
     }
 
     @Test
     void revokePermission_valid_returns200() throws Exception {
         var request = new Object() {
-            public UUID employeeId = activeEmployee.getId();
-            public UUID productionAreaId = areaId;
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
             public String startDate = LocalDate.now().toString();
             public String expirationDate = LocalDate.now().plusMonths(1).toString();
             public String startTime = "08:00";
@@ -181,8 +177,8 @@ class PermissionControllerTest {
     @Test
     void suspendPermission_valid_returns200() throws Exception {
         var request = new Object() {
-            public UUID employeeId = activeEmployee.getId();
-            public UUID productionAreaId = areaId;
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
             public String startDate = LocalDate.now().toString();
             public String expirationDate = LocalDate.now().plusMonths(1).toString();
             public String startTime = "08:00";

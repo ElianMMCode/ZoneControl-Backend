@@ -20,7 +20,7 @@ public class AccessController {
     @PostMapping("/validate")
     public ResponseEntity<ValidateAccessResponse> validate(@RequestBody ValidateAccessRequest request) {
         ValidateAccessResponse response = accessValidationService.validate(
-                request.getEmployeeCode(), request.getProductionAreaId());
+                request.getEmployeeCode(), request.getProductionAreaName());
         return ResponseEntity.ok(response);
     }
 }

@@ -2,7 +2,6 @@ package laboratorioxyz.com.ZoneControl.modulo_control_acceso.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
-import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
@@ -25,7 +24,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -49,21 +47,20 @@ class AccessControllerTest {
     private DepartmentRepository departmentRepository;
 
     @Autowired
-    private ProductionAreaRepository productionAreaRepository;
-
-    @Autowired
     private AccessPermissionRepository accessPermissionRepository;
 
     @Autowired
     private AccessHistoryRepository accessHistoryRepository;
 
+    @Autowired
+    private ProductionAreaRepository productionAreaRepository;
+
     private Department dept;
-    private ProductionArea area;
+    private final String areaName = "Sala Blanca A";
 
     @BeforeEach
     void setUp() {
         dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
-        area = productionAreaRepository.findByName("Sala Blanca A").orElseThrow();
     }
 
     private Employee createEmployee(String code, String docNum, EmployeeStatus status) {
@@ -79,10 +76,10 @@ class AccessControllerTest {
                 .build());
     }
 
-    private void grantPermission(Employee employee, ProductionArea targetArea) {
+    private void grantPermission(Employee employee) {
         accessPermissionRepository.save(AccessPermission.builder()
                 .employee(employee)
-                .productionArea(targetArea)
+                .productionArea(productionAreaRepository.findByName("Sala Blanca A").orElseThrow())
                 .status(PermissionStatus.ACTIVO)
                 .startDate(LocalDate.now().minusDays(1))
                 .expirationDate(LocalDate.now().plusDays(30))
@@ -91,27 +88,18 @@ class AccessControllerTest {
                 .build());
     }
 
-    private String requestBody(String employeeCode, UUID productionAreaId) {
-        try {
-            return objectMapper.writeValueAsString(new Object() {
-                public String empCode = employeeCode;
-                public UUID areaId = productionAreaId;
-                public String getEmployeeCode() { return empCode; }
-                public UUID getProductionAreaId() { return areaId; }
-            });
-        } catch (Exception e) {
-            return "{\"employeeCode\":\"" + employeeCode + "\",\"productionAreaId\":\"" + productionAreaId + "\"}";
-        }
+    private String requestBody(String employeeCode, String productionAreaName) {
+        return "{\"employeeCode\":\"" + employeeCode + "\",\"productionAreaName\":\"" + productionAreaName + "\"}";
     }
 
     @Test
     void validate_authorizedEmployee_returnsAuthorized() throws Exception {
         Employee emp = createEmployee("EMP-TEST-01", "1111111111", EmployeeStatus.ACTIVO);
-        grantPermission(emp, area);
+        grantPermission(emp);
 
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-TEST-01", area.getId())))
+                        .content(requestBody("EMP-TEST-01", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("AUTHORIZED"))
                 .andExpect(jsonPath("$.message").value("INGRESO AUTORIZADO"));
@@ -123,7 +111,7 @@ class AccessControllerTest {
 
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-TEST-02", area.getId())))
+                        .content(requestBody("EMP-TEST-02", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("DENIED"))
                 .andExpect(jsonPath("$.message").value("INGRESO DENEGADO"));
@@ -135,7 +123,7 @@ class AccessControllerTest {
 
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-TEST-03", area.getId())))
+                        .content(requestBody("EMP-TEST-03", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("DENIED"))
                 .andExpect(jsonPath("$.message").value("INGRESO DENEGADO"));
@@ -145,7 +133,7 @@ class AccessControllerTest {
     void validate_unregisteredEmployee_returnsUnregistered() throws Exception {
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-999999", area.getId())))
+                        .content(requestBody("EMP-999999", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("UNREGISTERED"))
                 .andExpect(jsonPath("$.message").value("NO REGISTRADO"));
@@ -157,7 +145,7 @@ class AccessControllerTest {
 
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-TEST-04", area.getId())))
+                        .content(requestBody("EMP-TEST-04", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUSPENDED"))
                 .andExpect(jsonPath("$.message").value("ACCESO SUSPENDIDO"));
@@ -166,13 +154,11 @@ class AccessControllerTest {
     @Test
     void validate_permissionForDifferentArea_returnsSuspended() throws Exception {
         Employee emp = createEmployee("EMP-TEST-05", "5555555555", EmployeeStatus.ACTIVO);
-        grantPermission(emp, area);
-
-        ProductionArea otherArea = productionAreaRepository.findByName("Sala Blanca B").orElseThrow();
+        grantPermission(emp);
 
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-TEST-05", otherArea.getId())))
+                        .content(requestBody("EMP-TEST-05", "Sala Blanca B")))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("SUSPENDED"))
                 .andExpect(jsonPath("$.message").value("ACCESO SUSPENDIDO"));
@@ -181,11 +167,11 @@ class AccessControllerTest {
     @Test
     void validate_logsAccessHistory() throws Exception {
         Employee emp = createEmployee("EMP-TEST-06", "6666666666", EmployeeStatus.ACTIVO);
-        grantPermission(emp, area);
+        grantPermission(emp);
 
         mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(requestBody("EMP-TEST-06", area.getId())))
+                        .content(requestBody("EMP-TEST-06", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("AUTHORIZED"));
 

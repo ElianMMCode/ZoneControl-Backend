@@ -7,15 +7,15 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
-import java.util.UUID;
+
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class CreatePermissionRequest {
-    private UUID employeeId;
-    private UUID productionAreaId;
+    private String employeeCode;
+    private String productionAreaName;
     private LocalDate startDate;
     private LocalDate expirationDate;
     private LocalTime startTime;

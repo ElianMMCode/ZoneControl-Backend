@@ -15,7 +15,7 @@ import java.util.UUID;
 public interface EmployeeService {
     RegisterEmployeeResponse register(RegisterEmployeeRequest request);
     Page<EmployeeSearchResponse> search(String documentType, String documentNumber, String firstName,
-                                        String lastName, UUID departmentId, EmployeeStatus status, Pageable pageable);
+                                        String lastName, String departmentName, EmployeeStatus status, Pageable pageable);
     EmployeeSearchResponse findById(UUID id);
     EmployeeSearchResponse update(UUID id, UpdateEmployeeRequest request);
     byte[] generateTemplate();

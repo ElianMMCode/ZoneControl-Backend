@@ -33,18 +33,18 @@ public class PermissionServiceImpl implements PermissionService {
     @Override
     @Transactional
     public PermissionResponse grant(CreatePermissionRequest request) {
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
+        Employee employee = employeeRepository.findByEmployeeCode(request.getEmployeeCode())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Empleado no encontrado"));
+                        "Empleado no encontrado: " + request.getEmployeeCode()));
 
         if (employee.getStatus() != EmployeeStatus.ACTIVO) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se puede otorgar acceso a empleado inactivo");
         }
 
-        ProductionArea area = productionAreaRepository.findById(request.getProductionAreaId())
+        ProductionArea area = productionAreaRepository.findByName(request.getProductionAreaName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Área de producción no encontrada"));
+                        "Área de producción no encontrada: " + request.getProductionAreaName()));
 
         if (accessPermissionRepository
                 .existsByEmployee_IdAndProductionArea_IdAndStartTimeAndEndTimeAndStatus(

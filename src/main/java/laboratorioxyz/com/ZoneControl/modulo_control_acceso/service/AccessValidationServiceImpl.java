@@ -20,7 +20,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
-import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -34,10 +33,10 @@ public class AccessValidationServiceImpl implements AccessValidationService {
 
     @Override
     @Transactional
-    public ValidateAccessResponse validate(String employeeCode, UUID productionAreaId) {
-        ProductionArea area = productionAreaRepository.findById(productionAreaId)
+    public ValidateAccessResponse validate(String employeeCode, String productionAreaName) {
+        ProductionArea area = productionAreaRepository.findByName(productionAreaName)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Área de producción no encontrada"));
+                        "Área de producción no encontrada: " + productionAreaName));
 
         Employee employee = employeeRepository.findByEmployeeCode(employeeCode).orElse(null);
 
@@ -52,7 +51,7 @@ public class AccessValidationServiceImpl implements AccessValidationService {
         }
 
         boolean hasValidPermission = accessPermissionRepository.hasValidPermission(
-                employee.getId(), productionAreaId, LocalDate.now(), LocalTime.now());
+                employee.getId(), area.getId(), LocalDate.now(), LocalTime.now());
 
         if (!hasValidPermission) {
             logAccess(employee, area.getName(), AccessResult.SUSPENDED);

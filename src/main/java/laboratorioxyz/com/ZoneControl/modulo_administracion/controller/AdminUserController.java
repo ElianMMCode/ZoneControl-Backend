@@ -35,11 +35,11 @@ public class AdminUserController {
             throw new ResponseStatusException(HttpStatus.CONFLICT, "El email ya está registrado");
         }
 
-        Employee employee = employeeRepository.findById(request.getEmployeeId())
+        Employee employee = employeeRepository.findByEmployeeCode(request.getEmployeeCode())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Empleado no encontrado"));
+                        "Empleado no encontrado: " + request.getEmployeeCode()));
 
-        if (userRepository.findByEmployee_Id(request.getEmployeeId()).isPresent()) {
+        if (userRepository.findByEmployee_Id(employee.getId()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
                     "El empleado ya tiene un usuario de sistema asociado");
         }

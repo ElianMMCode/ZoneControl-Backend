@@ -6,7 +6,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @Data
 @NoArgsConstructor
@@ -16,7 +16,7 @@ public class ExportRequest {
     private String formato;
     private LocalDate fechaInicio;
     private LocalDate fechaFin;
-    private UUID personalId;
-    private UUID departamentoId;
+    private String employeeCode;
+    private String departamentoName;
     private String resultado;
 }

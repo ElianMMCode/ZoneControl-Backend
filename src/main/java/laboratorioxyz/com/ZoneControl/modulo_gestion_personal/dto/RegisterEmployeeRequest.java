@@ -8,7 +8,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+
 
 /**
  * DTO de entrada para POST /personal.
@@ -42,5 +42,6 @@ public class RegisterEmployeeRequest {
     private String position;
 
     @NotNull
-    private UUID departmentId;
+    @Size(max = 80)
+    private String departmentName;
 }

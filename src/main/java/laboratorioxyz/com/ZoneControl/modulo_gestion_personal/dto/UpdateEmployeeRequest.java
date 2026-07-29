@@ -7,7 +7,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+
 
 @Data
 @NoArgsConstructor
@@ -19,6 +19,6 @@ public class UpdateEmployeeRequest {
     private String position;
     private DocumentType documentType;
     private String documentNumber;
-    private UUID departmentId;
+    private String departmentName;
     private EmployeeStatus status;
 }

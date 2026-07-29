@@ -25,7 +25,6 @@ import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -38,7 +37,7 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     @Transactional(readOnly = true)
     public Page<AccessHistoryResponse> search(LocalDate fechaInicio, LocalDate fechaFin,
-                                               UUID personalId, String resultado,
+                                               String employeeCode, String resultado,
                                                Pageable pageable) {
         if (fechaInicio.isAfter(fechaFin)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -51,9 +50,9 @@ public class HistoryServiceImpl implements HistoryService {
                     cb.greaterThanOrEqualTo(root.get("timestamp"), fechaInicio.atStartOfDay()));
             predicate = cb.and(predicate,
                     cb.lessThanOrEqualTo(root.get("timestamp"), fechaFin.atTime(LocalTime.MAX)));
-            if (personalId != null) {
+            if (employeeCode != null && !employeeCode.isBlank()) {
                 predicate = cb.and(predicate,
-                        cb.equal(root.get("employee").get("id"), personalId));
+                        cb.equal(root.get("employee").get("employeeCode"), employeeCode));
             }
             if (resultado != null && !resultado.isBlank()) {
                 predicate = cb.and(predicate,
@@ -81,9 +80,9 @@ public class HistoryServiceImpl implements HistoryService {
                     cb.greaterThanOrEqualTo(root.get("timestamp"), fechaInicio.atStartOfDay()));
             predicate = cb.and(predicate,
                     cb.lessThanOrEqualTo(root.get("timestamp"), fechaFin.atTime(LocalTime.MAX)));
-            if (request.getPersonalId() != null) {
+            if (request.getEmployeeCode() != null && !request.getEmployeeCode().isBlank()) {
                 predicate = cb.and(predicate,
-                        cb.equal(root.get("employee").get("id"), request.getPersonalId()));
+                        cb.equal(root.get("employee").get("employeeCode"), request.getEmployeeCode()));
             }
             if (request.getResultado() != null && !request.getResultado().isBlank()) {
                 predicate = cb.and(predicate,

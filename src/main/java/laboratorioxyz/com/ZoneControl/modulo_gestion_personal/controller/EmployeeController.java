@@ -21,6 +21,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.util.UUID;
 
+
 /**
  * Controlador de gestión de personal.
  * POST /personal para registrar un nuevo empleado con generación
@@ -51,11 +52,11 @@ public class EmployeeController {
             @RequestParam(required = false) String documentNumber,
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
-            @RequestParam(required = false) UUID departmentId,
+            @RequestParam(required = false) String departmentName,
             @RequestParam(required = false) EmployeeStatus status,
             @PageableDefault(size = 10) Pageable pageable) {
         Page<EmployeeSearchResponse> result = employeeService.search(
-                documentType, documentNumber, firstName, lastName, departmentId, status, pageable);
+                documentType, documentNumber, firstName, lastName, departmentName, status, pageable);
         return ResponseEntity.ok(result);
     }
 

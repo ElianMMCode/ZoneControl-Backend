@@ -9,7 +9,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
+
 
 @Data
 @NoArgsConstructor
@@ -38,5 +38,6 @@ public class CreateUserRequest {
     private Role role;
 
     @NotNull
-    private UUID employeeId;
+    @Size(max = 12)
+    private String employeeCode;
 }

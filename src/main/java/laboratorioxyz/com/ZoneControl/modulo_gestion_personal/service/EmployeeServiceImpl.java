@@ -25,7 +25,6 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.InputStreamReader;
-import java.io.OutputStreamWriter;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 
@@ -54,9 +53,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                 + " número " + request.getDocumentNumber());
         }
 
-        Department department = departmentRepository.findById(request.getDepartmentId())
+        Department department = departmentRepository.findByName(request.getDepartmentName())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Departamento no encontrado"));
+                        "Departamento no encontrado: " + request.getDepartmentName()));
 
         String employeeCode = generateEmployeeCode();
 
@@ -93,10 +92,10 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(readOnly = true)
     public Page<EmployeeSearchResponse> search(String documentType, String documentNumber,
                                                 String firstName, String lastName,
-                                                UUID departmentId, EmployeeStatus status,
+                                                String departmentName, EmployeeStatus status,
                                                 Pageable pageable) {
         if (documentType == null && documentNumber == null && firstName == null
-                && lastName == null && departmentId == null && status == null) {
+                && lastName == null && departmentName == null && status == null) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Debe seleccionar al menos un filtro de búsqueda");
         }
@@ -119,9 +118,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 predicate = cb.and(predicate,
                         cb.like(cb.lower(root.get("lastName")), "%" + lastName.toLowerCase() + "%"));
             }
-            if (departmentId != null) {
+            if (departmentName != null && !departmentName.isBlank()) {
                 predicate = cb.and(predicate,
-                        cb.equal(root.get("department").get("id"), departmentId));
+                        cb.like(cb.lower(root.get("department").get("name")),
+                                "%" + departmentName.toLowerCase() + "%"));
             }
             if (status != null) {
                 predicate = cb.and(predicate,
@@ -173,10 +173,10 @@ public class EmployeeServiceImpl implements EmployeeService {
                 employee.setDocumentNumber(newNumber);
             }
         }
-        if (request.getDepartmentId() != null) {
-            Department department = departmentRepository.findById(request.getDepartmentId())
+        if (request.getDepartmentName() != null) {
+            Department department = departmentRepository.findByName(request.getDepartmentName())
                     .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Departamento no encontrado"));
+                            "Departamento no encontrado: " + request.getDepartmentName()));
             employee.setDepartment(department);
         }
         if (request.getStatus() != null) {

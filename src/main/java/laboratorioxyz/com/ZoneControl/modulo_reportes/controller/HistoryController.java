@@ -14,7 +14,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
-import java.util.UUID;
+
 
 @RestController
 @RequestMapping("/historial")
@@ -27,11 +27,11 @@ public class HistoryController {
     public ResponseEntity<Page<AccessHistoryResponse>> search(
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaInicio,
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
-            @RequestParam(required = false) UUID personalId,
+            @RequestParam(required = false) String employeeCode,
             @RequestParam(required = false) String resultado,
             @PageableDefault(size = 20) Pageable pageable) {
         Page<AccessHistoryResponse> result = historyService.search(
-                fechaInicio, fechaFin, personalId, resultado, pageable);
+                fechaInicio, fechaFin, employeeCode, resultado, pageable);
         return ResponseEntity.ok(result);
     }
 
