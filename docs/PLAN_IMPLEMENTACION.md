@@ -513,3 +513,22 @@ Fase 7: HU-03 (autenticación JWT + seguridad y roles)
 ```
 
 Cada HU = al menos 1 commit atómico. Cada HU completa sus tests TDD antes de pasar a la siguiente.
+
+---
+
+## 7. Resolución de identificadores por texto
+
+Todos los endpoints que reciben UUIDs para referenciar entidades serán migrados para aceptar identificadores legibles y que el backend resuelva la entidad internamente.
+
+| DTO / Controller | Campo UUID actual | Nuevo campo String | Resuelve con |
+|-----------------|-------------------|-------------------|-------------|
+| `RegisterEmployeeRequest` | `departmentId` | `departmentName` | `DepartmentRepository.findByName()` |
+| `UpdateEmployeeRequest` | `departmentId` | `departmentName` | `DepartmentRepository.findByName()` |
+| `CreateUserRequest` | `employeeId` | `employeeCode` | `EmployeeRepository.findByEmployeeCode()` |
+| `CreatePermissionRequest` | `employeeId` + `productionAreaId` | `employeeCode` + `productionAreaName` | `findByEmployeeCode()` + `findByName()` |
+| `ValidateAccessRequest` | `productionAreaId` | `productionAreaName` | `ProductionAreaRepository.findByName()` |
+| `ExportRequest` | `personalId` + `departamentoId` | `employeeCode` + `departamentoName` | `findByEmployeeCode()` + `findByName()` |
+| `GET /personal` | `departmentId` (filtro) | `departmentName` | JPA Criteria `root.get("department").get("name")` |
+| `GET /historial` | `personalId` (filtro) | `employeeCode` | JPA Criteria `root.get("employee").get("employeeCode")` |
+
+**Beneficio:** el frontend envía texto plano (código de empleado, nombre de departamento, nombre de área) y el backend traduce a la entidad correspondiente, eliminando el flujo de 2 pasos (buscar UUID → usar UUID).
