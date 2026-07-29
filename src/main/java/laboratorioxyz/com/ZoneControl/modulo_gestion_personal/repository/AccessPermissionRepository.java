@@ -14,6 +14,8 @@ import java.util.UUID;
 
 public interface AccessPermissionRepository extends JpaRepository<AccessPermission, UUID> {
 
+    List<AccessPermission> findByEmployee_Id(UUID employeeId);
+
     @Modifying
     @Query("UPDATE AccessPermission ap SET ap.status = :status WHERE ap.employee.id = :employeeId")
     int updateStatusByEmployeeId(@Param("employeeId") UUID employeeId, @Param("status") PermissionStatus status);

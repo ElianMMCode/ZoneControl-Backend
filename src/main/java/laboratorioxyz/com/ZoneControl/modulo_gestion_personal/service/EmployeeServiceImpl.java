@@ -185,6 +185,9 @@ public class EmployeeServiceImpl implements EmployeeService {
             if (request.getStatus() == EmployeeStatus.INACTIVO
                     || request.getStatus() == EmployeeStatus.SUSPENDIDO) {
                 cascadeDeactivate(employee.getId());
+            } else if (request.getStatus() == EmployeeStatus.ACTIVO
+                    && previousStatus != EmployeeStatus.ACTIVO) {
+                cascadeReactivate(employee.getId());
             }
         }
 
@@ -193,12 +196,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private void cascadeDeactivate(UUID employeeId) {
-        int updatedPermissions = accessPermissionRepository.updateStatusByEmployeeId(
-                employeeId, PermissionStatus.SUSPENDIDO);
-        if (updatedPermissions > 0) {
-            log.info("Suspended {} permissions for employee {}", updatedPermissions, employeeId);
+        var permissions = accessPermissionRepository.findByEmployee_Id(employeeId);
+        permissions.forEach(p -> p.setStatus(PermissionStatus.SUSPENDIDO));
+        if (!permissions.isEmpty()) {
+            accessPermissionRepository.saveAll(permissions);
+            log.info("Suspended {} permissions for employee {}", permissions.size(), employeeId);
         }
         userService.deactivateByEmployeeId(employeeId);
+    }
+
+    private void cascadeReactivate(UUID employeeId) {
+        var permissions = accessPermissionRepository.findByEmployee_Id(employeeId);
+        permissions.forEach(p -> p.setStatus(PermissionStatus.ACTIVO));
+        if (!permissions.isEmpty()) {
+            accessPermissionRepository.saveAll(permissions);
+            log.info("Reactivated {} permissions for employee {}", permissions.size(), employeeId);
+        }
+        userService.reactivateByEmployeeId(employeeId);
     }
 
     @Override

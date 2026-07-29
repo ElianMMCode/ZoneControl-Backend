@@ -4,4 +4,5 @@ import java.util.UUID;
 
 public interface UserService {
     void deactivateByEmployeeId(UUID employeeId);
+    void reactivateByEmployeeId(UUID employeeId);
 }

@@ -25,4 +25,14 @@ public class UserServiceImpl implements UserService {
             log.info("User {} deactivated due to employee {} status change", user.getId(), employeeId);
         });
     }
+
+    @Override
+    @Transactional
+    public void reactivateByEmployeeId(UUID employeeId) {
+        userRepository.findByEmployee_Id(employeeId).ifPresent(user -> {
+            user.setStatus(UserStatus.ACTIVO);
+            userRepository.save(user);
+            log.info("User {} reactivated due to employee {} status change", user.getId(), employeeId);
+        });
+    }
 }
