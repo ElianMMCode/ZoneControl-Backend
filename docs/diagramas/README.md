@@ -9,7 +9,7 @@
 | `02_modulo_autenticacion.puml` | Módulo de autenticación (login) | Usuarios Internos |
 | `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador |
 | `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición con cascade) | Gestor de Personal |
-| `05_modulo_control_acceso_fisico.puml` | Control de acceso físico (simulación) | Seguridad |
+| `05_modulo_control_acceso_fisico.puml` | Control de acceso físico | Supervisor/Auditor |
 | `06_modulo_reportes_auditoria.puml` | Reportes y auditoría | Supervisor/Auditor |
 
 ---
@@ -41,7 +41,7 @@
 
 ## Flujo Transversal
 
-Todos los módulos internos (excepto CU-01 y CU-11) requieren autenticación:
+Todos los módulos internos requieren autenticación:
 
 ```
 Usuario → Login (CU-02) → Token JWT → Módulo correspondiente

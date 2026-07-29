@@ -372,9 +372,9 @@ Crear `import.sql` o `DataInitializer` que inserte:
 
 ### Fase 5 — Control de Acceso Físico (HU-18)
 
-**HU-18: Simular Lectura de Credencial**
-- `POST /api/access/simulate` — body: { "identificacion": "EMP-000001" }
-- SIN autenticación JWT (es simulación transaccional)
+**HU-18: Validar Acceso Físico**
+- `POST /access/validate` — body: { "employeeCode": "EMP-000001" }
+- Requiere rol: ADMIN, SUPERVISOR_AUDITOR
 - Lógica:
   1. ¿Empleado existe? No → "NO REGISTRADO" (amarillo)
   2. ¿Empleado activo? No → "INGRESO DENEGADO" (rojo)
@@ -430,7 +430,7 @@ feat(public): add institutional info endpoint with caching
 feat(auth): add JWT login with role-based redirection
 feat(admin): add user creation with BCrypt and password validation
 feat(personal): add bulk CSV upload with row-level validation
-feat(access): add credential simulation with historial logging
+feat(access): add access validation with historial logging
 feat(reports): add periodic partner file generation (CSV/Excel)
 fix(auth): prevent self-deactivation for admin users
 test(personal): add unit tests for employee search filters
@@ -441,7 +441,7 @@ docs: add PlantUML diagram for access control flow
 
 Comentar exclusivamente decisiones no obvias:
 - Por qué se eligió una secuencia numérica vs UUID para EMP-XXXXXX (trazabilidad humana)
-- Por qué la simulación de acceso no requiere auth (es transaccional, no hay sesión de usuario)
+- Por qué el acceso físico lo gestiona SUPERVISOR_AUDITOR (unifica responsabilidad de monitoreo y control de acceso en un solo rol)
 - Por qué se usa AND entre filtros de búsqueda (precisión > recall para control de acceso)
 - Por qué se excluyen datos personales del archivo periódico (protección datos sensibles socio internacional)
 
@@ -459,7 +459,7 @@ Crear `@RestControllerAdvice` con:
 Usar SLF4J + Logback. Registrar en cada operación crítica:
 - Creación/edición/desactivación de usuarios (admin actions)
 - Otorgar/revocar/suspender permisos (gestor actions)
-- Cada simulación de acceso (independientemente del resultado)
+- Cada validación de acceso (independientemente del resultado)
 - Generación y envío de archivos periódicos
 
 ---
@@ -490,7 +490,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | POST | /api/permisos | Gestor/Admin | Gestión Personal | 11 |
 | DELETE | /api/permisos/{id} | Gestor/Admin | Gestión Personal | 12 |
 | PATCH | /api/permisos/{id}/suspend | Gestor/Admin | Gestión Personal | 13 |
-| POST | /api/access/simulate | No | Control Acceso | 18 |
+| POST | /access/validate | Admin, Supervisor | Control Acceso | 18 |
 | GET | /api/historial | Supervisor/Admin | Reportes | 15 |
 | POST | /api/historial/export | Supervisor/Admin | Reportes | 16 |
 | POST | /api/reportes/archivo-periodico | Supervisor/Admin | Reportes | 17 |

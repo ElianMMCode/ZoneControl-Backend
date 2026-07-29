@@ -6,10 +6,10 @@ skinparam usecase {
 skinparam packageStyle rectangle
 left to right direction
 
-actor "Personal de Seguridad" as Seg
+actor "Supervisor / Auditor" as Sup
 
-package "Módulo de Control de Acceso\nFísico (Simulación)" {
-    usecase "Simular lectura\nde credencial" as UC_Acc1
+package "Módulo de Control de Acceso\nFísico" {
+    usecase "Validar lectura\nde credencial" as UC_Acc1
     usecase "Validar estado\n(autorizado/denegado/\nno registrado)" as UC_Acc2
     usecase "Registrar historial\ndel intento" as UC_Acc3
 
@@ -17,8 +17,6 @@ package "Módulo de Control de Acceso\nFísico (Simulación)" {
     UC_Acc1 ..> UC_Acc3 : <<include>>
 }
 
-Seg --> UC_Acc1
-
-note bottom of UC_Acc1 : Sin dependencia de autenticación:\nes una simulación transaccional
+Sup --> UC_Acc1
 
 @enduml

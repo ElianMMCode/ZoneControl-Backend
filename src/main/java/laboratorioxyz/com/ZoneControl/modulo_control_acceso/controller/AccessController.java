@@ -1,8 +1,8 @@
 package laboratorioxyz.com.ZoneControl.modulo_control_acceso.controller;
 
-import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.SimulateAccessRequest;
-import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.SimulateAccessResponse;
-import laboratorioxyz.com.ZoneControl.modulo_control_acceso.service.AccessSimulationService;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ValidateAccessRequest;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ValidateAccessResponse;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.service.AccessValidationService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -13,13 +13,13 @@ import org.springframework.web.bind.annotation.RestController;
 @RestController
 @RequestMapping("/access")
 @RequiredArgsConstructor
-public class AccessSimulationController {
+public class AccessController {
 
-    private final AccessSimulationService accessSimulationService;
+    private final AccessValidationService accessValidationService;
 
-    @PostMapping("/simulate")
-    public ResponseEntity<SimulateAccessResponse> simulate(@RequestBody SimulateAccessRequest request) {
-        SimulateAccessResponse response = accessSimulationService.simulate(
+    @PostMapping("/validate")
+    public ResponseEntity<ValidateAccessResponse> validate(@RequestBody ValidateAccessRequest request) {
+        ValidateAccessResponse response = accessValidationService.validate(
                 request.getEmployeeCode(), request.getProductionAreaId());
         return ResponseEntity.ok(response);
     }

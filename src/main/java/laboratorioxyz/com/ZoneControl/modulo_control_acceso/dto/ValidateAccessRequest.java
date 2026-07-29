@@ -1,14 +1,17 @@
 package laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto;
 
-import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import java.util.UUID;
 
 @Data
+@NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class SimulateAccessResponse {
-    private AccessResult result;
-    private String message;
+public class ValidateAccessRequest {
+    private String employeeCode;
+    private UUID productionAreaId;
 }

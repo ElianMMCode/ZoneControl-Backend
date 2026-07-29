@@ -10,18 +10,18 @@ skinparam swimlane {
 
 |Frontend (React / Vue)|
 start
-:Ingresar número de identificación;
-:Enviar petición (POST /api/access/simulate);
+:Ingresar código de empleado;
+:Enviar petición (POST /access/validate);
 
 |Backend (Spring Boot)|
 :Recibir petición;
-:Consultar estado del usuario;
+:Consultar estado del empleado;
 
 |Base de Datos (PostgreSQL)|
-:Buscar usuario por ID;
+:Buscar empleado por código;
 
 |Backend (Spring Boot)|
-if (¿El usuario existe?) then (Sí)
+if (¿El empleado existe?) then (Sí)
   if (¿Estado == 'Autorizado'?) then (Sí)
     :Establecer resultado: "Ingreso Autorizado";
   else (No)

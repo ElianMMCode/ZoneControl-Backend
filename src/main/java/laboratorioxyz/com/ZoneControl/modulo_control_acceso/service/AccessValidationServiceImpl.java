@@ -4,7 +4,7 @@ import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
-import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.SimulateAccessResponse;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ValidateAccessResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
@@ -25,7 +25,7 @@ import java.util.UUID;
 @Service
 @RequiredArgsConstructor
 @Slf4j
-public class AccessSimulationServiceImpl implements AccessSimulationService {
+public class AccessValidationServiceImpl implements AccessValidationService {
 
     private final EmployeeRepository employeeRepository;
     private final ProductionAreaRepository productionAreaRepository;
@@ -34,7 +34,7 @@ public class AccessSimulationServiceImpl implements AccessSimulationService {
 
     @Override
     @Transactional
-    public SimulateAccessResponse simulate(String employeeCode, UUID productionAreaId) {
+    public ValidateAccessResponse validate(String employeeCode, UUID productionAreaId) {
         ProductionArea area = productionAreaRepository.findById(productionAreaId)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Área de producción no encontrada"));
@@ -43,12 +43,12 @@ public class AccessSimulationServiceImpl implements AccessSimulationService {
 
         if (employee == null) {
             logAccess(null, area.getName(), AccessResult.UNREGISTERED);
-            return new SimulateAccessResponse(AccessResult.UNREGISTERED, "NO REGISTRADO");
+            return new ValidateAccessResponse(AccessResult.UNREGISTERED, "NO REGISTRADO");
         }
 
         if (employee.getStatus() != EmployeeStatus.ACTIVO) {
             logAccess(employee, area.getName(), AccessResult.DENIED);
-            return new SimulateAccessResponse(AccessResult.DENIED, "INGRESO DENEGADO");
+            return new ValidateAccessResponse(AccessResult.DENIED, "INGRESO DENEGADO");
         }
 
         boolean hasValidPermission = accessPermissionRepository.hasValidPermission(
@@ -56,11 +56,11 @@ public class AccessSimulationServiceImpl implements AccessSimulationService {
 
         if (!hasValidPermission) {
             logAccess(employee, area.getName(), AccessResult.SUSPENDED);
-            return new SimulateAccessResponse(AccessResult.SUSPENDED, "ACCESO SUSPENDIDO");
+            return new ValidateAccessResponse(AccessResult.SUSPENDED, "ACCESO SUSPENDIDO");
         }
 
         logAccess(employee, area.getName(), AccessResult.AUTHORIZED);
-        return new SimulateAccessResponse(AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
+        return new ValidateAccessResponse(AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
     }
 
     private void logAccess(Employee employee, String areaName, AccessResult result) {
@@ -72,7 +72,7 @@ public class AccessSimulationServiceImpl implements AccessSimulationService {
                 .result(result)
                 .build();
         accessHistoryRepository.save(history);
-        log.info("Access simulation: employee={}, area={}, result={}", 
+        log.info("Access validation: employee={}, area={}, result={}", 
                 employee != null ? employee.getEmployeeCode() : "UNKNOWN",
                 areaName, result);
     }

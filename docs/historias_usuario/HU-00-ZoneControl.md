@@ -11,12 +11,12 @@
 ## Descripción
 
 **Yo como** Laboratorio XYZ, compañía farmacéutica dedicada a la producción de medicamentos de alto costo
-**Requiero** modernizar el control de acceso físico a las áreas restringidas de producción, integrando la administración del personal autorizado, la simulación de lectura de credenciales, la trazabilidad de accesos y la generación de reportes periódicos para socios internacionales
+**Requiero** modernizar el control de acceso físico a las áreas restringidas de producción, integrando la administración del personal autorizado, la validación de acceso físico, la trazabilidad de accesos y la generación de reportes periódicos para socios internacionales
 **Para** garantizar la seguridad de los procesos productivos sensibles y cumplir con los requisitos normativos de auditoría
 
 ## Requerimiento
 
-El sistema debe reflejar la estructura organizacional de la compañía, diferenciando entre el público general (consulta de información institucional básica) y el personal interno con tres roles: administrador del sistema, gestor de personal y supervisor/auditor. Debe contemplar autenticación, registro y gestión del personal, carga masiva, control de acceso simulado, historial de accesos y exportación de información hacia sistemas externos para el socio internacional.
+El sistema debe reflejar la estructura organizacional de la compañía, diferenciando entre el público general (consulta de información institucional básica) y el personal interno con tres roles: administrador del sistema, gestor de personal y supervisor/auditor. Debe contemplar autenticación, registro y gestión del personal, carga masiva, control de acceso físico, historial de accesos y exportación de información hacia sistemas externos para el socio internacional.
 
 ## Criterios de Aceptación
 
@@ -55,7 +55,7 @@ Entonces: el sistema permite generar archivos periódicos de intercambio con la 
 | 5 | Implementar módulo público (información institucional, contacto, sedes, folleto) |
 | 6 | Implementar módulo de administración (CRUD de usuarios internos) |
 | 7 | Implementar módulo de gestión de personal (registro, carga masiva, permisos, búsqueda) |
-| 8 | Implementar módulo de control de acceso físico (simulación de credencial) |
+| 8 | Implementar módulo de control de acceso físico |
 | 9 | Implementar módulo de reportes y auditoría (historial, documentos descargables, archivo periódico) |
 | 10 | Documentar con diagramas PlantUML (casos de uso y flujos) |
 

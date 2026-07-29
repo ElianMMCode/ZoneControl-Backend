@@ -34,7 +34,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 @AutoConfigureMockMvc
 @Transactional
 @Rollback
-class AccessSimulationControllerTest {
+class AccessControllerTest {
 
     @Autowired
     private MockMvc mockMvc;
@@ -105,11 +105,11 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_authorizedEmployee_returnsAuthorized() throws Exception {
+    void validate_authorizedEmployee_returnsAuthorized() throws Exception {
         Employee emp = createEmployee("EMP-TEST-01", "1111111111", EmployeeStatus.ACTIVO);
         grantPermission(emp, area);
 
-        mockMvc.perform(post("/access/simulate")
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-01", area.getId())))
                 .andExpect(status().isOk())
@@ -118,10 +118,10 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_inactiveEmployee_returnsDenied() throws Exception {
+    void validate_inactiveEmployee_returnsDenied() throws Exception {
         Employee emp = createEmployee("EMP-TEST-02", "2222222222", EmployeeStatus.INACTIVO);
 
-        mockMvc.perform(post("/access/simulate")
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-02", area.getId())))
                 .andExpect(status().isOk())
@@ -130,10 +130,10 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_suspendedEmployee_returnsDenied() throws Exception {
+    void validate_suspendedEmployee_returnsDenied() throws Exception {
         Employee emp = createEmployee("EMP-TEST-03", "3333333333", EmployeeStatus.SUSPENDIDO);
 
-        mockMvc.perform(post("/access/simulate")
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-03", area.getId())))
                 .andExpect(status().isOk())
@@ -142,8 +142,8 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_unregisteredEmployee_returnsUnregistered() throws Exception {
-        mockMvc.perform(post("/access/simulate")
+    void validate_unregisteredEmployee_returnsUnregistered() throws Exception {
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-999999", area.getId())))
                 .andExpect(status().isOk())
@@ -152,10 +152,10 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_noValidPermission_returnsSuspended() throws Exception {
+    void validate_noValidPermission_returnsSuspended() throws Exception {
         Employee emp = createEmployee("EMP-TEST-04", "4444444444", EmployeeStatus.ACTIVO);
 
-        mockMvc.perform(post("/access/simulate")
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-04", area.getId())))
                 .andExpect(status().isOk())
@@ -164,13 +164,13 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_permissionForDifferentArea_returnsSuspended() throws Exception {
+    void validate_permissionForDifferentArea_returnsSuspended() throws Exception {
         Employee emp = createEmployee("EMP-TEST-05", "5555555555", EmployeeStatus.ACTIVO);
         grantPermission(emp, area);
 
         ProductionArea otherArea = productionAreaRepository.findByName("Sala Blanca B").orElseThrow();
 
-        mockMvc.perform(post("/access/simulate")
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-05", otherArea.getId())))
                 .andExpect(status().isOk())
@@ -179,11 +179,11 @@ class AccessSimulationControllerTest {
     }
 
     @Test
-    void simulate_logsAccessHistory() throws Exception {
+    void validate_logsAccessHistory() throws Exception {
         Employee emp = createEmployee("EMP-TEST-06", "6666666666", EmployeeStatus.ACTIVO);
         grantPermission(emp, area);
 
-        mockMvc.perform(post("/access/simulate")
+        mockMvc.perform(post("/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-06", area.getId())))
                 .andExpect(status().isOk())

@@ -68,9 +68,9 @@ package "Módulo de Gestión de Personal" #F3E5F5 {
 ' MÓDULO DE CONTROL DE ACCESO
 ' =============================================
 
-package "Módulo de Control de Acceso\nFísico (Simulación)" #FFEBEE {
+package "Módulo de Control de Acceso\nFísico" #FFEBEE {
   usecase "CU-11: Solicitud de acceso\na área restringida" as UC11
-  usecase "CU-11a: Simular lectura\nde credencial" as UC11a
+  usecase "CU-11a: Validar lectura\nde credencial" as UC11a
   usecase "CU-11b: Validar estado\n(autorizado/denegado/\nno registrado)" as UC11b
 }
 
@@ -114,6 +114,8 @@ Supervisor --> UC02
 Supervisor --> UC08
 Supervisor --> UC09
 Supervisor --> UC10
+Supervisor --> UC11
+Supervisor --> UC11a
 
 ' Personal / Empleado
 Empleado --> UC11
@@ -139,11 +141,6 @@ note bottom of UC02
   Módulo transversal:
   requerido por todos los
   módulos internos
-end note
-
-note bottom of UC11
-  Sin dependencia de autenticación:
-  es una simulación transaccional
 end note
 
 note right of UC05a
