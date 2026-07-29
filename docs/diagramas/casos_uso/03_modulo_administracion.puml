@@ -7,15 +7,28 @@ skinparam packageStyle rectangle
 left to right direction
 
 actor "Administrador" as Admin
+actor "Gestor de Personal" as Gestor #LightYellow
 
 package "Módulo de Administración" {
-    usecase "Administrar sistema y usuarios (CRUD)" as UC_Admin1
+    usecase "Administrar sistema\ny usuarios (CRUD)" as UC_Admin1
     usecase "Gestionar contenido\ndel módulo público" as UC_Admin2
+}
+
+package "Módulo de Gestión de Personal" as Gestion #F3E5F5 {
+    usecase "Registrar personal\ny asignar departamento" as UC_RegPersonal
 }
 
 Admin --> UC_Admin1
 Admin --> UC_Admin2
 UC_Admin1 ..> UC_Login : <<include>>
 UC_Admin2 ..> UC_Login : <<include>>
+UC_Admin1 ..> UC_RegPersonal : <<include>>
+
+note right of UC_Admin1
+  Crear usuario requiere un
+  employeeCode de un empleado
+  ya registrado (CU-04).
+  @OneToOne obligatoria.
+end note
 
 @enduml

@@ -132,6 +132,7 @@ UC05 ..> UC05a : <<include>>
 UC11 ..> UC11a : <<include>>
 UC11 ..> UC11b : <<include>>
 UC09 ..> UC08 : <<include>>
+UC03a ..> UC04 : <<include>>
 
 ' =============================================
 ' NOTAS
@@ -147,6 +148,13 @@ note right of UC05a
   Incluido en carga masiva:
   validación de estructura
   e información del archivo
+end note
+
+note right of UC03a
+  Dependencia: requiere empleado
+  registrado previamente (CU-04).
+  Relación @OneToOne obligatoria:
+  User → Employee.
 end note
 
 @enduml

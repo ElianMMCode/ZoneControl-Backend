@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-03: Crear Usuario
+title Flujo CU-03a: Crear Usuario
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -8,6 +8,12 @@ skinparam swimlane {
   BorderColor DarkSlateGray
   BorderThickness 2
 }
+
+note top
+  <b>Pre-condición:</b> El empleado debe existir en el sistema
+  (registrado previamente vía <b>HU-09: Registrar Personal</b>).
+  Se requiere su <b>employeeCode</b> (formato EMP-XXXXXX).
+end note
 
 |Administrador|
 start
@@ -19,52 +25,75 @@ start
 :Pantalla: Formulario de creación;
 
 |Administrador|
-:Completar datos del formulario\n(nombre, email, contraseña,\nconfirmar contraseña, rol, estado);
+:Ingresar employeeCode\ndel empleado (EMP-XXXXXX);
+
+:Completar datos del formulario\n(nombre, email, contraseña,\nrol);
 
 |Frontend|
 :Validar campos obligatorios;
 
 :Validar formato de email;
 
-:Validar coincidencia de\ncontraseña y confirmación;
-
 :Validar requisitos de contraseña\n(mín 8 caracteres, 1 mayúscula,\n1 minúscula, 1 dígito,\n1 carácter especial @$!%*?&);
 
 if (¿Formulario válido?) then (Sí)
-  :Enviar POST;
+  :Enviar POST /admin/users;
 
   |Backend|
   :Recibir datos;
 
   :Validar requisitos de\ncontraseña en backend;
 
-  :Validar email duplicado;
+  :Buscar empleado por employeeCode;
 
-  if (¿Email disponible?) then (Sí)
-    :Encriptar contraseña\ncon BCrypt;
+  if (¿Empleado existe?) then (Sí)
+    :Validar que el empleado\nno tenga ya un usuario asociado;
 
-    :Guardar en PostgreSQL;
+    if (¿Sin usuario previo?) then (Sí)
+      :Validar email duplicado;
 
-    :Retornar HTTP 201;
+      if (¿Email disponible?) then (Sí)
+        :Encriptar contraseña\ncon BCrypt;
 
-    |Frontend|
-    :Pantalla: Notificación de éxito;
+        :Guardar User en PostgreSQL\n(vinculado a Employee via @OneToOne);
 
-    :Actualizar lista de usuarios;
+        :Retornar HTTP 201;
 
-    |Administrador|
-    :Confirmar creación;
+        |Frontend|
+        :Pantalla: Notificación de éxito;
+
+        :Actualizar lista de usuarios;
+
+        |Administrador|
+        :Confirmar creación;
+
+      else (No)
+        :Retornar HTTP 409\n"Email ya registrado";
+
+        |Frontend|
+        :Pantalla: Error;
+        |Administrador|
+        :Corregir email;
+      endif
+
+    else (No)
+      :Retornar HTTP 409\n"El empleado ya tiene\nun usuario de sistema";
+
+      |Frontend|
+      :Pantalla: Error;
+      |Administrador|
+      :Seleccionar otro empleado;
+    endif
 
   else (No)
-    :Retornar HTTP 409;
+    :Retornar HTTP 400\n"Empleado no encontrado:\n{employeeCode}";
 
     |Frontend|
-    :Pantalla: Error\n"Email ya registrado";
-
+    :Pantalla: Error;
     |Administrador|
-    :Corregir email;
-
+    :Verificar employeeCode\n(primero registrar empleado\nvía HU-09 si no existe);
   endif
+
 else (No)
   if (¿Error de contraseña?) then (Sí)
     :Pantalla: "La contraseña debe\ntener mínimo 8 caracteres,\n1 mayúscula, 1 minúscula,\n1 número y 1 carácter especial\n(@$!%*?&)";

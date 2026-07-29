@@ -52,6 +52,39 @@ Cuando: hay campos obligatorios vacíos (nombre completo, email, contraseña, co
 
 Entonces: el sistema muestra los mensajes de error específicos debajo de cada campo inválido e impide el envío hasta que todos los errores sean corregidos
 
+## Notas Técnicas
+
+### Dependencia: Employee debe existir antes que User
+
+- `POST /admin/users` requiere `employeeCode` de un `Employee` ya registrado en el sistema
+- Relación `@OneToOne` con `employee_id NOT NULL UNIQUE` en la tabla `users`
+- Un `Employee` solo puede tener un `User` asociado (error HTTP 409 si ya existe uno)
+- No todo `Employee` necesita un `User` de sistema (empleados con solo permiso de acceso físico no requieren credenciales del sistema)
+- Flujo correcto:
+  1. `POST /personal` → registra `Employee` (genera código EMP-XXXXXX)
+  2. `POST /admin/users` con `employeeCode` → crea `User` vinculado
+
+### Orden de creación
+
+```
+┌─────────────────────────────────────┐
+│  Paso 1: Registrar empleado         │
+│  POST /personal                     │
+│  → Crea Employee con EMP-XXXXXX     │
+│  → Retorna { id, employeeCode }     │
+└─────────────────────────────────────┘
+              │
+              ▼
+┌─────────────────────────────────────┐
+│  Paso 2: Crear usuario sistema      │
+│  POST /admin/users                  │
+│  { employeeCode: "EMP-000001", ... }│
+│  → Valida que Employee exista       │
+│  → Valida que no tenga User ya      │
+│  → Crea User con @OneToOne          │
+└─────────────────────────────────────┘
+```
+
 ## Tareas
 
 | No | Descripción |

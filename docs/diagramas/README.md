@@ -39,6 +39,13 @@
 
 ---
 
+## Dependencias entre Casos de Uso
+
+| Caso de Uso | Dependencia | Motivo |
+|-------------|-----------|--------|
+| CU-03a (Crear Usuario) | CU-04 (Registrar Personal) | Todo User debe vincularse a un Employee existente vía employeeCode. Relación @OneToOne obligatoria. |
+| CU-05 (Carga Masiva) | CU-05a (Validar estructura) | Validación de encabezados y datos por fila antes de insertar. |
+
 ## Flujo Transversal
 
 Todos los módulos internos requieren autenticación:
