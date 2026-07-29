@@ -1,0 +1,176 @@
+package laboratorioxyz.com.ZoneControl.modulo_reportes.service;
+
+import jakarta.persistence.criteria.Predicate;
+import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
+import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.AccessHistoryResponse;
+import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.ExportRequest;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.domain.Specification;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.server.ResponseStatusException;
+
+import java.io.ByteArrayOutputStream;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+import java.util.stream.Collectors;
+
+@Service
+@RequiredArgsConstructor
+@Slf4j
+public class HistoryServiceImpl implements HistoryService {
+
+    private final AccessHistoryRepository accessHistoryRepository;
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<AccessHistoryResponse> search(LocalDate fechaInicio, LocalDate fechaFin,
+                                               UUID personalId, String resultado,
+                                               Pageable pageable) {
+        if (fechaInicio.isAfter(fechaFin)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Rango de fechas inválido");
+        }
+
+        Specification<AccessHistory> spec = (root, query, cb) -> {
+            Predicate predicate = cb.conjunction();
+            predicate = cb.and(predicate,
+                    cb.greaterThanOrEqualTo(root.get("timestamp"), fechaInicio.atStartOfDay()));
+            predicate = cb.and(predicate,
+                    cb.lessThanOrEqualTo(root.get("timestamp"), fechaFin.atTime(LocalTime.MAX)));
+            if (personalId != null) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("employee").get("id"), personalId));
+            }
+            if (resultado != null && !resultado.isBlank()) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("result"), AccessResult.valueOf(resultado)));
+            }
+            return predicate;
+        };
+
+        return accessHistoryRepository.findAll(spec, pageable).map(this::toResponse);
+    }
+
+    @Override
+    public byte[] export(ExportRequest request) {
+        LocalDate fechaInicio = request.getFechaInicio();
+        LocalDate fechaFin = request.getFechaFin();
+
+        if (fechaInicio.isAfter(fechaFin)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Rango de fechas inválido");
+        }
+
+        Specification<AccessHistory> spec = (root, query, cb) -> {
+            Predicate predicate = cb.conjunction();
+            predicate = cb.and(predicate,
+                    cb.greaterThanOrEqualTo(root.get("timestamp"), fechaInicio.atStartOfDay()));
+            predicate = cb.and(predicate,
+                    cb.lessThanOrEqualTo(root.get("timestamp"), fechaFin.atTime(LocalTime.MAX)));
+            if (request.getPersonalId() != null) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("employee").get("id"), request.getPersonalId()));
+            }
+            if (request.getResultado() != null && !request.getResultado().isBlank()) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("result"), AccessResult.valueOf(request.getResultado())));
+            }
+            return predicate;
+        };
+
+        List<AccessHistory> records = accessHistoryRepository.findAll(spec);
+
+        if (records.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "No hay datos para exportar");
+        }
+
+        return switch (request.getFormato().toUpperCase()) {
+            case "CSV" -> generateCsv(records, fechaInicio, fechaFin);
+            case "EXCEL" -> generateExcel(records, fechaInicio, fechaFin);
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Formato no soportado: " + request.getFormato());
+        };
+    }
+
+    private byte[] generateCsv(List<AccessHistory> records, LocalDate desde, LocalDate hasta) {
+        StringBuilder sb = new StringBuilder();
+        sb.append("Fecha;Hora;ID Empleado;Nombre;Cargo;Departamento;Área;Resultado\n");
+        DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+        DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
+        for (AccessHistory h : records) {
+            sb.append(h.getTimestamp().format(dateFmt)).append(";")
+              .append(h.getTimestamp().format(timeFmt)).append(";")
+              .append(h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A").append(";")
+              .append(h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A").append(";")
+              .append(h.getEmployee() != null ? h.getEmployee().getPosition() : "").append(";")
+              .append(h.getDepartment() != null ? h.getDepartment() : "").append(";")
+              .append(h.getProductionAreaName() != null ? h.getProductionAreaName() : "").append(";")
+              .append(h.getResult()).append("\n");
+        }
+        long validos = records.size();
+        long autorizados = records.stream().filter(h -> h.getResult() == AccessResult.AUTHORIZED).count();
+        sb.append("\nResumen: Total=").append(validos)
+          .append(", Autorizados=").append(autorizados)
+          .append(", Otros=").append(validos - autorizados).append("\n");
+        return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
+    }
+
+    private byte[] generateExcel(List<AccessHistory> records, LocalDate desde, LocalDate hasta) {
+        try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
+            Sheet sheet = wb.createSheet("Historial de Accesos");
+            Row header = sheet.createRow(0);
+            String[] cols = {"Fecha", "Hora", "ID Empleado", "Nombre", "Cargo", "Departamento", "Área", "Resultado"};
+            for (int i = 0; i < cols.length; i++) {
+                header.createCell(i).setCellValue(cols[i]);
+            }
+            DateTimeFormatter dateFmt = DateTimeFormatter.ofPattern("dd/MM/yyyy");
+            DateTimeFormatter timeFmt = DateTimeFormatter.ofPattern("HH:mm:ss");
+            int rowNum = 1;
+            for (AccessHistory h : records) {
+                Row row = sheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(h.getTimestamp().format(dateFmt));
+                row.createCell(1).setCellValue(h.getTimestamp().format(timeFmt));
+                row.createCell(2).setCellValue(h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A");
+                row.createCell(3).setCellValue(h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A");
+                row.createCell(4).setCellValue(h.getEmployee() != null ? h.getEmployee().getPosition() : "");
+                row.createCell(5).setCellValue(h.getDepartment() != null ? h.getDepartment() : "");
+                row.createCell(6).setCellValue(h.getProductionAreaName() != null ? h.getProductionAreaName() : "");
+                row.createCell(7).setCellValue(h.getResult().name());
+            }
+            wb.write(out);
+            return out.toByteArray();
+        } catch (Exception e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "Error al generar el archivo Excel");
+        }
+    }
+
+    private AccessHistoryResponse toResponse(AccessHistory h) {
+        return AccessHistoryResponse.builder()
+                .id(h.getId())
+                .employeeCode(h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : null)
+                .employeeName(h.getEmployee() != null
+                        ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : null)
+                .position(h.getEmployee() != null ? h.getEmployee().getPosition() : null)
+                .department(h.getDepartment())
+                .productionAreaName(h.getProductionAreaName())
+                .timestamp(h.getTimestamp())
+                .result(h.getResult())
+                .build();
+    }
+}
