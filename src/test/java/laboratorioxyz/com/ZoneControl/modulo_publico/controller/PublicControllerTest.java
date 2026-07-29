@@ -6,6 +6,8 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.web.servlet.MockMvc;
 
+import java.io.File;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -62,6 +64,7 @@ class PublicControllerTest {
 
     @Test
     void getBrochure_notFound_returns404() throws Exception {
+        new File("uploads/folleto/Folleto_Laboratorio_XYZ.pdf").delete();
         mockMvc.perform(get("/public/folleto"))
                 .andExpect(status().isNotFound());
     }

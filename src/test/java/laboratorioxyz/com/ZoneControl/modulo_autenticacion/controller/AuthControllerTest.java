@@ -57,7 +57,8 @@ class AuthControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.token").isString())
                 .andExpect(jsonPath("$.usuario.email").value(adminEmail))
-                .andExpect(jsonPath("$.usuario.rol").isString());
+                .andExpect(jsonPath("$.usuario.rol").isString())
+                .andExpect(jsonPath("$.requirePasswordChange").isBoolean());
     }
 
     @Test

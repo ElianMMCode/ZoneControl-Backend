@@ -2,6 +2,7 @@ package laboratorioxyz.com.ZoneControl.modulo_administracion.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
+import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.*;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
@@ -31,6 +32,8 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
@@ -167,5 +170,56 @@ class AdminUserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", ""))))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateUser_validData_returns200() throws Exception {
+        mockMvc.perform(put("/admin/users/{id}", testUser.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "firstName", "Updated",
+                                "lastName", "Name",
+                                "email", "updated@test.com",
+                                "role", "ADMIN"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Updated"))
+                .andExpect(jsonPath("$.lastName").value("Name"))
+                .andExpect(jsonPath("$.email").value("updated@test.com"))
+                .andExpect(jsonPath("$.role").value("ADMIN"));
+    }
+
+    @Test
+    void updateUser_duplicateEmail_returns409() throws Exception {
+        User admin = userRepository.findByEmail("admin@zonecontrol.com").orElseThrow();
+
+        mockMvc.perform(put("/admin/users/{id}", testUser.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("email", admin.getEmail()))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("El email ya está registrado"));
+    }
+
+    @Test
+    void updateUser_nonExistentUser_returns404() throws Exception {
+        mockMvc.perform(put("/admin/users/{id}", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of("firstName", "Any"))))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
+    }
+
+    @Test
+    void resetPassword_validUser_returns200() throws Exception {
+        mockMvc.perform(post("/admin/users/{id}/reset-password", testUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.temporaryPassword").isString());
+    }
+
+    @Test
+    void resetPassword_nonExistentUser_returns404() throws Exception {
+        mockMvc.perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
     }
 }

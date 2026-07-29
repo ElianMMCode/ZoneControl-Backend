@@ -62,6 +62,6 @@ public class AuthController {
                 user.getRole().name()
         );
 
-        return ResponseEntity.ok(new LoginResponse(token, usuario));
+        return ResponseEntity.ok(new LoginResponse(token, usuario, user.isRequirePasswordChange()));
     }
 }
