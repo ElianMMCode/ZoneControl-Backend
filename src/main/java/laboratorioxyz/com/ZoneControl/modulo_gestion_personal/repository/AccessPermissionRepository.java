@@ -23,4 +23,14 @@ public interface AccessPermissionRepository extends JpaRepository<AccessPermissi
 
     List<AccessPermission> findByStatusAndReactivationDateBefore(
             PermissionStatus status, LocalDate date);
+
+    @Query("SELECT COUNT(ap) > 0 FROM AccessPermission ap "
+            + "WHERE ap.employee.id = :employeeId AND ap.productionArea.id = :areaId "
+            + "AND ap.status = 'ACTIVO' "
+            + "AND ap.startDate <= :today AND ap.expirationDate >= :today "
+            + "AND ap.startTime <= :now AND ap.endTime >= :now")
+    boolean hasValidPermission(@Param("employeeId") UUID employeeId,
+                                @Param("areaId") UUID areaId,
+                                @Param("today") LocalDate today,
+                                @Param("now") LocalTime now);
 }
