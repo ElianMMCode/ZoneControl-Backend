@@ -56,7 +56,7 @@ if (¿Usuario encontrado?) then (Sí)
         :Mostrar panel de administración;
       elseif (Rol == "Gestor de Personal") then (Gestor)
         :Mostrar panel de gestión de personal;
-      elseif (Rol == "Supervisor") then (Supervisor)
+      elseif (Rol == "Supervisor / Auditor") then (Supervisor)
         :Mostrar panel de reportes;
       endif
 

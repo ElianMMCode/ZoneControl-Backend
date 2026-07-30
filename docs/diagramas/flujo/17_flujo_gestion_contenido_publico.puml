@@ -11,8 +11,6 @@ skinparam swimlane {
 
 |Administrador|
 start
-:Iniciar sesión (CU-02);
-
 :Acceder a "Gestionar Contenido Público";
 
 |Frontend|

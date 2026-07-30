@@ -11,8 +11,6 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Iniciar sesión (CU-02);
-
 :Acceder a "Gestionar Personal";
 
 :Seleccionar "Registrar Personal";

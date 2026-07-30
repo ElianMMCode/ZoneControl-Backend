@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-03: Activar / Desactivar Usuario
+title Flujo CU-03a: Activar / Desactivar Usuario
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray

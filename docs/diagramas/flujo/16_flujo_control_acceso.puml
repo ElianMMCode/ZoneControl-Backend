@@ -9,9 +9,9 @@ skinparam swimlane {
   BorderThickness 2
 }
 
-|Dispositivo / Terminal|
+|Empleado|
 start
-:Empleado presenta credencial;
+:Presenta credencial (employeeCode);
 
 :Ingresar número de identificación;
 
@@ -25,7 +25,7 @@ start
 
 :Registrar timestamp del intento;
 
-:Consultar PostgreSQL por ID de usuario;
+:Consultar PostgreSQL por employeeCode;
 
 if (¿Usuario encontrado?) then (Sí)
   :Obtener estado del usuario;

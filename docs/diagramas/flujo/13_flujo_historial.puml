@@ -11,8 +11,6 @@ skinparam swimlane {
 
 |Supervisor / Auditor|
 start
-:Iniciar sesión (CU-02);
-
 :Acceder a "Reportes y Auditoría";
 
 :Seleccionar "Consultar Historial";

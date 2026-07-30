@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-03: Editar Usuario
+title Flujo CU-03a: Editar Usuario
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,8 +11,6 @@ skinparam swimlane {
 
 |Administrador|
 start
-:Iniciar sesión (CU-02);
-
 :Acceder al módulo de administración;
 
 :Seleccionar "Gestionar Usuarios";
