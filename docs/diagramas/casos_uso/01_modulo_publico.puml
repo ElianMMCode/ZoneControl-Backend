@@ -6,14 +6,14 @@ skinparam usecase {
 skinparam packageStyle rectangle
 left to right direction
 
-actor "Público General" as Pub
+actor "Público General" as Pub #LightBlue
 
 package "Módulo Público" {
-    usecase "Consultar información institucional" as UC_Pub1
-    usecase "Consultar datos de contacto" as UC_Pub2
-    usecase "Consultar ubicación de sedes" as UC_Pub3
-    usecase "Descargar folleto informativo" as UC_Pub4
-    usecase "Consultar catálogo de\nservicios/productos" as UC_Pub5
+    usecase "CU-01: Consultar información institucional" as UC_Pub1
+    usecase "CU-01a: Consultar datos de contacto" as UC_Pub2
+    usecase "CU-01b: Consultar ubicación de sedes" as UC_Pub3
+    usecase "CU-01c: Descargar folleto informativo" as UC_Pub4
+    usecase "CU-01d: Consultar catálogo de servicios/productos" as UC_Pub5
 
     UC_Pub4 ..> UC_Pub1 : <<extend>>
 }
@@ -23,7 +23,5 @@ Pub --> UC_Pub2
 Pub --> UC_Pub3
 Pub --> UC_Pub4
 Pub --> UC_Pub5
-
-note top of UC_Pub1 : Sin precondiciones\nAcceso libre (sin autenticación)\nActor: Público General
 
 @enduml

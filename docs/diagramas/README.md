@@ -4,13 +4,13 @@
 
 | Archivo | Descripción | Actores |
 |---------|-------------|---------|
-| `00_diagrama_general.puml` | Diagrama general con todos los actores y casos de uso | Todos |
-| `01_modulo_publico.puml` | Módulo público - información institucional | Público General |
-| `02_modulo_autenticacion.puml` | Módulo de autenticación (login) | Usuarios Internos |
-| `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador |
-| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición con cascade) | Gestor de Personal |
-| `05_modulo_control_acceso_fisico.puml` | Control de acceso físico | Supervisor/Auditor |
-| `06_modulo_reportes_auditoria.puml` | Reportes y auditoría | Supervisor/Auditor |
+| `00_diagrama_general.puml` | Diagrama general con jerarquía de actores y todos los casos de uso | Todos |
+| `01_modulo_publico.puml` | Módulo público - información institucional (sin auth) | Público General |
+| `02_modulo_autenticacion.puml` | Módulo de autenticación (login JWT) | Usuario Autenticado |
+| `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador (hereda de Usuario Autenticado) |
+| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición) | Gestor de Personal (hereda de Usuario Autenticado) |
+| `05_modulo_control_acceso_fisico.puml` | Control de acceso físico | Supervisor/Auditor + Empleado |
+| `06_modulo_reportes_auditoria.puml` | Reportes y auditoría | Supervisor/Auditor (hereda de Usuario Autenticado) |
 
 ---
 
@@ -43,15 +43,18 @@
 
 | Caso de Uso | Dependencia | Motivo |
 |-------------|-----------|--------|
-| CU-03a (Crear Usuario) | CU-04 (Registrar Personal) | Todo User debe vincularse a un Employee existente vía employeeCode. Relación @OneToOne obligatoria. |
-| CU-05 (Carga Masiva) | CU-05a (Validar estructura) | Validación de encabezados y datos por fila antes de insertar. |
+| CU-03a (Crear Usuario) | CU-04 (Registrar Personal) | Prerrequisito: el Employee debe existir antes de crear el User. Relación @OneToOne obligatoria vía employeeCode. |
+| CU-05 (Carga Masiva) | CU-05a (Validar estructura) | Incluido (<<include>>): validación de encabezados y datos por fila antes de insertar. |
 
 ## Flujo Transversal
 
-Todos los módulos internos requieren autenticación:
+Todos los módulos internos requieren autenticación. La herencia de actores refleja esto:
 
 ```
-Usuario → Login (CU-02) → Token JWT → Módulo correspondiente
+Usuario Autenticado ─── CU-02 (Login JWT)
+    ├── Administrador      → CU-03 (Admin)
+    ├── Gestor Personal    → CU-04-07 (Personal)
+    └── Supervisor/Auditor → CU-08-11 (Reportes + Acceso)
 ```
 
 ---

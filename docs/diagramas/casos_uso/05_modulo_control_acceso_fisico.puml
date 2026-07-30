@@ -6,17 +6,28 @@ skinparam usecase {
 skinparam packageStyle rectangle
 left to right direction
 
-actor "Supervisor / Auditor" as Sup
+actor "Supervisor / Auditor" as Sup #LightPink
+actor "Personal / Empleado" as Emp #LightCoral
 
-package "Módulo de Control de Acceso\nFísico" {
-    usecase "Validar lectura\nde credencial" as UC_Acc1
-    usecase "Validar estado\n(autorizado/denegado/\nno registrado)" as UC_Acc2
-    usecase "Registrar historial\ndel intento" as UC_Acc3
+package "Módulo de Control de Acceso Físico" {
+    usecase "CU-11: Solicitar y validar acceso a área restringida" as UC_Acc1
+    usecase "CU-11a: Validar lectura de credencial" as UC_Acc2
+    usecase "CU-11b: Validar estado (autorizado/denegado/no registrado/suspendido)" as UC_Acc3
+    usecase "CU-11c: Registrar historial del intento" as UC_Acc4
 
     UC_Acc1 ..> UC_Acc2 : <<include>>
     UC_Acc1 ..> UC_Acc3 : <<include>>
+    UC_Acc1 ..> UC_Acc4 : <<include>>
 }
 
 Sup --> UC_Acc1
+Emp --> UC_Acc1
+
+note right of UC_Acc4
+  Cada intento se registra en
+  AccessHistory con timestamp
+  y resultado, incluso si es
+  NO REGISTRADO (employee nulo).
+end note
 
 @enduml

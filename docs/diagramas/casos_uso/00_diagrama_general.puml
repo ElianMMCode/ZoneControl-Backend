@@ -12,149 +12,121 @@ left to right direction
 ' ACTORES
 ' =============================================
 
+actor "Usuario Autenticado" as Auth #BDBDBD
 actor "Público General" as Publico #LightBlue
 actor "Administrador" as Admin #LightGreen
 actor "Gestor de Personal" as Gestor #LightYellow
-actor "Supervisor / Auditor" as Supervisor #LightPink
 actor "Personal / Empleado" as Empleado #LightCoral
+actor "Supervisor / Auditor" as Supervisor #LightPink
 actor "Socio Internacional" as Socio #Wheat
 
 ' =============================================
-' MÓDULO PÚBLICO
+' HERENCIA (actores autenticados heredan de Auth)
 ' =============================================
 
-package "Módulo Público" #E8F5E9 {
-  usecase "CU-01: Consultar información\ninstitucional" as UC01
-  usecase "CU-01a: Consultar datos\nde contacto" as UC01a
-  usecase "CU-01b: Consultar ubicación\nde sedes" as UC01b
-  usecase "CU-01c: Descargar folleto\ninformativo" as UC01c
-  usecase "CU-01d: Consultar catálogo\nde servicios/productos" as UC01d
+Admin --|> Auth
+Gestor --|> Auth
+Supervisor --|> Auth
 
+note right of Auth
+  Autenticación JWT.
+  Admin, Gestor y Supervisor
+  heredan la capacidad de
+  iniciar sesión (CU-02).
+end note
+
+' =============================================
+' MÓDULOS (apilados verticalmente, ordenados
+' según el actor que los usa para evitar cruces)
+' =============================================
+
+package "Módulo de Autenticación" as ModuloAutenticacion #E3F2FD {
+  usecase "CU-02: Iniciar sesión JWT" as UC_LOGIN
+}
+
+Auth --> UC_LOGIN
+
+ModuloAutenticacion -[hidden]down- ModuloPublico
+
+package "Módulo Público" as ModuloPublico #E8F5E9 {
+  usecase "CU-01: Consultar información institucional" as UC01
+  usecase "CU-01a: Consultar datos de contacto" as UC01a
+  usecase "CU-01b: Consultar ubicación de sedes" as UC01b
+  usecase "CU-01c: Descargar folleto informativo" as UC01c
+  usecase "CU-01d: Consultar catálogo de servicios/productos" as UC01d
   UC01 ..> UC01c : <<extend>>
 }
 
-' =============================================
-' MÓDULO DE AUTENTICACIÓN
-' =============================================
-
-package "Módulo de Autenticación" #E3F2FD {
-  usecase "CU-02: Iniciar sesión\nmediante autenticación" as UC02
-}
-
-' =============================================
-' MÓDULO DE ADMINISTRACIÓN
-' =============================================
-
-package "Módulo de Administración" #FFF3E0 {
-  usecase "CU-03: Administrar sistema\ny usuarios internos" as UC03
-  usecase "CU-03a: CRUD de\nusuarios del sistema" as UC03a
-  usecase "CU-03b: Gestionar contenido\ndel módulo público" as UC03b
-}
-
-' =============================================
-' MÓDULO DE GESTIÓN DE PERSONAL
-' =============================================
-
-package "Módulo de Gestión de Personal" #F3E5F5 {
-  usecase "CU-04: Registrar personal\ny asignar departamento" as UC04
-  usecase "CU-05: Realizar carga masiva\n(Archivo plano)" as UC05
-  usecase "CU-06: Gestionar permisos\n(Otorgar/Revocar/Suspender)" as UC06
-  usecase "CU-07: Buscar personal\npor filtros" as UC07
-  usecase "CU-07a: Editar empleado\ny cambiar estado\n(ACTIVO/INACTIVO/SUSPENDIDO)" as UC07a
-  usecase "CU-05a: Validar estructura\ne información" as UC05a
-}
-
-' =============================================
-' MÓDULO DE CONTROL DE ACCESO
-' =============================================
-
-package "Módulo de Control de Acceso\nFísico" #FFEBEE {
-  usecase "CU-11: Solicitud de acceso\na área restringida" as UC11
-  usecase "CU-11a: Validar lectura\nde credencial" as UC11a
-  usecase "CU-11b: Validar estado\n(autorizado/denegado/\nno registrado)" as UC11b
-}
-
-' =============================================
-' MÓDULO DE REPORTES Y AUDITORÍA
-' =============================================
-
-package "Módulo de Reportes\ny Auditoría" #E0F7FA {
-  usecase "CU-08: Consultar historial\nde accesos por fechas" as UC08
-  usecase "CU-09: Generar documento\ndescargable del historial" as UC09
-  usecase "CU-10: Generar archivo\nperiódico por departamentos" as UC10
-}
-
-' =============================================
-' RELACIONES ACTORES → CASOS DE USO
-' =============================================
-
-' Público General
 Publico --> UC01
 Publico --> UC01a
 Publico --> UC01b
 Publico --> UC01c
 Publico --> UC01d
 
-' Administrador
-Admin --> UC02
-Admin --> UC03
+ModuloPublico -[hidden]down- ModuloAdmin
+
+package "Módulo de Administración" as ModuloAdmin #FFF3E0 {
+  usecase "CU-03a: CRUD de usuarios del sistema" as UC03a
+  usecase "CU-03b: Gestionar contenido del módulo público" as UC03b
+}
+
 Admin --> UC03a
 Admin --> UC03b
 
-' Gestor de Personal
-Gestor --> UC02
+note right of UC03a
+  Prerrequisito: CU-04 debe
+  ejecutarse antes. El User
+  requiere un Employee existente
+  (relación @OneToOne).
+end note
+
+ModuloAdmin -[hidden]down- ModuloGestion
+
+package "Módulo de Gestión de Personal" as ModuloGestion #F3E5F5 {
+  usecase "CU-04: Registrar personal y asignar departamento" as UC04
+  usecase "CU-05: Carga masiva (Archivo plano)" as UC05
+  usecase "CU-05a: Validar estructura e información" as UC05a
+  usecase "CU-06: Gestionar permisos (Otorgar/Revocar/Suspender)" as UC06
+  usecase "CU-07: Buscar personal por filtros" as UC07
+  usecase "CU-07a: Editar empleado y cambiar estado" as UC07a
+  UC05 ..> UC05a : <<include>>
+  UC07a ..> UC07 : <<include>>
+}
+
 Gestor --> UC04
 Gestor --> UC05
 Gestor --> UC06
 Gestor --> UC07
 Gestor --> UC07a
 
-' Supervisor / Auditor
-Supervisor --> UC02
+ModuloGestion -[hidden]down- ModuloAcceso
+
+package "Módulo de Control de Acceso Físico" as ModuloAcceso #FFEBEE {
+  usecase "CU-11: Solicitar y validar acceso a área restringida" as UC11
+  usecase "CU-11a: Validar lectura de credencial" as UC11a
+  usecase "CU-11b: Validar estado (autorizado/denegado/no registrado/suspendido)" as UC11b
+  usecase "CU-11c: Registrar historial del intento" as UC11c
+  UC11 ..> UC11a : <<include>>
+  UC11 ..> UC11b : <<include>>
+  UC11 ..> UC11c : <<include>>
+}
+
+Empleado --> UC11
+Supervisor --> UC11
+
+ModuloAcceso -[hidden]down- ModuloReportes
+
+package "Módulo de Reportes y Auditoría" as ModuloReportes #E0F7FA {
+  usecase "CU-08: Consultar historial de accesos por fechas" as UC08
+  usecase "CU-09: Generar documento descargable del historial" as UC09
+  usecase "CU-10: Generar archivo periódico por departamentos" as UC10
+  UC09 ..> UC08 : <<include>>
+}
+
 Supervisor --> UC08
 Supervisor --> UC09
 Supervisor --> UC10
-Supervisor --> UC11
-Supervisor --> UC11a
 
-' Personal / Empleado
-Empleado --> UC11
-Empleado --> UC11a
-
-' Socio Internacional (recibe archivo)
 UC10 --> Socio
-
-' =============================================
-' RELACIONES ENTRE CASOS DE USO
-' =============================================
-
-UC05 ..> UC05a : <<include>>
-UC11 ..> UC11a : <<include>>
-UC11 ..> UC11b : <<include>>
-UC09 ..> UC08 : <<include>>
-UC03a ..> UC04 : <<include>>
-
-' =============================================
-' NOTAS
-' =============================================
-
-note bottom of UC02
-  Módulo transversal:
-  requerido por todos los
-  módulos internos
-end note
-
-note right of UC05a
-  Incluido en carga masiva:
-  validación de estructura
-  e información del archivo
-end note
-
-note right of UC03a
-  Dependencia: requiere empleado
-  registrado previamente (CU-04).
-  Relación @OneToOne obligatoria:
-  User → Employee.
-end note
 
 @enduml

@@ -6,13 +6,13 @@ skinparam usecase {
 skinparam packageStyle rectangle
 left to right direction
 
-actor "Usuario Interno" as User
+actor "Usuario Autenticado" as Auth #BDBDBD
 
 package "Módulo de Autenticación" {
-    usecase "Iniciar sesión en el sistema" as UC_Login
+    usecase "CU-02: Iniciar sesión JWT" as UC_Login
 }
 
-User --> UC_Login
+Auth --> UC_Login
 
 note top of UC_Login : Módulo transversal:\nrequerido por todos los\nmódulos internos
 

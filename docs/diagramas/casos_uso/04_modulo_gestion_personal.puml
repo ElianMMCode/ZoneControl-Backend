@@ -6,17 +6,18 @@ skinparam usecase {
 skinparam packageStyle rectangle
 left to right direction
 
-actor "Gestor de Personal" as Gestor
+actor "Gestor de Personal" as Gestor #LightYellow
 
 package "Módulo de Gestión de Personal" {
-    usecase "Registrar personal individual\ny asignar departamento" as UC_Gest1
-    usecase "Carga masiva\n(Archivo plano)" as UC_Gest2
-    usecase "Validar estructura\ne información" as UC_Gest3
-    usecase "Gestionar permisos de acceso\n(otorgar/revocar/suspender)" as UC_Gest4
-    usecase "Buscar personal\n(identificación, nombre,\napellido, departamento,\nestado)" as UC_Gest5
-    usecase "Editar datos del empleado\ny cambiar estado\n(ACTIVO/INACTIVO/SUSPENDIDO)" as UC_Gest6
+    usecase "CU-04: Registrar personal y asignar departamento" as UC_Gest1
+    usecase "CU-05: Carga masiva (Archivo plano)" as UC_Gest2
+    usecase "CU-05a: Validar estructura e información" as UC_Gest3
+    usecase "CU-06: Gestionar permisos (Otorgar/Revocar/Suspender)" as UC_Gest4
+    usecase "CU-07: Buscar personal por filtros" as UC_Gest5
+    usecase "CU-07a: Editar empleado y cambiar estado" as UC_Gest6
 
     UC_Gest2 ..> UC_Gest3 : <<include>>
+    UC_Gest6 ..> UC_Gest5 : <<include>>
 }
 
 Gestor --> UC_Gest1
@@ -24,10 +25,5 @@ Gestor --> UC_Gest2
 Gestor --> UC_Gest4
 Gestor --> UC_Gest5
 Gestor --> UC_Gest6
-UC_Gest1 ..> UC_Login : <<include>>
-UC_Gest2 ..> UC_Login : <<include>>
-UC_Gest4 ..> UC_Login : <<include>>
-UC_Gest5 ..> UC_Login : <<include>>
-UC_Gest6 ..> UC_Login : <<include>>
 
 @enduml
