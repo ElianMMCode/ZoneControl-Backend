@@ -531,6 +531,19 @@ class PermissionControllerTest {
     }
 
     @Test
+    void reactivatePermission_alreadyActive_returns400() throws Exception {
+        grantPermission();
+        UUID permId = UUID.fromString(objectMapper.readTree(
+                mockMvc.perform(get("/api/permisos").param("search", "EMP-PRM-01"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("content").get(0).get("id").asText());
+
+        mockMvc.perform(patch("/api/permisos/{id}/reactivate", permId))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("El permiso ya está activo"));
+    }
+
+    @Test
     void createArea_valid_returns201() throws Exception {
         var body = new Object() {
             public String name = "Area Test " + UUID.randomUUID().toString().substring(0, 8);

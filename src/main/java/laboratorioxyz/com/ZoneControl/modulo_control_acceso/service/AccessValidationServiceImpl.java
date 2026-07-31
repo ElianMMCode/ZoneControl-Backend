@@ -47,6 +47,13 @@ public class AccessValidationServiceImpl implements AccessValidationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Área de producción no encontrada: " + productionAreaName));
 
+        if (!area.isActive()) {
+            logAccess(null, area.getName(), AccessResult.DENIED);
+            publishValidated(null, area.getName(), AccessResult.DENIED,
+                    "ÁREA INACTIVA");
+            return buildResponse(AccessResult.DENIED, "ÁREA INACTIVA", null);
+        }
+
         // Kill switch de emergencia (2.2): la zona cerrada deniega el ingreso.
         if (area.isEmergencyClosed()) {
             logAccess(null, area.getName(), AccessResult.DENIED);

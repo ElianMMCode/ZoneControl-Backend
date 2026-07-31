@@ -77,9 +77,10 @@ ModuloGestion -[hidden]down-> ModuloAcceso
 ModuloAcceso -[hidden]down-> ModuloReportes
 
 package "Módulo de Administración" as ModuloAdmin #FFF3E0 {
-  usecase "CU-03a: Administrar usuarios (crear, editar, activar o desactivar)" as UC03a
-  usecase "CU-03b: Gestionar el contenido público" as UC03b
-  usecase "CU-03c: Consultar la matriz de roles" as UC03c
+   usecase "CU-03a: Administrar usuarios (crear, editar, activar o desactivar)" as UC03a
+   usecase "CU-03b: Gestionar el contenido público" as UC03b
+   usecase "CU-03c: Consultar la matriz de roles" as UC03c
+   usecase "CU-03d: Gestionar áreas de producción" as UC03d
 }
 
 note right of UC03c
@@ -152,10 +153,6 @@ Publico --> UC01d
 Autenticado --> UC_LOGIN
 Autenticado --> UC_CAMBIO
 Autenticado --> UC_SETUP
-
-Admin --> UC03a
-Admin --> UC03b
-Admin --> UC03c
 
 Gestor --> UC04
 Gestor --> UC05

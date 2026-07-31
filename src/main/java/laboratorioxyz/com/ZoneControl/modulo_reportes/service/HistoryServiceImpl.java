@@ -12,7 +12,9 @@ import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.SupervisorStatsRespons
 import laboratorioxyz.com.ZoneControl.modulo_reportes.util.PdfExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -30,6 +32,17 @@ import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
+
+import com.itextpdf.text.BaseColor;
+import com.itextpdf.text.Chunk;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.PageSize;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
+import com.itextpdf.text.pdf.PdfPCell;
+import com.itextpdf.text.pdf.PdfPTable;
+import com.itextpdf.text.pdf.PdfWriter;
 
 @Service
 @RequiredArgsConstructor
@@ -214,7 +227,7 @@ public class HistoryServiceImpl implements HistoryService {
                 accessHistoryRepository.countTodayByResult(AccessResult.SUSPENDED),
                 accessPermissionRepository.countByStatus(PermissionStatus.ACTIVO),
                 accessPermissionRepository.countByStatus(PermissionStatus.SUSPENDIDO),
-                accessPermissionRepository.countDistinctEmployeesWithActivePermissions()
+accessPermissionRepository.countDistinctEmployeesWithActivePermissions()
         );
     }
 

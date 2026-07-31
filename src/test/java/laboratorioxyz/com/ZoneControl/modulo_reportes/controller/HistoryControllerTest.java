@@ -282,6 +282,37 @@ class HistoryControllerTest {
     }
 
     @Test
+    void exportPdf_validRequest_returns200() throws Exception {
+        Employee emp = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-EXP-04")
+                .documentType(DocumentType.CC)
+                .documentNumber("900000004")
+                .firstName("Export")
+                .lastName("Pdf")
+                .position("Técnico")
+                .department(dept)
+                .status(EmployeeStatus.ACTIVO)
+                .email("export.pdf@test.com")
+                .build());
+
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp).department("Control de Calidad")
+                .productionAreaName("Sala Blanca A")
+                .timestamp(LocalDateTime.now())
+                .result(AccessResult.AUTHORIZED).build());
+
+        mockMvc.perform(post("/api/historial/export")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "formato", "PDF",
+                                "fechaInicio", LocalDate.now().minusDays(1).toString(),
+                                "fechaFin", LocalDate.now().toString()
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(header().string("Content-Type", "application/pdf"));
+    }
+
+    @Test
     void getStats_returnsCounts() throws Exception {
         // Capturamos el baseline (DataInitializer puede haber sembrado
         // registros de hoy) y validamos solo los deltas introducidos

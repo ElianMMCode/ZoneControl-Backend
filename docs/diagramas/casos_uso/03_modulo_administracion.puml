@@ -13,11 +13,13 @@ package "Módulo de Administración" {
     usecase "CU-03a: Administrar usuarios (crear, editar, activar o desactivar)" as UC_Admin1
     usecase "CU-03b: Gestionar el contenido público" as UC_Admin2
     usecase "CU-03c: Consultar la matriz de roles" as UC_Admin3
+    usecase "CU-03d: Gestionar áreas de producción" as UC_Admin4
 }
 
 Admin --> UC_Admin1
 Admin --> UC_Admin2
 Admin --> UC_Admin3
+Admin --> UC_Admin4
 
 note bottom of UC_Admin1
   Para crear un usuario se necesita

@@ -6,9 +6,9 @@
 |---------|-------------|---------|
 | `00_diagrama_general.puml` | Diagrama general con jerarquía de actores y todos los casos de uso | Todos |
 | `01_modulo_publico.puml` | Módulo público - información institucional (sin auth) | Público General |
-| `02_modulo_autenticacion.puml` | Módulo de autenticación (login JWT + cambio de contraseña) | Usuario Autenticado |
-| `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador (hereda de Usuario Autenticado). CU-03a: CRUD usuarios · CU-03b: Contenido público · CU-03c: Matriz de roles y permisos (consulta, pendiente) |
-| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición, áreas, fotografía) | Gestor de Personal (hereda de Usuario Autenticado) |
+| `02_modulo_autenticacion.puml` | Módulo de autenticación (login JWT) | Usuario Autenticado |
+| `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador (hereda de Usuario Autenticado). CU-03a: CRUD usuarios · CU-03b: Contenido público · CU-03c: Matriz de roles y permisos · CU-03d: Áreas de producción |
+| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición) | Gestor de Personal (hereda de Usuario Autenticado) |
 | `05_modulo_control_acceso_fisico.puml` | Control de acceso físico | Supervisor/Auditor + Empleado |
 | `06_modulo_reportes_auditoria.puml` | Reportes y auditoría | Supervisor/Auditor (hereda de Usuario Autenticado) |
 

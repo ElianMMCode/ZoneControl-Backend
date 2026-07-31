@@ -58,7 +58,7 @@ public class PublicServiceImpl implements PublicService {
             info.put("companyName", "Laboratorio XYZ");
         }
         if (!info.containsKey("productionAreas")) {
-            List<String> areaNames = productionAreaRepository.findAll()
+            List<String> areaNames = productionAreaRepository.findAllByActive(true)
                     .stream().map(area -> area.getName())
                     .collect(Collectors.toList());
             info.put("productionAreas", String.join(", ", areaNames));
