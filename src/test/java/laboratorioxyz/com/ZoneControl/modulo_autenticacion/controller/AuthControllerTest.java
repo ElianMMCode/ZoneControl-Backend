@@ -19,7 +19,9 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.Map;
+import java.util.UUID;
 
+import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -117,5 +119,94 @@ class AuthControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest());
+    }
+
+    private String loginAndGetToken() throws Exception {
+        var body = Map.of("email", adminEmail, "password", adminPassword);
+        var result = mockMvc.perform(post("/auth/login")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andReturn();
+        return objectMapper.readTree(result.getResponse().getContentAsString()).get("token").asText();
+    }
+
+    @Test
+    void changePassword_validCredentials_returns200AndUpdates() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
+
+        mockMvc.perform(post("/auth/change-password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Contraseña actualizada correctamente"));
+
+        userRepository.findByEmail(adminEmail).ifPresent(user -> {
+            assertThat(passwordEncoder.matches("NuevaPass123!", user.getPassword())).isTrue();
+            assertThat(user.isRequirePasswordChange()).isFalse();
+        });
+    }
+
+    @Test
+    void changePassword_wrongCurrentPassword_returns400() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("currentPassword", "Incorrecta1!", "newPassword", "NuevaPass123!");
+
+        mockMvc.perform(post("/auth/change-password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("La contraseña actual es incorrecta"));
+    }
+
+    @Test
+    void changePassword_newPasswordSameAsCurrent_returns400() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("currentPassword", adminPassword, "newPassword", adminPassword);
+
+        mockMvc.perform(post("/auth/change-password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("La nueva contraseña no puede ser igual a la actual"));
+    }
+
+    @Test
+    void changePassword_newPasswordFailsValidation_returns400() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("currentPassword", adminPassword, "newPassword", "weak");
+
+        mockMvc.perform(post("/auth/change-password")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void changePassword_invalidToken_returns403() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
+        String tamperedToken = token.substring(0, token.length() - 4) + "xxxx";
+
+        mockMvc.perform(post("/auth/change-password")
+                        .header("Authorization", "Bearer " + tamperedToken)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void changePassword_withoutToken_returns403() throws Exception {
+        var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
+
+        mockMvc.perform(post("/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isForbidden());
     }
 }

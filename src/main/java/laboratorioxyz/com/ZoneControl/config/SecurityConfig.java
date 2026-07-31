@@ -12,6 +12,7 @@ import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
+import org.springframework.http.HttpMethod;
 
 @Configuration
 @EnableWebSecurity
@@ -37,6 +38,7 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/error").permitAll()
+                .requestMatchers(HttpMethod.POST, "/auth/change-password").authenticated()
                 .requestMatchers("/public/**", "/auth/**", "/setup-password/**",
                         "/swagger-ui.html", "/swagger-ui/**", "/webjars/**",
                         "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
