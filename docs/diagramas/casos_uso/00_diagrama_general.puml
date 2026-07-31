@@ -68,10 +68,12 @@ ModuloPublico -[hidden]down- ModuloAdmin
 package "Módulo de Administración" as ModuloAdmin #FFF3E0 {
   usecase "CU-03a: CRUD de usuarios del sistema" as UC03a
   usecase "CU-03b: Gestionar contenido del módulo público" as UC03b
+  usecase "CU-03c: Gestionar matriz de roles y permisos" as UC03c
 }
 
 Admin --> UC03a
 Admin --> UC03b
+Admin --> UC03c
 
 note right of UC03a
   Prerrequisito: CU-04 debe

@@ -11,10 +11,12 @@ actor "Administrador" as Admin #LightGreen
 package "Módulo de Administración" {
     usecase "CU-03a: CRUD de usuarios del sistema" as UC_Admin1
     usecase "CU-03b: Gestionar contenido del módulo público" as UC_Admin2
+    usecase "CU-03c: Gestionar matriz de roles y permisos" as UC_Admin3
 }
 
 Admin --> UC_Admin1
 Admin --> UC_Admin2
+Admin --> UC_Admin3
 
 note right of UC_Admin1
   Para crear un usuario se requiere

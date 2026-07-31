@@ -328,6 +328,16 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - Reutilizar pantalla /configurar-contrasena del flujo HU-05 para completar el restablecimiento
 - TDD: test envío de magic link, test empleado sin correo, test usuario inexistente
 
+**CU-03c: Gestionar Matriz de Roles y Permisos** (formalizado en diagramas v1.1)
+- Vista `admin-roles.html`: matriz de permisos por módulo y rol según SecurityConfig
+- Actores: solo ADMIN (ver y consultar la matriz)
+- Frontend: tabla con checkmarks por (módulo, rol)
+
+**Vista transversal: Ajustes y Perfil** (`settings.html`)
+- Perfil del usuario autenticado + cambio de contraseña (`POST /auth/change-password`)
+- Aplica a los tres roles (CU-02 transversal); no es exclusiva del admin
+- Vista compartida en los 3 dashboards
+
 ### Fase 4 — Gestión de Personal (HU-09, HU-14, HU-10, HU-11, HU-12, HU-13)
 
 **HU-09: Registrar Personal Individual**
