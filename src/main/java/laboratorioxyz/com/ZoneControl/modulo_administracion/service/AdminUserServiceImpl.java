@@ -5,6 +5,7 @@ import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.AdminStatsResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ResetPasswordResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.StatusUpdateRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.UpdateUserRequest;
@@ -237,6 +238,22 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Usuario no encontrado"));
         return toUserResponse(user);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public AdminStatsResponse getStats() {
+        return new AdminStatsResponse(
+                userRepository.count(),
+                userRepository.countByStatus(UserStatus.ACTIVO),
+                userRepository.countByStatus(UserStatus.INACTIVO),
+                userRepository.countBySetupTokenIsNotNull(),
+                employeeRepository.count(),
+                employeeRepository.countByStatus(EmployeeStatus.ACTIVO),
+                accessPermissionRepository.count(),
+                accessPermissionRepository.countByStatus(PermissionStatus.ACTIVO),
+                accessPermissionRepository.countByStatus(PermissionStatus.SUSPENDIDO)
+        );
     }
 
     private UserResponse toUserResponse(User user) {

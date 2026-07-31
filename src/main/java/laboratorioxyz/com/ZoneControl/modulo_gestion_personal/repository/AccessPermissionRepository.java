@@ -32,4 +32,6 @@ public interface AccessPermissionRepository extends JpaRepository<AccessPermissi
                                 @Param("areaId") UUID areaId,
                                 @Param("today") LocalDate today,
                                 @Param("now") LocalTime now);
+
+    long countByStatus(PermissionStatus status);
 }

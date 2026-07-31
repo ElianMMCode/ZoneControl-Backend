@@ -1,6 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository;
 
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
+import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 
@@ -15,10 +16,14 @@ import java.util.UUID;
  * crudo se hashea con SHA-256 en el servicio antes de consultar.
  * JpaSpecificationExecutor habilita el listado paginado con filtros
  * dinámicos de la pantalla de Gestión de Usuarios (HU-05).
+ * Los métodos countByStatus y countBySetupTokenIsNotNull alimentan los
+ * indicadores del dashboard del administrador (GET /admin/stats).
  */
 public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificationExecutor<User> {
     Optional<User> findByEmail(String email);
     boolean existsByEmail(String email);
     Optional<User> findByEmployee_Id(UUID employeeId);
     Optional<User> findBySetupToken(String setupToken);
+    long countByStatus(UserStatus status);
+    long countBySetupTokenIsNotNull();
 }

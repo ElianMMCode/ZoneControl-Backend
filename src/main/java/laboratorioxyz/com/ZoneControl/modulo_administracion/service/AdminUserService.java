@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_administracion.service;
 
+import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.AdminStatsResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ResetPasswordResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.StatusUpdateRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.UpdateUserRequest;
@@ -20,4 +21,5 @@ public interface AdminUserService {
     ResetPasswordResponse resetPassword(UUID id);
     Page<UserResponse> list(String search, Role role, UserStatus status, Pageable pageable);
     UserResponse getById(UUID id);
+    AdminStatsResponse getStats();
 }

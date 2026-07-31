@@ -1,6 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository;
 
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
+import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -29,4 +30,6 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSp
      */
     @Query("SELECT MAX(e.employeeCode) FROM Employee e")
     String findMaxEmployeeCode();
+
+    long countByStatus(EmployeeStatus status);
 }
