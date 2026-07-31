@@ -31,6 +31,7 @@ import java.util.Map;
 import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
@@ -219,6 +220,115 @@ class AdminUserControllerTest {
     @Test
     void resetPassword_nonExistentUser_returns404() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
+    }
+
+    @Test
+    void createUser_validEmployee_returns201() throws Exception {
+        Department dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        Employee fresh = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-ADM-02")
+                .documentType(DocumentType.CC)
+                .documentNumber("900000002")
+                .firstName("Nuevo")
+                .lastName("Empleado")
+                .email("nuevo@test.com")
+                .position("Analista")
+                .department(dept)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "employeeCode", "EMP-ADM-02",
+                                "role", "SUPERVISOR_AUDITOR",
+                                "status", "ACTIVO"
+                        ))))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").isString());
+
+                assertThat(userRepository.findByEmployee_Id(fresh.getId()))
+                        .hasValueSatisfying(u -> {
+                            assertThat(u.getFirstName()).isEqualTo("Nuevo");
+                            assertThat(u.getLastName()).isEqualTo("Empleado");
+                            assertThat(u.getEmail()).isEqualTo("nuevo@test.com");
+                            assertThat(u.getPassword()).isNull();
+                            assertThat(u.getRole()).isEqualTo(Role.SUPERVISOR_AUDITOR);
+                    assertThat(u.getStatus()).isEqualTo(UserStatus.ACTIVO);
+                    assertThat(u.getSetupToken()).isNotBlank();
+                    assertThat(u.getSetupTokenExpiry()).isNotNull();
+                });
+    }
+
+    @Test
+    void createUser_employeeWithoutEmail_returns400() throws Exception {
+        Department dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-ADM-03")
+                .documentType(DocumentType.CC)
+                .documentNumber("900000003")
+                .firstName("Sin")
+                .lastName("Correo")
+                .position("Auxiliar")
+                .department(dept)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "employeeCode", "EMP-ADM-03",
+                                "role", "ADMIN",
+                                "status", "ACTIVO"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error")
+                        .value("El empleado no tiene un correo registrado. Regístrelo en Gestión Personal para poder crear el usuario"));
+    }
+
+    @Test
+    void createUser_employeeAlreadyLinked_returns409() throws Exception {
+        testEmployee.setEmail("nuevo@test.com");
+        employeeRepository.save(testEmployee);
+
+        mockMvc.perform(post("/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "employeeCode", "EMP-ADM-01",
+                                "role", "ADMIN",
+                                "status", "ACTIVO"
+                        ))))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error")
+                        .value("El empleado ya tiene un usuario de sistema asociado"));
+    }
+
+    @Test
+    void listUsers_returnsPaginatedResults() throws Exception {
+        mockMvc.perform(get("/admin/users")
+                        .param("search", "EMP-ADM-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].employeeCode").value("EMP-ADM-01"))
+                .andExpect(jsonPath("$.content[0].position").value("Técnico"));
+    }
+
+    @Test
+    void getUserById_returnsDetail() throws Exception {
+        mockMvc.perform(get("/admin/users/{id}", testUser.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.id").value(testUser.getId().toString()))
+                .andExpect(jsonPath("$.email").value("admin.test@test.com"))
+                .andExpect(jsonPath("$.role").value("GESTOR_PERSONAL"))
+                .andExpect(jsonPath("$.employeeCode").value("EMP-ADM-01"))
+                .andExpect(jsonPath("$.position").value("Técnico"));
+    }
+
+    @Test
+    void getUserById_nonExistentUser_returns404() throws Exception {
+        mockMvc.perform(get("/admin/users/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
     }
