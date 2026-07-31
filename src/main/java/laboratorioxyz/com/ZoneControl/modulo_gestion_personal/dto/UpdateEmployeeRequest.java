@@ -17,6 +17,7 @@ public class UpdateEmployeeRequest {
     private String firstName;
     private String lastName;
     private String position;
+    private String email;
     private DocumentType documentType;
     private String documentNumber;
     private String departmentName;

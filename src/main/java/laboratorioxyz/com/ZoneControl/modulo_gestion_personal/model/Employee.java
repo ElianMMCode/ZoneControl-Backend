@@ -1,6 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model;
 
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
@@ -49,6 +50,17 @@ public class Employee {
     @Size(max = 30)
     @Column(length = 30, nullable = false)
     private String position;
+
+    /**
+     * Correo personal del empleado (no corporativo).
+     * Se usa para enviar el magic link cuando el ADMIN crea un usuario
+     * del sistema (HU-05). Es nullable porque no todos los empleados
+     * requieren acceso al sistema (solo acceso físico).
+     */
+    @Email
+    @Size(max = 100)
+    @Column(length = 100, nullable = true)
+    private String email;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 11, nullable = false)

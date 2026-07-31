@@ -66,6 +66,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .position(request.getPosition())
+                .email(request.getEmail())
                 .department(department)
                 .build();
 
@@ -157,6 +158,9 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         if (request.getPosition() != null) {
             employee.setPosition(request.getPosition());
+        }
+        if (request.getEmail() != null) {
+            employee.setEmail(request.getEmail());
         }
         if (request.getDocumentType() != null || request.getDocumentNumber() != null) {
             DocumentType newType = request.getDocumentType() != null
@@ -434,6 +438,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .firstName(employee.getFirstName())
                 .lastName(employee.getLastName())
                 .position(employee.getPosition())
+                .email(employee.getEmail())
                 .departmentName(employee.getDepartment().getName())
                 .status(employee.getStatus())
                 .build();

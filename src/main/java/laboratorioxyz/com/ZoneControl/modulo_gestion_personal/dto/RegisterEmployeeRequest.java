@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto;
 
+import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
@@ -44,4 +45,13 @@ public class RegisterEmployeeRequest {
     @NotNull
     @Size(max = 80)
     private String departmentName;
+
+    /**
+     * Correo personal opcional del empleado. Si se registra, el ADMIN
+     * podrá usar este correo para crear el usuario del sistema con
+     * magic link (HU-05). No es corporativo.
+     */
+    @Email
+    @Size(max = 100)
+    private String email;
 }

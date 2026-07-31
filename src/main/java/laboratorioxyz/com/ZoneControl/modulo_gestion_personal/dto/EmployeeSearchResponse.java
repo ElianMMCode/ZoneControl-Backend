@@ -19,6 +19,7 @@ public class EmployeeSearchResponse {
     private String firstName;
     private String lastName;
     private String position;
+    private String email;
     private String departmentName;
     private EmployeeStatus status;
 }
