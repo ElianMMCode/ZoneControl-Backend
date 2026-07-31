@@ -153,8 +153,8 @@ Crear en orden de dependencia:
 | firstName | String | Not null |
 | lastName | String | Not null |
 | email | String | Único, not null |
-| password | String | BCrypt, not null |
-| rol | Enum(ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR, SEGURIDAD) | Not null |
+| password | String | BCrypt, nullable hasta completar el setup por magic link (HU-05) |
+| rol | Enum(ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR) | Not null |
 | estado | Enum(ACTIVO, INACTIVO) | Default ACTIVO |
 | requiereCambioPassword | boolean | Default false |
 | employee | @OneToOne(Employee) | Not null, unique |
