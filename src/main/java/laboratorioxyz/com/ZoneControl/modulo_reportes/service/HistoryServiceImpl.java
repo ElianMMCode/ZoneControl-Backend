@@ -2,10 +2,13 @@ package laboratorioxyz.com.ZoneControl.modulo_reportes.service;
 
 import jakarta.persistence.criteria.Predicate;
 import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
+import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.AccessHistoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.ExportRequest;
+import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.SupervisorStatsResponse;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -33,6 +36,7 @@ import java.util.stream.Collectors;
 public class HistoryServiceImpl implements HistoryService {
 
     private final AccessHistoryRepository accessHistoryRepository;
+    private final AccessPermissionRepository accessPermissionRepository;
 
     @Override
     @Transactional(readOnly = true)
@@ -157,6 +161,21 @@ public class HistoryServiceImpl implements HistoryService {
             throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                     "Error al generar el archivo Excel");
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public SupervisorStatsResponse getStats() {
+        return new SupervisorStatsResponse(
+                accessHistoryRepository.countTodayTotal(),
+                accessHistoryRepository.countTodayByResult(AccessResult.AUTHORIZED),
+                accessHistoryRepository.countTodayByResult(AccessResult.DENIED),
+                accessHistoryRepository.countTodayByResult(AccessResult.UNREGISTERED),
+                accessHistoryRepository.countTodayByResult(AccessResult.SUSPENDED),
+                accessPermissionRepository.countByStatus(PermissionStatus.ACTIVO),
+                accessPermissionRepository.countByStatus(PermissionStatus.SUSPENDIDO),
+                accessPermissionRepository.countDistinctEmployeesWithActivePermissions()
+        );
     }
 
     private AccessHistoryResponse toResponse(AccessHistory h) {

@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository;
 
+import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
@@ -17,4 +18,10 @@ public interface AccessHistoryRepository extends JpaRepository<AccessHistory, UU
             + "EXTRACT(YEAR FROM h.timestamp) = :anio "
             + "ORDER BY h.timestamp DESC")
     List<AccessHistory> findByPeriod(@Param("mes") int mes, @Param("anio") int anio);
+
+    @Query("SELECT COUNT(h) FROM AccessHistory h WHERE CAST(h.timestamp AS date) = CURRENT_DATE")
+    long countTodayTotal();
+
+    @Query("SELECT COUNT(h) FROM AccessHistory h WHERE CAST(h.timestamp AS date) = CURRENT_DATE AND h.result = :result")
+    long countTodayByResult(@Param("result") AccessResult result);
 }

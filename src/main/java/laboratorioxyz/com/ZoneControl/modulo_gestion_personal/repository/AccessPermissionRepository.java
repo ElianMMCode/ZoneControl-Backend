@@ -42,4 +42,7 @@ public interface AccessPermissionRepository extends JpaRepository<AccessPermissi
                                 @Param("now") LocalTime now);
 
     long countByStatus(PermissionStatus status);
+
+    @Query("SELECT COUNT(DISTINCT ap.employee.id) FROM AccessPermission ap WHERE ap.status = 'ACTIVO'")
+    long countDistinctEmployeesWithActivePermissions();
 }

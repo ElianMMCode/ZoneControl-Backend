@@ -2,6 +2,7 @@ package laboratorioxyz.com.ZoneControl.modulo_reportes.service;
 
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.AccessHistoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.ExportRequest;
+import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.SupervisorStatsResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -12,4 +13,5 @@ public interface HistoryService {
                                         String employeeCode, String resultado,
                                         Pageable pageable);
     byte[] export(ExportRequest request);
+    SupervisorStatsResponse getStats();
 }

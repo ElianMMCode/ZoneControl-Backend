@@ -422,6 +422,12 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - Frontend: selector de mes/año, multiselect departamentos, formato
 - TDD: test generación con datos, sin datos, sin datos personales
 
+**Dashboard del Supervisor** (adición de coherencia)
+- `GET /historial/stats` — indicadores agregados: accesos del día por resultado, permisos activos/suspendidos, empleados con acceso vigente
+- Tags: **Módulo Reportes**, solo ADMIN y SUPERVISOR_AUDITOR
+- Vista `supervisor-dashboard.html`: tarjetas KPI + actividad reciente
+- TDD: 1 test de conteos delta
+
 ---
 
 ## 4. Convenciones y Reglas Transversales

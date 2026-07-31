@@ -71,7 +71,7 @@ cada vista debe aparecer en el dashboard de su actor.
 | **Compartido** | Usuario Autenticado (CU-02) | `login.html`, `settings.html` |
 | **Admin** | Administrador (CU-03a/03b/03c) | `admin-dashboard.html`, `admin-users.html`, `admin-create-user.html`, `admin-public-content.html`, `admin-roles.html` |
 | **Gestor** | Gestor de Personal (CU-04/05/06/07) | `gestor-personal.html`, `gestor-personal-register.html`, `gestor-personal-bulk.html`, `gestor-personal-detail.html`, `gestor-permisos.html` |
-| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `access-validation.html`, `audit-reports.html` |
+| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `supervisor-dashboard.html`, `access-validation.html`, `audit-reports.html` |
 
 > **Nota**: `settings.html` es transversal porque el perfil y el cambio de contraseña
 > (`POST /auth/change-password`) aplican a los tres roles autenticados (CU-02).
