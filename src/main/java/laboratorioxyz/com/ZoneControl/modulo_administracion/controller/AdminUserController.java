@@ -100,9 +100,11 @@ public class AdminUserController {
     }
 
     @Operation(summary = "Restablecer contraseña",
-            description = "Genera una contraseña temporal que cumple los requisitos de seguridad y la muestra una sola vez. " +
-                    "El usuario debe cambiarla en su próximo inicio de sesión.")
-    @ApiResponse(responseCode = "200", description = "Contraseña temporal generada")
+            description = "Invalida la contraseña actual y envía un enlace de configuración (magic link) de un solo uso " +
+                    "al correo personal del empleado para que el propio usuario establezca una nueva contraseña. " +
+                    "El enlace expira en 24 horas.")
+    @ApiResponse(responseCode = "200", description = "Enlace de configuración enviado al correo del usuario")
+    @ApiResponse(responseCode = "400", description = "El empleado no tiene un correo registrado")
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     @PostMapping("/{id}/reset-password")
     public ResponseEntity<ResetPasswordResponse> resetPassword(@PathVariable UUID id) {

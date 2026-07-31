@@ -26,6 +26,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Map;
 import java.util.UUID;
@@ -85,6 +86,7 @@ class AdminUserControllerTest {
                 .position("Técnico")
                 .department(dept)
                 .status(EmployeeStatus.ACTIVO)
+                .email("personal.admin@test.com")
                 .build());
 
         testUser = userRepository.save(User.builder()
@@ -214,7 +216,13 @@ class AdminUserControllerTest {
     void resetPassword_validUser_returns200() throws Exception {
         mockMvc.perform(post("/admin/users/{id}/reset-password", testUser.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.temporaryPassword").isString());
+                .andExpect(jsonPath("$.message")
+                        .value("Enlace de configuración enviado al correo del usuario"));
+
+        User afterReset = userRepository.findById(testUser.getId()).orElseThrow();
+        assertThat(afterReset.getPassword()).isNull();
+        assertThat(afterReset.getSetupToken()).isNotBlank();
+        assertThat(afterReset.getSetupTokenExpiry()).isAfter(LocalDateTime.now());
     }
 
     @Test
@@ -222,6 +230,35 @@ class AdminUserControllerTest {
         mockMvc.perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
+    }
+
+    @Test
+    void resetPassword_employeeWithoutEmail_returns400() throws Exception {
+        Department dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        Employee noEmailEmployee = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-ADM-03")
+                .documentType(DocumentType.CC)
+                .documentNumber("900000003")
+                .firstName("Sin")
+                .lastName("Correo")
+                .position("Técnico")
+                .department(dept)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        User noEmailUser = userRepository.save(User.builder()
+                .firstName("Sin")
+                .lastName("Correo")
+                .email("sin.correo@test.com")
+                .password(passwordEncoder.encode("Pass123!"))
+                .role(Role.GESTOR_PERSONAL)
+                .status(UserStatus.ACTIVO)
+                .employee(noEmailEmployee)
+                .build());
+
+        mockMvc.perform(post("/admin/users/{id}/reset-password", noEmailUser.getId()))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error")
+                        .value("El empleado no tiene un correo registrado. Regístrelo en Gestión Personal para restablecer la contraseña"));
     }
 
     @Test
