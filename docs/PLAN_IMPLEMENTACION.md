@@ -296,6 +296,9 @@ Crear `import.sql` o `DataInitializer` que inserte:
   - Redirección a dashboard según rol
 - TDD: 4 condiciones de aceptación → 4 tests
 
+- **Adicional (dashboard admin)**: `GET /admin/stats` — contadores agregados para las tarjetas KPI del dashboard del administrador (usuarios por estado, pendientes de configuración de contraseña, empleados, permisos). Solo ADMIN. TDD: 1 test de conteos delta.
+- **Adicional (ajustes)**: `POST /auth/change-password` — cambio de contraseña voluntario por el usuario autenticado. Requiere token JWT válido (SecurityConfig: regla auth/change-password → authenticated() antes del permitAll de /auth/**). TDD: 5 tests (éxito, actual incorrecta, misma contraseña, validación, sin token).
+
 ### Fase 3 — Administración (HU-05, HU-06, HU-07, HU-08)
 
 **HU-05: Crear Usuario Interno**
@@ -320,11 +323,10 @@ Crear `import.sql` o `DataInitializer` que inserte:
 
 **HU-08: Restablecer Contraseña**
 - `POST /api/admin/users/{id}/reset-password`
-- Generar password temporal aleatoria que cumpla requisitos de seguridad
-- Encriptar con BCrypt, mostrar 1 vez al admin
-- Marcar `requiereCambioPassword = true`
-- Flujo login: si flag activo → obligar a cambiar password antes de dashboard
-- TDD: test generación, test de flag en login, test de cambio obligatorio
+- Alineada con HU-05: invalidar password actual (null), generar setupToken criptográfico de 96 hex, hash SHA-256 con expiración 24h, enviar magic link al correo personal del empleado (sin contraseña temporal visible al admin)
+- HTTP 400 si el empleado no tiene correo registrado, 404 si usuario no existe
+- Reutilizar pantalla /configurar-contrasena del flujo HU-05 para completar el restablecimiento
+- TDD: test envío de magic link, test empleado sin correo, test usuario inexistente
 
 ### Fase 4 — Gestión de Personal (HU-09, HU-14, HU-10, HU-11, HU-12, HU-13)
 
