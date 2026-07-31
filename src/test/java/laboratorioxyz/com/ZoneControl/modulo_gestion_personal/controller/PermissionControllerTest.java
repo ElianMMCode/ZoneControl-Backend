@@ -22,6 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
@@ -126,7 +128,7 @@ class PermissionControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
-                .andExpect(jsonPath("$.error").value("Conflicto de permisos existente"));
+                .andExpect(jsonPath("$.error").value("El empleado ya tiene un permiso para esta área. Edite el permiso existente"));
     }
 
     @Test
@@ -216,5 +218,203 @@ class PermissionControllerTest {
                         .content(objectMapper.writeValueAsString(suspendRequest)))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Permiso no encontrado"));
+    }
+
+    private void grantPermission() throws Exception {
+        var request = new Object() {
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
+            public String startDate = LocalDate.now().toString();
+            public String expirationDate = LocalDate.now().plusMonths(1).toString();
+            public String startTime = "08:00";
+            public String endTime = "17:00";
+        };
+        mockMvc.perform(post("/permisos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated());
+    }
+
+    @Test
+    void listPermissions_returnsPaginatedResults() throws Exception {
+        grantPermission();
+
+        mockMvc.perform(get("/permisos")
+                        .param("search", "EMP-PRM-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content[0].employeeCode").value("EMP-PRM-01"))
+                .andExpect(jsonPath("$.content[0].areaName").value("Sala Blanca A"));
+    }
+
+    @Test
+    void listPermissions_filtersByStatus() throws Exception {
+        grantPermission();
+        UUID permId = UUID.fromString(objectMapper.readTree(
+                mockMvc.perform(get("/permisos").param("search", "EMP-PRM-01"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("content").get(0).get("id").asText());
+        var suspendBody = new Object() {
+            public String reactivationDate = LocalDate.now().plusDays(7).toString();
+        };
+        mockMvc.perform(patch("/permisos/{id}/suspend", permId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(suspendBody)))
+                .andExpect(status().isOk());
+
+        mockMvc.perform(get("/permisos")
+                        .param("status", "SUSPENDIDO")
+                        .param("search", "EMP-PRM-01"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].status").value("SUSPENDIDO"));
+    }
+
+    @Test
+    void listPermissions_searchByEmployeeName() throws Exception {
+        grantPermission();
+
+        mockMvc.perform(get("/permisos")
+                        .param("search", "Test"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray())
+                .andExpect(jsonPath("$.content.length()").value(org.hamcrest.Matchers.greaterThan(0)));
+    }
+
+    @Test
+    void listPermissions_noMatch_returnsEmptyPage() throws Exception {
+        mockMvc.perform(get("/permisos")
+                        .param("search", "NOEXISTE"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isEmpty())
+                .andExpect(jsonPath("$.totalElements").value(0));
+    }
+
+    @Test
+    void listAreas_returnsAllAreas() throws Exception {
+        mockMvc.perform(get("/permisos/areas"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[0].name").exists())
+                .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(5)));
+    }
+
+    @Test
+    void grantPermission_sameEmployeeAreaDifferentTimes_returns409() throws Exception {
+        var request1 = new Object() {
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
+            public String startDate = LocalDate.now().toString();
+            public String expirationDate = LocalDate.now().plusMonths(1).toString();
+            public String startTime = "08:00";
+            public String endTime = "12:00";
+        };
+        mockMvc.perform(post("/permisos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isCreated());
+
+        var request2 = new Object() {
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
+            public String startDate = LocalDate.now().toString();
+            public String expirationDate = LocalDate.now().plusMonths(1).toString();
+            public String startTime = "13:00";
+            public String endTime = "17:00";
+        };
+        mockMvc.perform(post("/permisos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("El empleado ya tiene un permiso para esta área. Edite el permiso existente"));
+    }
+
+    @Test
+    void grantPermission_sameEmployeeDifferentArea_returns201() throws Exception {
+        var request1 = new Object() {
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
+            public String startDate = LocalDate.now().toString();
+            public String expirationDate = LocalDate.now().plusMonths(1).toString();
+            public String startTime = "08:00";
+            public String endTime = "17:00";
+        };
+        mockMvc.perform(post("/permisos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request1)))
+                .andExpect(status().isCreated());
+
+        var request2 = new Object() {
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca B";
+            public String startDate = LocalDate.now().toString();
+            public String expirationDate = LocalDate.now().plusMonths(1).toString();
+            public String startTime = "08:00";
+            public String endTime = "17:00";
+        };
+        mockMvc.perform(post("/permisos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request2)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.areaName").value("Sala Blanca B"));
+    }
+
+    @Test
+    void editPermission_validData_returns200() throws Exception {
+        grantPermission();
+        UUID permId = UUID.fromString(objectMapper.readTree(
+                mockMvc.perform(get("/permisos").param("search", "EMP-PRM-01"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("content").get(0).get("id").asText());
+
+        var editBody = new Object() {
+            public String startTime = "06:00";
+            public String endTime = "14:00";
+            public String startDate = LocalDate.now().plusDays(1).toString();
+            public String expirationDate = LocalDate.now().plusMonths(2).toString();
+        };
+        mockMvc.perform(patch("/permisos/{id}", permId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.startTime").value("06:00:00"))
+                .andExpect(jsonPath("$.endTime").value("14:00:00"));
+    }
+
+    @Test
+    void editPermission_nonExistent_returns404() throws Exception {
+        var editBody = new Object() {
+            public String startTime = "06:00";
+            public String endTime = "14:00";
+        };
+        mockMvc.perform(patch("/permisos/{id}", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editBody)))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Permiso no encontrado"));
+    }
+
+    @Test
+    void editPermission_suspended_returns400() throws Exception {
+        grantPermission();
+        UUID permId = UUID.fromString(objectMapper.readTree(
+                mockMvc.perform(get("/permisos").param("search", "EMP-PRM-01"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("content").get(0).get("id").asText());
+        var suspendBody = new Object() {
+            public String reactivationDate = LocalDate.now().plusDays(7).toString();
+        };
+        mockMvc.perform(patch("/permisos/{id}/suspend", permId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(suspendBody)))
+                .andExpect(status().isOk());
+
+        var editBody = new Object() {
+            public String startTime = "06:00";
+            public String endTime = "14:00";
+        };
+        mockMvc.perform(patch("/permisos/{id}", permId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(editBody)))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("No se puede editar un permiso suspendido"));
     }
 }
