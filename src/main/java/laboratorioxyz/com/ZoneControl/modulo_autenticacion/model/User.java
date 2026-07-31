@@ -8,11 +8,21 @@ import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 /**
  * Usuarios internos del sistema con acceso a los módulos administrativos.
  * Cada usuario tiene un rol que define sus permisos.
+ * 
+ * La contraseña se establece mediante un magic link enviado por email,
+ * por lo que password es nullable hasta que el usuario complete el
+ * proceso de configuración.
+ *
+ * setupToken almacena el hash SHA-256 (hex, 64 chars) del token crudo de un
+ * solo uso. Se eligió SHA-256 sobre BCrypt porque el token es una cadena
+ * aleatoria de 64 caracteres (alta entropía, no requiere un KDF lento) y
+ * permite búsqueda directa en BD por hash sin recorrer todos los usuarios.
  */
 @Entity
 @Table(name = "users")
@@ -40,8 +50,14 @@ public class User {
     private String email;
 
     @Size(max = 60)
-    @Column(length = 60, nullable = false)
+    @Column(length = 60, nullable = true)
     private String password;
+
+    @Column(unique = true, length = 64, nullable = true)
+    private String setupToken;
+
+    @Column(nullable = true)
+    private LocalDateTime setupTokenExpiry;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20, nullable = false)

@@ -1,16 +1,22 @@
 package laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto;
 
-import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
+import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-
-
+/**
+ * DTO de entrada para POST /admin/users.
+ *
+ * Con el flujo de magic link (HU-05), el ADMIN solo envía el código del
+ * empleado, el rol y el estado inicial. El firstName, lastName y email
+ * se derivan del Employee vinculado, y la contraseña se establece por
+ * el propio usuario a través del enlace de configuración enviado por email.
+ */
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -18,26 +24,12 @@ import lombok.NoArgsConstructor;
 public class CreateUserRequest {
 
     @NotNull
-    @Size(min = 2, max = 35)
-    private String firstName;
-
-    @NotNull
-    @Size(min = 2, max = 35)
-    private String lastName;
-
-    @NotNull
-    @Email
-    @Size(max = 100)
-    private String email;
-
-    @NotNull
-    @Size(min = 8)
-    private String password;
+    @Size(max = 12)
+    private String employeeCode;
 
     @NotNull
     private Role role;
 
     @NotNull
-    @Size(max = 12)
-    private String employeeCode;
+    private UserStatus status;
 }
