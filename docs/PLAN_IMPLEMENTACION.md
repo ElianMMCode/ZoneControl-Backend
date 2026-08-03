@@ -540,7 +540,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 
 ## 6. Orden de Implementación (estado actual)
 
-Todas las fases están **implementadas y con tests verdes** (116). El orden histórico de construcción fue:
+Todas las fases backend están **implementadas y con tests verdes** (120). El orden histórico de construcción fue:
 
 ```
 Fase 0: Schema BD + DataInitializer                          ✓
@@ -551,11 +551,19 @@ Fase 4: HU-11 → HU-12 → HU-13 (permisos de acceso)          ✓
 Fase 5: HU-18 (control acceso físico)                        ✓
 Fase 6: HU-05 → HU-06 → HU-07 → HU-08 (admin usuarios)      ✓
 Fase 7: HU-15 → HU-16 → HU-17 (reportes y auditoría)        ✓
+Fase 8: Frontend (rama `feat/frontend-ui`)                    en progreso
+  ✓ HU-03 login + HU-05/08 magic link
+  ✓ Dashboard del Admin (mockup 28): KPIs, candidatos a usuario, usuarios sin configuración, actividad reciente
+  ✓ Gestión de usuarios (mockup 31) + Crear usuario (21/20)
+  ✓ Gestión de personal (mockup 32): lista + filtros
+  ✓ Dashboard del supervisor (mockup 09)
+  ✓ Sitio corporativo público (mockup 27) en `/`
+  ✓ Gestión de contenido público (mockup 18) en `/admin/contenido-publico`
 ```
 
 Adiciones de coherencia posteriores también implementadas: `GET /api/admin/stats`, `GET /api/historial/stats`, `GET /api/permisos` + `GET /api/permisos/areas` + `PATCH /api/permisos/{id}`, `POST /api/auth/change-password`, y flujo de magic link para contraseñas (HU-05/08).
 
-**Pendiente global:** solo el frontend React (esqueleto en `../ZoneControl-Frontend`, sin código aún), los gaps documentados en §4/§7/§8 y en AGENTS.md.
+**Pendiente global:** frontend React en progreso (rama `feat/frontend-ui` con base, design system, rutas, autenticación, dashboard del Admin con panel de activación, gestión de personal, dashboard del supervisor, landing público y gestión de contenido público). Vistas aún no construidas: detalle de empleado (41), registro de personal (42), carga masiva (10), gestión de permisos (45), reportes (37), historial, validación de credencial (44), perfil admin (00), gestión de áreas (22, mockup sin backend), matriz de roles (16, mockup sin edición). Gaps documentados en §4/§7/§8 y en AGENTS.md.
 
 Cada HU = al menos 1 commit atómico. Cada HU completa sus tests TDD antes de pasar a la siguiente.
 

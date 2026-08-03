@@ -120,8 +120,15 @@ Entonces: el sistema muestra los errores de validación correspondientes a los c
 | 8 | Condicionar la visibilidad del botón "Descargar Folleto" en el módulo público a la existencia del archivo en el servidor |
 | 9 | Configurar almacenamiento de archivos en el servidor (directorio uploads/folleto/) |
 
+## Implementación (referencia)
+
+- **Backend:** ver "Contrato de los endpoints" arriba. La caché pública se invalida automáticamente en cada `PUT/POST/DELETE` para que el landing refleje los cambios sin reiniciar el servidor.
+- **Frontend:** ruta `/admin/contenido-publico` (rol ADMIN) con cinco pestañas (Institucional, Contacto, Sedes, Catálogo, Folleto) implementadas en `PublicContentView`. Formularios con RHF + Zod. Las pestañas Sedes y Catálogo hacen CRUD completo (listar/crear/editar/eliminar) usando el `id` que los GET públicos `sedes` y `catalogo` exponen en cada elemento.
+- **Validación de formulario (Condición 09):** los formularios institucionales, de contacto, sedes y productos validan con Zod; los campos obligatorios (mission, vision, description, phone, email, socialMedia, name, address) no se envían vacíos.
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-03 | | | GET públicos `sedes` y `catalogo` exponen `id` para que el panel admin referencie cada elemento al editar/eliminar; panel admin `/admin/contenido-publico` con 5 tabs implementado en el frontend. | |
