@@ -1,12 +1,10 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 
 import jakarta.validation.Valid;
+import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.BulkUploadResult;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeResponse;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdateEmployeeRequest;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.*;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -19,6 +17,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.UUID;
 
 
@@ -44,6 +43,16 @@ public class EmployeeController {
             @Valid @RequestBody RegisterEmployeeRequest request) {
         RegisterEmployeeResponse response = employeeService.register(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping("/departamentos")
+    public ResponseEntity<List<String>> listDepartments() {
+        return ResponseEntity.ok(employeeService.listDepartmentNames());
+    }
+
+    @GetMapping("/sedes")
+    public ResponseEntity<List<Office>> listOffices() {
+        return ResponseEntity.ok(employeeService.listOffices());
     }
 
     @GetMapping
@@ -86,8 +95,40 @@ public class EmployeeController {
     @PatchMapping("/{id}")
     public ResponseEntity<EmployeeSearchResponse> update(
             @PathVariable UUID id,
-            @RequestBody UpdateEmployeeRequest request) {
+            @Valid @RequestBody UpdateEmployeeRequest request) {
         EmployeeSearchResponse response = employeeService.update(id, request);
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/{id}/permisos")
+    public ResponseEntity<List<PermissionResponse>> getPermissions(@PathVariable UUID id) {
+        return ResponseEntity.ok(employeeService.findPermissionsByEmployee(id));
+    }
+
+    @GetMapping("/{id}/accesos")
+    public ResponseEntity<List<AccessHistory>> getAccessHistory(
+            @PathVariable UUID id,
+            @RequestParam(required = false, defaultValue = "20") int limit) {
+        return ResponseEntity.ok(employeeService.findAccessHistoryByEmployee(id, limit));
+    }
+
+    @PostMapping(value = "/{id}/photo", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<EmployeeSearchResponse> uploadPhoto(
+            @PathVariable UUID id,
+            @RequestParam("file") MultipartFile file) {
+        return ResponseEntity.ok(employeeService.uploadPhoto(id, file));
+    }
+
+    @GetMapping("/{id}/photo")
+    public ResponseEntity<byte[]> getPhoto(@PathVariable UUID id) {
+        byte[] data = employeeService.loadPhoto(id);
+        HttpHeaders headers = new HttpHeaders();
+        headers.setContentType(MediaType.IMAGE_PNG);
+        return ResponseEntity.ok().headers(headers).body(data);
+    }
+
+    @DeleteMapping("/{id}/photo")
+    public ResponseEntity<EmployeeSearchResponse> deletePhoto(@PathVariable UUID id) {
+        return ResponseEntity.ok(employeeService.deletePhoto(id));
     }
 }

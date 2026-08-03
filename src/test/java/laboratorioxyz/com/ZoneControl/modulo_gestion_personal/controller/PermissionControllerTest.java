@@ -417,4 +417,120 @@ class PermissionControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("No se puede editar un permiso suspendido"));
     }
+
+    @Test
+    void reactivatePermission_suspended_returns200() throws Exception {
+        grantPermission();
+        UUID permId = UUID.fromString(objectMapper.readTree(
+                mockMvc.perform(get("/api/permisos").param("search", "EMP-PRM-01"))
+                        .andReturn().getResponse().getContentAsString())
+                .get("content").get(0).get("id").asText());
+
+        var suspendBody = new Object() {
+            public String reactivationDate = LocalDate.now().plusDays(7).toString();
+        };
+        mockMvc.perform(patch("/api/permisos/{id}/suspend", permId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(suspendBody)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("SUSPENDIDO"));
+
+        mockMvc.perform(patch("/api/permisos/{id}/reactivate", permId))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.status").value("ACTIVO"))
+                .andExpect(jsonPath("$.reactivationDate").value(org.hamcrest.Matchers.nullValue()));
+    }
+
+    @Test
+    void reactivatePermission_nonExistent_returns404() throws Exception {
+        mockMvc.perform(patch("/api/permisos/{id}/reactivate", UUID.randomUUID()))
+                .andExpect(status().isNotFound())
+                .andExpect(jsonPath("$.error").value("Permiso no encontrado"));
+    }
+
+    @Test
+    void createArea_valid_returns201() throws Exception {
+        var body = new Object() {
+            public String name = "Area Test " + UUID.randomUUID().toString().substring(0, 8);
+            public String description = "Area de prueba";
+        };
+        mockMvc.perform(post("/api/permisos/areas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.name").value(body.name))
+                .andExpect(jsonPath("$.description").value("Area de prueba"));
+    }
+
+    @Test
+    void createArea_duplicateName_returns409() throws Exception {
+        var body = new Object() {
+            public String name = "Sala Blanca A";
+            public String description = "duplicado";
+        };
+        mockMvc.perform(post("/api/permisos/areas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value(
+                        "Ya existe un área con el nombre: Sala Blanca A"));
+    }
+
+    @Test
+    void createArea_blankName_returns400() throws Exception {
+        var body = new Object() {
+            public String name = "";
+            public String description = "x";
+        };
+        mockMvc.perform(post("/api/permisos/areas")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateArea_valid_returns200() throws Exception {
+        var created = productionAreaRepository.findByName("Sala Blanca A").orElseThrow();
+        var body = new Object() {
+            public String name = "Sala Blanca A";
+            public String description = "Descripción actualizada";
+        };
+        mockMvc.perform(put("/api/permisos/areas/{id}", created.getId())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.description").value("Descripción actualizada"));
+    }
+
+    @Test
+    void updateArea_nonExistent_returns404() throws Exception {
+        var body = new Object() {
+            public String name = "x";
+        };
+        mockMvc.perform(put("/api/permisos/areas/{id}", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void deleteArea_noPermissions_returns200() throws Exception {
+        var created = productionAreaRepository.save(ProductionArea.builder()
+                .name("Area Sin Permisos " + UUID.randomUUID().toString().substring(0, 6))
+                .description("temporal")
+                .build());
+        mockMvc.perform(delete("/api/permisos/areas/{id}", created.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Área eliminada exitosamente"));
+    }
+
+    @Test
+    void deleteArea_withActivePermissions_returns409() throws Exception {
+        grantPermission();
+        var area = productionAreaRepository.findByName("Sala Blanca A").orElseThrow();
+        mockMvc.perform(delete("/api/permisos/areas/{id}", area.getId()))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error")
+                        .value(org.hamcrest.Matchers.containsString("permiso(s) activo(s)")));
+    }
 }

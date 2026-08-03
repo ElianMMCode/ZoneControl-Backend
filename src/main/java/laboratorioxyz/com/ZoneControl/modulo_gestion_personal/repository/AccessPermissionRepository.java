@@ -43,6 +43,8 @@ public interface AccessPermissionRepository extends JpaRepository<AccessPermissi
 
     long countByStatus(PermissionStatus status);
 
+    long countByProductionArea_IdAndStatus(UUID areaId, PermissionStatus status);
+
     @Query("SELECT COUNT(DISTINCT ap.employee.id) FROM AccessPermission ap WHERE ap.status = 'ACTIVO'")
     long countDistinctEmployeesWithActivePermissions();
 }

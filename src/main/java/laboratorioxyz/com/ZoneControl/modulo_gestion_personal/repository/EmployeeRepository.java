@@ -19,6 +19,7 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSp
     Optional<Employee> findByEmployeeCode(String employeeCode);
     boolean existsByEmployeeCode(String employeeCode);
     boolean existsByDocumentTypeAndDocumentNumber(DocumentType documentType, String documentNumber);
+    Optional<Employee> findByDocumentTypeAndDocumentNumber(DocumentType documentType, String documentNumber);
 
     /**
      * Obtiene el código de empleado más alto en la BD.

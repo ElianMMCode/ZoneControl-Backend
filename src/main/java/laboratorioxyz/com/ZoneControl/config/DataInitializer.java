@@ -4,12 +4,14 @@ import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.ContentSection;
+import laboratorioxyz.com.ZoneControl.model.enums.ContractType;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.model.enums.WorkShift;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
@@ -31,6 +33,10 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Component;
 
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+
 /**
  * Inicializador de datos semilla para la base de datos.
  * Se ejecuta al arrancar la aplicación y siembra datos iniciales
@@ -40,9 +46,11 @@ import org.springframework.stereotype.Component;
  * - 6 departamentos de producción
  * - 5 áreas restringidas de producción
  * - 1 usuario administrador por defecto
+ * - 1 usuario gestor de personal por defecto (gestor@zonecontrol.com)
  * - Contenido público de ejemplo (misión, visión, contacto)
  * - 2 sedes físicas
  * - 2 productos del catálogo
+ * - Empleados de prueba con distintos estados y perfiles reales
  */
 @Component
 @RequiredArgsConstructor
@@ -62,10 +70,6 @@ public class DataInitializer implements CommandLineRunner {
 
     private Department adminDepartment;
 
-    /**
-     * Cada método de seed verifica si ya existen datos antes de insertar,
-     * permitiendo reinicios del servidor sin duplicar registros.
-     */
     @Override
     public void run(String... args) {
         log.info("Seeding initial data...");
@@ -75,10 +79,12 @@ public class DataInitializer implements CommandLineRunner {
         seedPublicContent();
         seedOffices();
         seedProductCatalog();
+        seedGestorUser();
         seedExtraEmployees();
         seedExtraUsers();
         seedAccessPermissions();
         seedCandidateEmployees();
+        seedGestorSampleData();
         seedAccessHistory();
         log.info("Seed completed successfully");
     }
@@ -128,11 +134,6 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Seeded {} production areas", names.length);
     }
 
-    /**
-     * Crea el empleado administrador y su usuario de sistema asociado.
-     * Primero se crea el Employee (EMP-000001) y luego el User vinculado,
-     * cumpliendo la regla @OneToOne obligatoria (todo User debe tener un Employee).
-     */
     private void seedAdminUser() {
         if (userRepository.count() > 0) {
             log.info("Users already exist — skipping");
@@ -163,6 +164,49 @@ public class DataInitializer implements CommandLineRunner {
 
         userRepository.save(admin);
         log.info("Seeded admin user: admin@zonecontrol.com");
+    }
+
+    /**
+     * Crea un empleado y usuario de tipo GESTOR_PERSONAL dedicado al
+     * dashboard del gestor. Credenciales: gestor@zonecontrol.com /
+     * Gestor123!. Es idempotente.
+     */
+    private void seedGestorUser() {
+        if (userRepository.findByEmail("gestor@zonecontrol.com").isPresent()) {
+            log.info("Gestor user already exists — skipping");
+            return;
+        }
+        Department calidad = departmentRepository.findByName("Control de Calidad")
+                .orElseGet(() -> departmentRepository.findByName("Control de Calidad").orElseThrow());
+
+        Employee gestorEmployee = employeeRepository.findByEmployeeCode("EMP-000050")
+                .orElseGet(() -> employeeRepository.save(Employee.builder()
+                        .employeeCode("EMP-000050")
+                        .documentType(DocumentType.CC)
+                        .documentNumber("0000000050")
+                        .firstName("María")
+                        .lastName("Pérez")
+                        .position("Gestora de Personal")
+                        .email("gestor@zonecontrol.com")
+                        .department(calidad)
+                        .status(EmployeeStatus.ACTIVO)
+                        .contractType(ContractType.TIEMPO_COMPLETO)
+                        .workShift(WorkShift.DIURNO)
+                        .hireDate(LocalDate.now().minusYears(2))
+                        .build()));
+
+        User gestor = User.builder()
+                .firstName("María")
+                .lastName("Pérez")
+                .email("gestor@zonecontrol.com")
+                .password(passwordEncoder.encode("Gestor123!"))
+                .role(Role.GESTOR_PERSONAL)
+                .status(UserStatus.ACTIVO)
+                .requirePasswordChange(false)
+                .employee(gestorEmployee)
+                .build();
+        userRepository.save(gestor);
+        log.info("Seeded gestor user: gestor@zonecontrol.com");
     }
 
     private void seedPublicContent() {
@@ -250,7 +294,6 @@ public class DataInitializer implements CommandLineRunner {
         Department produccion = departmentRepository.findByName("Producción Sólidos").orElseThrow();
         Department empaque = departmentRepository.findByName("Empaque").orElseThrow();
 
-        // saveEmployee es idempotente por código: si ya existe, no duplica.
         saveEmployee("EMP-000030", "100000030", "Eduardo", "Vega",
                 "Jefe de Sistemas", null, calidad, EmployeeStatus.ACTIVO, Role.ADMIN);
         saveEmployee("EMP-000031", "100000031", "Daniela", "Torres",
@@ -261,17 +304,6 @@ public class DataInitializer implements CommandLineRunner {
                 empaque, EmployeeStatus.SUSPENDIDO, null);
     }
 
-    /**
-     * Crea empleados que ya tienen un usuario asociado (varios estados y
-     * roles) para que el dashboard muestre variedad: usuarios activos de
-     * distintos roles, uno inactivo, y dos con setupToken pendiente
-     * (para alimentar el panel "Usuarios sin configuración" y la KPI
-     * "Sin configuración" de la página de Gestión de Usuarios).
-     *
-     * Los empleados se crean en seedExtraEmployees; aquí se crean los
-     * usuarios vinculados. Es idempotente: si el email ya existe, no
-     * duplica.
-     */
     private void seedExtraUsers() {
         if (userRepository.findByEmail("sandra.ruiz@laboratorioxzy.com.co").isPresent()) {
             log.info("Extra users already exist — skipping");
@@ -321,19 +353,17 @@ public class DataInitializer implements CommandLineRunner {
         createUser(sandra, "Sandra", "Ruiz", sandra.getEmail(), Role.GESTOR_PERSONAL, UserStatus.ACTIVO, null, null);
         createUser(javier, "Javier", "Soto", javier.getEmail(), Role.SUPERVISOR_AUDITOR, UserStatus.ACTIVO, null, null);
         createUser(miguel, "Miguel", "Ángel", miguel.getEmail(), Role.GESTOR_PERSONAL, UserStatus.INACTIVO, null, null);
-        // Ricardo y Ana tienen setupToken pendiente → aparecen en el panel
-        // "Usuarios sin configuración" del dashboard.
         createUser(ricardo, "Ricardo", "Díaz", ricardo.getEmail(), Role.GESTOR_PERSONAL, UserStatus.ACTIVO,
-                "pending-ricardo-hash", java.time.LocalDateTime.now().plusHours(24));
+                "pending-ricardo-hash", LocalDateTime.now().plusHours(24));
         createUser(ana, "Ana", "Martínez", ana.getEmail(), Role.ADMIN, UserStatus.ACTIVO,
-                "pending-ana-hash", java.time.LocalDateTime.now().plusHours(24));
+                "pending-ana-hash", LocalDateTime.now().plusHours(24));
 
         log.info("Seeded 5 extra users (Sandra, Javier, Miguel, Ricardo, Ana)");
     }
 
     private void createUser(Employee employee, String firstName, String lastName, String email,
                             Role role, UserStatus status, String setupToken,
-                            java.time.LocalDateTime setupTokenExpiry) {
+                            LocalDateTime setupTokenExpiry) {
         User.UserBuilder builder = User.builder()
                 .firstName(firstName)
                 .lastName(lastName)
@@ -351,10 +381,7 @@ public class DataInitializer implements CommandLineRunner {
 
     /**
      * Siembra permisos de acceso (algunos activos, otros suspendidos)
-     * para que las KPI "Permisos activos" y "Permisos suspendidos"
-     * del dashboard tengan contenido y para que el historial los
-     * pueda referenciar. Es idempotente: si ya hay al menos 3
-     * permisos no crea más.
+     * para que las KPI y vistas tengan contenido.
      */
     private void seedAccessPermissions() {
         ProductionArea salaBlancaA = productionAreaRepository.findByName("Sala Blanca A").orElseThrow();
@@ -365,16 +392,14 @@ public class DataInitializer implements CommandLineRunner {
         Employee javier = employeeRepository.findByEmployeeCode("EMP-000041").orElse(null);
         Employee miguel = employeeRepository.findByEmployeeCode("EMP-000042").orElse(null);
 
-        java.time.LocalDate today = java.time.LocalDate.now();
-        // Idempotente: solo crea el permiso si el empleado aún no tiene
-        // ninguno para esa área. Así un re-arranque no duplica filas.
+        LocalDate today = LocalDate.now();
         if (admin != null && accessPermissionRepository.findByEmployee_Id(admin.getId()).isEmpty()) {
             accessPermissionRepository.save(AccessPermission.builder()
                     .employee(admin).productionArea(salaBlancaA)
                     .status(PermissionStatus.ACTIVO)
                     .startDate(today).expirationDate(today.plusYears(1))
-                    .startTime(java.time.LocalTime.of(0, 0))
-                    .endTime(java.time.LocalTime.of(23, 59))
+                    .startTime(LocalTime.of(0, 0))
+                    .endTime(LocalTime.of(23, 59))
                     .build());
         }
         if (sandra != null && accessPermissionRepository.findByEmployee_Id(sandra.getId()).isEmpty()) {
@@ -382,8 +407,8 @@ public class DataInitializer implements CommandLineRunner {
                     .employee(sandra).productionArea(salaBlancaA)
                     .status(PermissionStatus.ACTIVO)
                     .startDate(today).expirationDate(today.plusMonths(6))
-                    .startTime(java.time.LocalTime.of(7, 0))
-                    .endTime(java.time.LocalTime.of(17, 0))
+                    .startTime(LocalTime.of(7, 0))
+                    .endTime(LocalTime.of(17, 0))
                     .build());
         }
         if (javier != null && accessPermissionRepository.findByEmployee_Id(javier.getId()).isEmpty()) {
@@ -391,8 +416,8 @@ public class DataInitializer implements CommandLineRunner {
                     .employee(javier).productionArea(salaBlancaB)
                     .status(PermissionStatus.ACTIVO)
                     .startDate(today).expirationDate(today.plusMonths(6))
-                    .startTime(java.time.LocalTime.of(6, 0))
-                    .endTime(java.time.LocalTime.of(22, 0))
+                    .startTime(LocalTime.of(6, 0))
+                    .endTime(LocalTime.of(22, 0))
                     .build());
         }
         if (miguel != null && accessPermissionRepository.findByEmployee_Id(miguel.getId()).isEmpty()) {
@@ -400,67 +425,18 @@ public class DataInitializer implements CommandLineRunner {
                     .employee(miguel).productionArea(salaBlancaA)
                     .status(PermissionStatus.SUSPENDIDO)
                     .startDate(today).expirationDate(today.plusMonths(3))
-                    .startTime(java.time.LocalTime.of(8, 0))
-                    .endTime(java.time.LocalTime.of(17, 0))
+                    .startTime(LocalTime.of(8, 0))
+                    .endTime(LocalTime.of(17, 0))
                     .build());
         }
         log.info("Seeded access permissions (3 activos, 1 suspendido)");
     }
 
-    /**
-     * Siembra 6 registros de AccessHistory distribuidos a lo largo del
-     * día de hoy con resultados variados (autorizado, denegado, no
-     * registrado, suspendido) para que el panel "Actividad reciente"
-     * del dashboard del Admin y la página del Supervisor tengan
-     * contenido realista. Es idempotente: si ya hay al menos un
-     * registro con timestamp de hoy, no crea más.
-     */
-    private void seedAccessHistory() {
-        java.time.LocalDateTime startOfDay = java.time.LocalDate.now().atStartOfDay();
-        boolean todayHasHistory = accessHistoryRepository.findAll().stream()
-                .anyMatch(h -> h.getTimestamp() != null
-                        && h.getTimestamp().toLocalDate().isEqual(java.time.LocalDate.now()));
-        if (todayHasHistory) {
-            log.info("Access history for today already exists — skipping");
-            return;
-        }
-        Employee admin = employeeRepository.findByEmployeeCode("EMP-000001").orElse(null);
-        Employee sandra = employeeRepository.findByEmployeeCode("EMP-000040").orElse(null);
-        Employee javier = employeeRepository.findByEmployeeCode("EMP-000041").orElse(null);
-
-        saveHistory(admin, "Control de Calidad", "Sala Blanca A", startOfDay.plusHours(8).plusMinutes(12), AccessResult.AUTHORIZED);
-        saveHistory(sandra, "Control de Calidad", "Sala Blanca A", startOfDay.plusHours(9).plusMinutes(3), AccessResult.AUTHORIZED);
-        saveHistory(javier, "Producción Sólidos", "Sala Blanca B", startOfDay.plusHours(9).plusMinutes(47), AccessResult.AUTHORIZED);
-        saveHistory(null, "Producción Sólidos", "Sala Blanca B", startOfDay.plusHours(10).plusMinutes(15), AccessResult.UNREGISTERED);
-        saveHistory(null, "Almacenamiento", "Almacén Controlado", startOfDay.plusHours(11).plusMinutes(22), AccessResult.DENIED);
-        saveHistory(null, "Producción Sólidos", "Sala Blanca B", startOfDay.plusHours(12).plusMinutes(5), AccessResult.SUSPENDED);
-        log.info("Seeded 6 access history records for today");
-    }
-
-    private void saveHistory(Employee employee, String department, String area,
-                             java.time.LocalDateTime timestamp, AccessResult result) {
-        accessHistoryRepository.save(AccessHistory.builder()
-                .employee(employee)
-                .department(department)
-                .productionAreaName(area)
-                .timestamp(timestamp)
-                .result(result)
-                .build());
-    }
-
-    /**
-     * Empleados candidatos a ser activados como usuarios del sistema:
-     * tienen systemRole + email + ACTIVO + sin usuario. Cubren los tres
-     * roles del sistema para que el panel "Empleados pendientes de
-     * activación" muestre variedad. Es idempotente: si los códigos ya
-     * existen, no duplica.
-     */
     private void seedCandidateEmployees() {
         Department calidad = departmentRepository.findByName("Control de Calidad").orElseThrow();
         Department produccion = departmentRepository.findByName("Producción Sólidos").orElseThrow();
         Department empaque = departmentRepository.findByName("Empaque").orElseThrow();
 
-        // saveEmployee es idempotente por código.
         saveEmployee("EMP-000002", "0000000002", "Lucía", "Fernandez",
                 "Coordinadora de Personal", "lucia.fernandez@laboratorioxzy.com.co",
                 calidad, EmployeeStatus.ACTIVO, Role.GESTOR_PERSONAL);
@@ -484,8 +460,141 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     /**
-     * Helper: crea o recupera un empleado por código. Es idempotente.
+     * Empleados de prueba para que el dashboard del gestor tenga
+     * contenido realista con distintos estados y perfiles de
+     * "empleado real" (tipo de contrato, sede, turno, fechas de
+     * vigencia, foto). Es idempotente.
      */
+    private void seedGestorSampleData() {
+        if (employeeRepository.findByEmployeeCode("EMP-000100").isPresent()) {
+            log.info("Gestor sample employees already exist — skipping");
+            return;
+        }
+        Department calidad = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        Department produccion = departmentRepository.findByName("Producción Sólidos").orElseThrow();
+        Department empaque = departmentRepository.findByName("Empaque").orElseThrow();
+        Department almacenamiento = departmentRepository.findByName("Almacenamiento").orElseThrow();
+        Office bogota = officeRepository.findByName("Sede Principal Bogotá").orElseThrow();
+        Office medellin = officeRepository.findByName("Planta de Producción Medellín").orElseThrow();
+
+        saveRichEmployee("EMP-000100", "200000100", "Camila", "Rojas",
+                "Analista de Calidad Senior", "camila.rojas@laboratorioxzy.com.co",
+                calidad, EmployeeStatus.ACTIVO, ContractType.TIEMPO_COMPLETO,
+                bogota, WorkShift.DIURNO,
+                LocalDate.now().minusYears(3), null);
+
+        saveRichEmployee("EMP-000101", "200000101", "Andrés", "Salazar",
+                "Operario de Producción", "andres.salazar@laboratorioxzy.com.co",
+                produccion, EmployeeStatus.ACTIVO, ContractType.TIEMPO_COMPLETO,
+                medellin, WorkShift.NOCTURNO,
+                LocalDate.now().minusYears(1), null);
+
+        saveRichEmployee("EMP-000102", "200000102", "Valentina", "Castro",
+                "Auxiliar de Empaque", "valentina.castro@laboratorioxzy.com.co",
+                empaque, EmployeeStatus.SUSPENDIDO, ContractType.TEMPORAL,
+                bogota, WorkShift.DIURNO,
+                LocalDate.now().minusMonths(8), LocalDate.now().plusMonths(4));
+
+        saveRichEmployee("EMP-000103", "200000103", "Sergio", "Ortega",
+                "Coordinador de Almacén", "sergio.ortega@laboratorioxzy.com.co",
+                almacenamiento, EmployeeStatus.INACTIVO, ContractType.CONTRATISTA,
+                medellin, WorkShift.MIXTO,
+                LocalDate.now().minusYears(5), null);
+
+        saveRichEmployee("EMP-000104", "200000104", "Juliana", "Paredes",
+                "Practicante de Calidad", "juliana.paredes@laboratorioxzy.com.co",
+                calidad, EmployeeStatus.ACTIVO, ContractType.PRACTICANTE,
+                bogota, WorkShift.DIURNO,
+                LocalDate.now().minusMonths(3), LocalDate.now().plusMonths(3));
+
+        saveRichEmployee("EMP-000105", "200000105", "Tomás", "Vargas",
+                "Inspector QC", "tomas.vargas@laboratorioxzy.com.co",
+                calidad, EmployeeStatus.ACTIVO, ContractType.MEDIO_TIEMPO,
+                bogota, WorkShift.DIURNO,
+                LocalDate.now().minusYears(2), null);
+
+        log.info("Seeded 6 rich sample employees for gestor dashboard (various statuses)");
+    }
+
+    private void saveRichEmployee(String code, String doc, String firstName, String lastName,
+                                  String position, String email, Department department,
+                                  EmployeeStatus status, ContractType contractType,
+                                  Office baseOffice, WorkShift workShift,
+                                  LocalDate hireDate, LocalDate contractEndDate) {
+        if (employeeRepository.findByEmployeeCode(code).isPresent()) return;
+        employeeRepository.save(Employee.builder()
+                .employeeCode(code)
+                .documentType(DocumentType.CC)
+                .documentNumber(doc)
+                .firstName(firstName)
+                .lastName(lastName)
+                .position(position)
+                .email(email)
+                .department(department)
+                .status(status)
+                .contractType(contractType)
+                .baseOffice(baseOffice)
+                .workShift(workShift)
+                .hireDate(hireDate)
+                .contractEndDate(contractEndDate)
+                .build());
+    }
+
+    private void seedAccessHistory() {
+        LocalDateTime startOfDay = LocalDate.now().atStartOfDay();
+        boolean todayHasHistory = accessHistoryRepository.findAll().stream()
+                .anyMatch(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now()));
+        if (todayHasHistory) {
+            log.info("Access history for today already exists — skipping");
+            return;
+        }
+        Employee admin = employeeRepository.findByEmployeeCode("EMP-000001").orElse(null);
+        Employee sandra = employeeRepository.findByEmployeeCode("EMP-000040").orElse(null);
+        Employee javier = employeeRepository.findByEmployeeCode("EMP-000041").orElse(null);
+        Employee camila = employeeRepository.findByEmployeeCode("EMP-000100").orElse(null);
+
+        saveHistory(admin, "Control de Calidad", "Sala Blanca A",
+                startOfDay.plusHours(8).plusMinutes(12), AccessResult.AUTHORIZED);
+        saveHistory(sandra, "Control de Calidad", "Sala Blanca A",
+                startOfDay.plusHours(9).plusMinutes(3), AccessResult.AUTHORIZED);
+        saveHistory(javier, "Producción Sólidos", "Sala Blanca B",
+                startOfDay.plusHours(9).plusMinutes(47), AccessResult.AUTHORIZED);
+        saveHistory(camila, "Control de Calidad", "Laboratorio QC",
+                startOfDay.plusHours(10).plusMinutes(20), AccessResult.AUTHORIZED);
+        saveHistory(null, "Producción Sólidos", "Sala Blanca B",
+                startOfDay.plusHours(10).plusMinutes(15), AccessResult.UNREGISTERED);
+        saveHistory(null, "Almacenamiento", "Almacén Controlado",
+                startOfDay.plusHours(11).plusMinutes(22), AccessResult.DENIED);
+        saveHistory(null, "Producción Sólidos", "Sala Blanca B",
+                startOfDay.plusHours(12).plusMinutes(5), AccessResult.SUSPENDED);
+
+        // Para el historial del empleado EMP-000100 (Camila) sembramos
+        // algunos registros anteriores también, para que la vista de
+        // detalle tenga una mini-timeline coherente.
+        if (camila != null) {
+            saveHistory(camila, "Control de Calidad", "Laboratorio QC",
+                    startOfDay.minusDays(1).plusHours(8), AccessResult.AUTHORIZED);
+            saveHistory(camila, "Control de Calidad", "Sala Blanca A",
+                    startOfDay.minusDays(1).plusHours(14), AccessResult.AUTHORIZED);
+            saveHistory(camila, "Control de Calidad", "Laboratorio QC",
+                    startOfDay.minusDays(2).plusHours(9), AccessResult.AUTHORIZED);
+        }
+
+        log.info("Seeded access history records");
+    }
+
+    private void saveHistory(Employee employee, String department, String area,
+                             LocalDateTime timestamp, AccessResult result) {
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(employee)
+                .department(department)
+                .productionAreaName(area)
+                .timestamp(timestamp)
+                .result(result)
+                .build());
+    }
+
     private Employee saveEmployee(String code, String doc, String firstName, String lastName,
                                   String position, String email, Department department,
                                   EmployeeStatus status, Role systemRole) {

@@ -2,18 +2,24 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service;
 
 import jakarta.persistence.criteria.Predicate;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
+import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.service.UserService;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.*;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.http.HttpStatus;
@@ -22,11 +28,19 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.server.ResponseStatusException;
 
+import jakarta.annotation.PostConstruct;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -35,7 +49,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     private final EmployeeRepository employeeRepository;
     private final DepartmentRepository departmentRepository;
+    private final OfficeRepository officeRepository;
     private final AccessPermissionRepository accessPermissionRepository;
+    private final AccessHistoryRepository accessHistoryRepository;
     private final UserService userService;
 
     @Override
@@ -53,9 +69,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                 + " número " + request.getDocumentNumber());
         }
 
-        Department department = departmentRepository.findByName(request.getDepartmentName())
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                        "Departamento no encontrado: " + request.getDepartmentName()));
+        Department department = resolveDepartment(request.getDepartmentName());
+        Office baseOffice = resolveBaseOffice(request.getBaseOfficeName());
 
         String employeeCode = generateEmployeeCode();
 
@@ -69,6 +84,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .email(request.getEmail())
                 .department(department)
                 .systemRole(request.getSystemRole())
+                .contractType(request.getContractType())
+                .baseOffice(baseOffice)
+                .workShift(request.getWorkShift())
+                .hireDate(request.getHireDate())
+                .contractEndDate(request.getContractEndDate())
                 .build();
 
         employee = employeeRepository.save(employee);
@@ -173,10 +193,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             }
         }
         if (request.getDepartmentName() != null) {
-            Department department = departmentRepository.findByName(request.getDepartmentName())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Departamento no encontrado: " + request.getDepartmentName()));
-            employee.setDepartment(department);
+            employee.setDepartment(resolveDepartment(request.getDepartmentName()));
         }
         if (request.getStatus() != null) {
             EmployeeStatus previousStatus = employee.getStatus();
@@ -191,6 +208,21 @@ public class EmployeeServiceImpl implements EmployeeService {
         }
         if (request.getSystemRole() != null) {
             employee.setSystemRole(request.getSystemRole());
+        }
+        if (request.getContractType() != null) {
+            employee.setContractType(request.getContractType());
+        }
+        if (request.getBaseOfficeName() != null) {
+            employee.setBaseOffice(resolveBaseOffice(request.getBaseOfficeName()));
+        }
+        if (request.getWorkShift() != null) {
+            employee.setWorkShift(request.getWorkShift());
+        }
+        if (request.getHireDate() != null) {
+            employee.setHireDate(request.getHireDate());
+        }
+        if (request.getContractEndDate() != null) {
+            employee.setContractEndDate(request.getContractEndDate());
         }
 
         employee = employeeRepository.save(employee);
@@ -219,8 +251,9 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     public byte[] generateTemplate() {
-        String headers = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado";
-        String example = "CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO";
+        String headers = "tipo_documento;documento_identidad;nombres;apellidos;cargo;"
+                + "departamento;estado;fecha_ingreso";
+        String example = "CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15";
         return (headers + "\n" + example).getBytes(StandardCharsets.UTF_8);
     }
 
@@ -260,7 +293,8 @@ public class EmployeeServiceImpl implements EmployeeService {
                     + "Por favor, divida el archivo en partes más pequeñas");
         }
 
-        String[] expectedHeaders = {"tipo_documento", "documento_identidad", "nombres", "apellidos", "cargo", "departamento", "estado"};
+        String[] expectedHeaders = {"tipo_documento", "documento_identidad", "nombres",
+                "apellidos", "cargo", "departamento", "estado", "fecha_ingreso"};
         String[] headers = rows.getFirst();
         for (int i = 0; i < expectedHeaders.length; i++) {
             if (!headers[i].trim().equalsIgnoreCase(expectedHeaders[i])) {
@@ -280,10 +314,10 @@ public class EmployeeServiceImpl implements EmployeeService {
             int rowNumber = i + 1;
             boolean hasError = false;
 
-            if (row.length < 7) {
+            if (row.length < 8) {
                 errorList.add(BulkUploadError.builder()
                         .row(rowNumber).field("general")
-                        .reason("Fila incompleta: se esperaban 7 columnas pero se recibieron " + row.length)
+                        .reason("Fila incompleta: se esperaban 8 columnas pero se recibieron " + row.length)
                         .build());
                 continue;
             }
@@ -295,6 +329,7 @@ public class EmployeeServiceImpl implements EmployeeService {
             String cargo = row[4].trim();
             String deptName = row[5].trim();
             String estadoStr = row[6].trim();
+            String fechaIngreso = row[7].trim();
 
             DocumentType docType;
             try {
@@ -370,6 +405,19 @@ public class EmployeeServiceImpl implements EmployeeService {
                 status = null;
             }
 
+            java.time.LocalDate hireDate = null;
+            if (!fechaIngreso.isEmpty()) {
+                try {
+                    hireDate = java.time.LocalDate.parse(fechaIngreso);
+                } catch (java.time.format.DateTimeParseException e) {
+                    errorList.add(BulkUploadError.builder()
+                            .row(rowNumber).field("fecha_ingreso")
+                            .reason("Formato de fecha de ingreso inválido. Use YYYY-MM-DD")
+                            .build());
+                    hasError = true;
+                }
+            }
+
             if (hasError) continue;
 
             String docKey = tipoDoc + ":" + numDoc;
@@ -399,6 +447,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                     .position(cargo)
                     .department(department)
                     .status(status)
+                    .hireDate(hireDate)
                     .build());
         }
 
@@ -427,6 +476,79 @@ public class EmployeeServiceImpl implements EmployeeService {
         return sb.toString();
     }
 
+    @Override
+    @Transactional(readOnly = true)
+    public List<String> listDepartmentNames() {
+        return departmentRepository.findAll().stream()
+                .map(Department::getName)
+                .sorted()
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Office> listOffices() {
+        return officeRepository.findAllByOrderByNameAsc();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<PermissionResponse> findPermissionsByEmployee(UUID employeeId) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado");
+        }
+        return accessPermissionRepository.findByEmployee_Id(employeeId).stream()
+                .map(this::toPermissionResponse)
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AccessHistory> findAccessHistoryByEmployee(UUID employeeId, int limit) {
+        if (!employeeRepository.existsById(employeeId)) {
+            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado");
+        }
+        int safeLimit = Math.max(1, Math.min(limit, 200));
+        Page<AccessHistory> page = accessHistoryRepository
+                .findByEmployee_IdOrderByTimestampDesc(employeeId, PageRequest.of(0, safeLimit));
+        return page.getContent();
+    }
+
+    private Department resolveDepartment(String name) {
+        if (name == null || name.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El departamento es obligatorio");
+        }
+        return departmentRepository.findByName(name)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Departamento no encontrado: " + name));
+    }
+
+    private Office resolveBaseOffice(String name) {
+        if (name == null || name.isBlank()) {
+            return null;
+        }
+        return officeRepository.findByName(name)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Sede no encontrada: " + name));
+    }
+
+    private PermissionResponse toPermissionResponse(AccessPermission permission) {
+        return PermissionResponse.builder()
+                .id(permission.getId())
+                .employeeCode(permission.getEmployee().getEmployeeCode())
+                .employeeName(permission.getEmployee().getFirstName()
+                        + " " + permission.getEmployee().getLastName())
+                .areaName(permission.getProductionArea().getName())
+                .status(permission.getStatus())
+                .startDate(permission.getStartDate())
+                .expirationDate(permission.getExpirationDate())
+                .reactivationDate(permission.getReactivationDate())
+                .startTime(permission.getStartTime())
+                .endTime(permission.getEndTime())
+                .build();
+    }
+
     private EmployeeSearchResponse toSearchResponse(Employee employee) {
         return EmployeeSearchResponse.builder()
                 .id(employee.getId())
@@ -440,6 +562,125 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .departmentName(employee.getDepartment().getName())
                 .status(employee.getStatus())
                 .systemRole(employee.getSystemRole())
+                .contractType(employee.getContractType())
+                .baseOfficeName(employee.getBaseOffice() != null
+                        ? employee.getBaseOffice().getName() : null)
+                .workShift(employee.getWorkShift())
+                .hireDate(employee.getHireDate())
+                .contractEndDate(employee.getContractEndDate())
+                .photoUrl(employee.getPhotoUrl())
                 .build();
+    }
+
+    private static final Path PHOTO_DIR = Paths.get("uploads", "photos");
+    private static final Set<String> ALLOWED_PHOTO_EXT = Set.of("jpg", "jpeg", "png", "webp");
+    private static final long MAX_PHOTO_BYTES = 2L * 1024 * 1024; // 2 MB
+
+    @PostConstruct
+    void initPhotoDir() {
+        try {
+            Files.createDirectories(PHOTO_DIR);
+        } catch (IOException e) {
+            log.warn("No se pudo crear el directorio de fotos: {}", e.getMessage());
+        }
+    }
+
+    @Override
+    @Transactional
+    public EmployeeSearchResponse uploadPhoto(UUID id, MultipartFile file) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Debe adjuntar una imagen para subir");
+        }
+        if (file.getSize() > MAX_PHOTO_BYTES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La imagen excede el tamaño máximo permitido de 2MB");
+        }
+        String original = file.getOriginalFilename();
+        String ext = original != null && original.contains(".")
+                ? original.substring(original.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT)
+                : "";
+        if (!ALLOWED_PHOTO_EXT.contains(ext)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Extensión no permitida. Solo se aceptan: jpg, jpeg, png, webp");
+        }
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Empleado no encontrado"));
+        deletePhotoFile(employee.getPhotoUrl());
+        String filename = employee.getEmployeeCode() + "." + ext;
+        Path target = PHOTO_DIR.resolve(filename);
+        try {
+            Files.write(target, file.getBytes());
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No se pudo guardar la imagen: " + e.getMessage());
+        }
+        String relativePath = "/uploads/photos/" + filename;
+        employee.setPhotoUrl(relativePath);
+        employeeRepository.save(employee);
+        log.info("Photo uploaded for employee {}: {}", employee.getEmployeeCode(), relativePath);
+        return toSearchResponse(employee);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public byte[] loadPhoto(UUID id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Empleado no encontrado"));
+        if (employee.getPhotoUrl() != null) {
+            Path path = photoFilePath(employee.getPhotoUrl());
+            if (Files.exists(path)) {
+                try {
+                    return Files.readAllBytes(path);
+                } catch (IOException e) {
+                    log.warn("No se pudo leer la foto {}: {}", path, e.getMessage());
+                }
+            } else {
+                log.warn("Foto registrada pero archivo ausente en disco: {}", path);
+            }
+        }
+        return defaultEmployeePhoto();
+    }
+
+    private byte[] defaultEmployeePhoto() {
+        try (var in = getClass().getResourceAsStream("/static/images/default-employee.png")) {
+            if (in == null) {
+                throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                        "Imagen por defecto no encontrada en el classpath");
+            }
+            return in.readAllBytes();
+        } catch (IOException e) {
+            log.error("No se pudo cargar la imagen de empleado por defecto", e);
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No se pudo cargar la imagen por defecto");
+        }
+    }
+
+    @Override
+    @Transactional
+    public EmployeeSearchResponse deletePhoto(UUID id) {
+        Employee employee = employeeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Empleado no encontrado"));
+        deletePhotoFile(employee.getPhotoUrl());
+        employee.setPhotoUrl(null);
+        employeeRepository.save(employee);
+        return toSearchResponse(employee);
+    }
+
+    private void deletePhotoFile(String photoUrl) {
+        if (photoUrl == null) return;
+        try {
+            Files.deleteIfExists(photoFilePath(photoUrl));
+        } catch (IOException e) {
+            log.warn("No se pudo eliminar la foto anterior {}: {}", photoUrl, e.getMessage());
+        }
+    }
+
+    private Path photoFilePath(String photoUrl) {
+        String filename = photoUrl.substring(photoUrl.lastIndexOf('/') + 1);
+        return PHOTO_DIR.resolve(filename);
     }
 }

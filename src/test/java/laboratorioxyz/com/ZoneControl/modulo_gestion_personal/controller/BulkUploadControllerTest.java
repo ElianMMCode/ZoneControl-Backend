@@ -57,14 +57,14 @@ class BulkUploadControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("text/csv"))
                 .andExpect(content().string(
-                        org.hamcrest.Matchers.startsWith("tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado")));
+                        org.hamcrest.Matchers.startsWith("tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso")));
     }
 
     @Test
     void uploadBulk_validCsv_returns200() throws Exception {
-        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado\n"
-                + "CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO\n"
-                + "CE;9876543210;María;Gómez;Técnico;Control de Calidad;ACTIVO";
+        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
+                + "CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15\n"
+                + "CE;9876543210;María;Gómez;Técnico;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "empleados.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -103,10 +103,10 @@ class BulkUploadControllerTest {
 
     @Test
     void uploadBulk_mixedRows_returnsSummaryWithErrors() throws Exception {
-        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado\n"
-                + "CC;1111111111;Ana;López;Analista;Control de Calidad;ACTIVO\n"
-                + "XX;2222222222;Pedro;Ramírez;Técnico;Control de Calidad;ACTIVO\n"
-                + "CC;3333333333;Luis;García;Analista;Control de Calidad;ACTIVO";
+        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
+                + "CC;1111111111;Ana;López;Analista;Control de Calidad;ACTIVO;2026-02-01\n"
+                + "XX;2222222222;Pedro;Ramírez;Técnico;Control de Calidad;ACTIVO;\n"
+                + "CC;3333333333;Luis;García;Analista;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -133,9 +133,9 @@ class BulkUploadControllerTest {
                 .status(EmployeeStatus.ACTIVO)
                 .build());
 
-        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado\n"
-                + "CC;9999999999;Duplicado;Error;Test;Control de Calidad;ACTIVO\n"
-                + "CC;8888888888;Nuevo;Ok;Analista;Control de Calidad;ACTIVO";
+        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
+                + "CC;9999999999;Duplicado;Error;Test;Control de Calidad;ACTIVO;\n"
+                + "CC;8888888888;Nuevo;Ok;Analista;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -145,6 +145,23 @@ class BulkUploadControllerTest {
                 .andExpect(jsonPath("$.total").value(2))
                 .andExpect(jsonPath("$.successes").value(1))
                 .andExpect(jsonPath("$.errors").value(1));
+    }
+
+    @Test
+    void uploadBulk_invalidHireDate_returnsRowError() throws Exception {
+        String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
+                + "CC;7777777777;Sofía;Ríos;Analista;Control de Calidad;ACTIVO;no-es-fecha";
+
+        MockMultipartFile file = new MockMultipartFile(
+                "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
+
+        mockMvc.perform(multipart("/api/personal/bulk").file(file))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.total").value(1))
+                .andExpect(jsonPath("$.successes").value(0))
+                .andExpect(jsonPath("$.errors").value(1))
+                .andExpect(jsonPath("$.errorReportUrl")
+                        .value(org.hamcrest.Matchers.containsString("fecha_ingreso")));
     }
 
     @Test

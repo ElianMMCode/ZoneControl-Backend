@@ -67,6 +67,15 @@ public class PermissionController {
         return ResponseEntity.ok(response);
     }
 
+    @PatchMapping("/{id}/reactivate")
+    @Operation(summary = "Reactivar permiso",
+            description = "Reactiva un permiso previamente suspendido y limpia la fecha de reactivación.")
+    @ApiResponse(responseCode = "200", description = "Permiso reactivado")
+    @ApiResponse(responseCode = "404", description = "Permiso no encontrado")
+    public ResponseEntity<PermissionResponse> reactivate(@PathVariable UUID id) {
+        return ResponseEntity.ok(permissionService.reactivate(id));
+    }
+
     @Operation(summary = "Listar permisos",
             description = "Lista paginada de permisos con búsqueda por código de empleado, nombre o área y filtro por estado.")
     @ApiResponse(responseCode = "200", description = "Lista de permisos paginada")
@@ -79,11 +88,45 @@ public class PermissionController {
     }
 
     @Operation(summary = "Listar áreas de producción",
-            description = "Catálogo de áreas restringidas disponibles para asignar permisos (solo lectura).")
+            description = "Catálogo de áreas restringidas disponibles para asignar permisos.")
     @ApiResponse(responseCode = "200", description = "Lista de áreas")
     @GetMapping("/areas")
     public ResponseEntity<List<ProductionArea>> listAreas() {
         return ResponseEntity.ok(permissionService.listAreas());
+    }
+
+    @PostMapping("/areas")
+    @Operation(summary = "Crear área de producción",
+            description = "Crea un área nueva. Nombre único, máximo 30 caracteres.")
+    @ApiResponse(responseCode = "201", description = "Área creada")
+    @ApiResponse(responseCode = "400", description = "Datos inválidos")
+    @ApiResponse(responseCode = "409", description = "Ya existe un área con ese nombre")
+    public ResponseEntity<ProductionArea> createArea(@RequestBody Map<String, String> body) {
+        ProductionArea area = permissionService.createArea(
+                body.get("name"), body.get("description"));
+        return ResponseEntity.status(HttpStatus.CREATED).body(area);
+    }
+
+    @PutMapping("/areas/{id}")
+    @Operation(summary = "Editar área de producción")
+    @ApiResponse(responseCode = "200", description = "Área actualizada")
+    @ApiResponse(responseCode = "404", description = "Área no encontrada")
+    public ResponseEntity<ProductionArea> updateArea(
+            @PathVariable UUID id,
+            @RequestBody Map<String, String> body) {
+        return ResponseEntity.ok(permissionService.updateArea(
+                id, body.get("name"), body.get("description")));
+    }
+
+    @DeleteMapping("/areas/{id}")
+    @Operation(summary = "Eliminar área de producción",
+            description = "Elimina el área si no tiene permisos activos asociados.")
+    @ApiResponse(responseCode = "200", description = "Área eliminada")
+    @ApiResponse(responseCode = "404", description = "Área no encontrada")
+    @ApiResponse(responseCode = "409", description = "El área tiene permisos activos asociados")
+    public ResponseEntity<Map<String, String>> deleteArea(@PathVariable UUID id) {
+        permissionService.deleteArea(id);
+        return ResponseEntity.ok(Map.of("message", "Área eliminada exitosamente"));
     }
 
     @Operation(summary = "Editar permiso",

@@ -107,6 +107,21 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     @Override
+    @Transactional
+    public PermissionResponse reactivate(UUID id) {
+        AccessPermission permission = accessPermissionRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Permiso no encontrado"));
+
+        permission.setStatus(PermissionStatus.ACTIVO);
+        permission.setReactivationDate(null);
+        permission = accessPermissionRepository.save(permission);
+
+        log.info("Permission reactivated: id={}", id);
+        return toResponse(permission);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public Page<PermissionResponse> list(String search, PermissionStatus status, Pageable pageable) {
         Specification<AccessPermission> spec = (root, query, cb) -> {
@@ -133,6 +148,74 @@ public class PermissionServiceImpl implements PermissionService {
     @Transactional(readOnly = true)
     public List<ProductionArea> listAreas() {
         return productionAreaRepository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public ProductionArea createArea(String name, String description) {
+        if (name == null || name.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del área es obligatorio");
+        }
+        if (name.length() > 30) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del área no puede superar los 30 caracteres");
+        }
+        if (productionAreaRepository.existsByName(name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ya existe un área con el nombre: " + name);
+        }
+        ProductionArea area = ProductionArea.builder()
+                .name(name)
+                .description(description)
+                .build();
+        area = productionAreaRepository.save(area);
+        log.info("Production area created: id={}, name={}", area.getId(), area.getName());
+        return area;
+    }
+
+    @Override
+    @Transactional
+    public ProductionArea updateArea(UUID id, String name, String description) {
+        ProductionArea area = productionAreaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Área no encontrada"));
+        if (name == null || name.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del área es obligatorio");
+        }
+        if (name.length() > 30) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del área no puede superar los 30 caracteres");
+        }
+        if (!area.getName().equals(name) && productionAreaRepository.existsByName(name)) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "Ya existe un área con el nombre: " + name);
+        }
+        area.setName(name);
+        if (description != null) {
+            area.setDescription(description);
+        }
+        area = productionAreaRepository.save(area);
+        log.info("Production area updated: id={}", area.getId());
+        return area;
+    }
+
+    @Override
+    @Transactional
+    public void deleteArea(UUID id) {
+        ProductionArea area = productionAreaRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Área no encontrada"));
+        long active = accessPermissionRepository
+                .countByProductionArea_IdAndStatus(id, PermissionStatus.ACTIVO);
+        if (active > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "No se puede eliminar el área porque tiene "
+                            + active + " permiso(s) activo(s) asociado(s)");
+        }
+        productionAreaRepository.delete(area);
+        log.info("Production area deleted: id={}", id);
     }
 
     @Override
