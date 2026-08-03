@@ -64,7 +64,7 @@ Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene
 
 | No | Descripción |
 |---|---|
-| 1 | Implementar endpoint POST /api/admin/users/{id}/reset-password en Spring Boot |
+| 1 | Implementar endpoint POST /admin/users/{id}/reset-password en Spring Boot |
 | 2 | Al restablecer: validar que el empleado tenga email, generar setupToken criptográfico de 96 caracteres hex, hashearlo con SHA-256, guardarlo con setupTokenExpiry = now() + 24h, anular password y no enviar ninguna contraseña temporal al administrador |
 | 3 | Reutilizar el servicio MagicLinkNotifier para enviar el enlace al correo personal del empleado; la contraseña nunca viaja por email ni es visible para el administrador |
 | 4 | Mostrar diálogo de confirmación en el frontend antes de ejecutar el restablecimiento y notificación de éxito con "Enlace de configuración enviado al correo del usuario" |

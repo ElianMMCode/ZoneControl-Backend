@@ -65,7 +65,7 @@ Entonces: el sistema registra la acción en los logs de auditoría con la fecha,
 | No | Descripción |
 |---|---|
 | 1 | Diseñar interfaz de configuración del archivo periódico con selector de período (mes y año), selector múltiple de departamentos de producción y selector de formato (CSV, Excel) |
-| 2 | Implementar endpoint POST /api/reportes/archivo-periodico en Spring Boot que reciba período, lista de departamentos y formato |
+| 2 | Implementar endpoint POST /reportes/archivo-periodico en Spring Boot que reciba período, lista de departamentos y formato |
 | 3 | Implementar consulta SQL que agrupe los accesos por departamento en el período seleccionado, excluyendo explícitamente las columnas de datos personales (nombres, apellidos, tipo_documento, documento_identidad, identificacion_interna) |
 | 4 | Generar archivo CSV con columnas: Departamento, Período, Total Accesos, Autorizados, Denegados, No Registrados, Suspendidos |
 | 5 | Generar archivo Excel con las mismas columnas usando Apache POI e incluir formato de tabla y autoajuste de columnas |

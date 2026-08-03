@@ -65,8 +65,8 @@ Entonces: el sistema rechaza la carga y muestra el mensaje "El archivo excede el
 | No | Descripción |
 |---|---|
 | 1 | Diseñar interfaz de carga masiva con selector de archivo, botón "Descargar Plantilla" y botón "Subir Archivo" |
-| 2 | Crear archivo plantilla CSV de referencia en el servidor con encabezados correctos y fila de ejemplo, servido mediante endpoint GET /api/personal/bulk/plantilla |
-| 3 | Implementar endpoint POST /api/personal/bulk (multipart/form-data) en Spring Boot |
+| 2 | Crear archivo plantilla CSV de referencia en el servidor con encabezados correctos y fila de ejemplo, servido mediante endpoint GET /personal/bulk/plantilla |
+| 3 | Implementar endpoint POST /personal/bulk (multipart/form-data) en Spring Boot |
 | 4 | Validar extensión del archivo recibido: solo .csv y .txt permitidos |
 | 5 | Validar encabezados del archivo contra los esperados (tipo_documento, documento_identidad, nombres, apellidos, cargo, departamento, estado) |
 | 6 | Validar cada fila individualmente: tipo de documento colombiano válido (CC, CE, TI, PA, RC), documento de identidad no duplicado en BD ni dentro del mismo archivo, campos obligatorios completos, departamento existente en BD, estado válido (ACTIVO/INACTIVO) |

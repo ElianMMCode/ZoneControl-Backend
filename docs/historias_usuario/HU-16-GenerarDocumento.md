@@ -48,7 +48,7 @@ Entonces: el sistema muestra el mensaje "No hay datos para exportar"
 
 | No | Descripción |
 |---|---|
-| 1 | Implementar endpoint POST /api/historial/export en Spring Boot que reciba formato y filtros aplicados |
+| 1 | Implementar endpoint POST /historial/export en Spring Boot que reciba formato y filtros aplicados |
 | 2 | Implementar generación de archivo PDF con librería iText o PDFBox (encabezado, fecha, filtros, tabla, resumen estadístico) |
 | 3 | Implementar generación de archivo CSV con separador comma |
 | 4 | Implementar generación de archivo Excel (.xlsx) con Apache POI |

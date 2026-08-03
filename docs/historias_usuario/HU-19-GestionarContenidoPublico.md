@@ -100,9 +100,9 @@ Entonces: el sistema muestra los errores de validación correspondientes a los c
 | 2 | Implementar formularios de edición para información institucional, datos de contacto y ubicación de sedes |
 | 3 | Implementar CRUD del catálogo de servicios/productos (nombre, descripción, principio activo, presentación, área de producción) |
 | 4 | Implementar carga de archivo PDF para el folleto con validación de formato (.pdf) y tamaño máximo (10MB) |
-| 5 | Implementar endpoints PUT/POST /api/admin/contenido-publico en Spring Boot para cada sección |
-| 6 | Implementar endpoint POST /api/admin/contenido-publico/folleto (multipart/form-data) con validaciones de formato y peso |
-| 7 | Implementar endpoint DELETE /api/admin/contenido-publico/folleto para eliminar el folleto actual |
+| 5 | Implementar endpoints PUT/POST /admin/contenido-publico en Spring Boot para cada sección |
+| 6 | Implementar endpoint POST /admin/contenido-publico/folleto (multipart/form-data) con validaciones de formato y peso |
+| 7 | Implementar endpoint DELETE /admin/contenido-publico/folleto para eliminar el folleto actual |
 | 8 | Condicionar la visibilidad del botón "Descargar Folleto" en el módulo público a la existencia del archivo en el servidor |
 | 9 | Configurar almacenamiento de archivos en el servidor (directorio uploads/folleto/) |
 

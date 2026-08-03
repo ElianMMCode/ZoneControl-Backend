@@ -34,7 +34,7 @@ start
 |Frontend|
 :Validar cambios;
 
-:Enviar PUT /api/admin/usuarios/{id};
+:Enviar PUT /admin/usuarios/{id};
 
 |Backend|
 :Recibir actualización;

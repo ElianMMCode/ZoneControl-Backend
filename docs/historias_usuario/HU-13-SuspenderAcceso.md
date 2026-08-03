@@ -16,7 +16,7 @@
 
 ## Requerimiento
 
-El sistema debe permitir al gestor de personal suspender temporalmente la autorización de ingreso de un empleado, estableciendo una fecha programada de reactivación. Mientras el permiso esté suspendido, el empleado no debe poder acceder. Al llegar la fecha de reactivación, el permiso debe reactivarse automáticamente.
+El sistema debe permitir al gestor de personal suspender temporalmente la autorización de ingreso de un empleado, estableciendo una fecha programada de reactivación. Mientras el permiso esté suspendido, el empleado no debe poder acceder. **Nota:** la reactivación NO es automática (el job `@Scheduled` se eliminó en commit fc377cf); el permiso queda suspendido hasta que el gestor lo reactive manualmente vía `PATCH /permisos/{id}`.
 
 ## Criterios de Aceptación
 
@@ -30,11 +30,11 @@ Entonces: el sistema cambia el estado del permiso a "SUSPENDIDO", registra la fe
 
 Condición 02
 
-Dado: que un permiso está en estado "SUSPENDIDO"
+Dado: que un permiso está en estado "SUSPENDIDO" con una fecha de reactivación registrada
 
-Cuando: llega la fecha de reactivación programada
+Cuando: el gestor reactiva el permiso manualmente (o el empleado es reactivado en cascada)
 
-Entonces: el sistema reactiva el permiso automáticamente y el empleado recupera el acceso a las áreas correspondientes
+Entonces: el sistema cambia el estado a "ACTIVO" y el empleado recupera el acceso a las áreas correspondientes
 
 Condición 03
 
@@ -50,9 +50,9 @@ Entonces: el sistema muestra un diálogo de confirmación indicando la fecha has
 |---|---|
 | 1 | Diseñar la vista de permisos activos del empleado con opción de suspender cada permiso |
 | 2 | Implementar campo de fecha de reactivación en el diálogo de suspensión |
-| 3 | Implementar endpoint PATCH /api/permisos/{id}/suspend en Spring Boot |
+| 3 | Implementar endpoint PATCH /permisos/{id}/suspend en Spring Boot |
 | 4 | Actualizar estado del permiso a "SUSPENDIDO" y guardar fecha de reactivación en PostgreSQL |
-| 5 | Implementar job programado que verifique periódicamente las fechas de reactivación y reactive permisos automáticamente |
+| 5 | ~~Implementar job programado que reactive permisos automáticamente~~ — gap conocido (HU-13): no hay reactivación automática |
 | 6 | Mostrar diálogo de confirmación antes de ejecutar la suspensión con la fecha de reactivación |
 
 ## Control de Versiones

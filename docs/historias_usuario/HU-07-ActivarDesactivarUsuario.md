@@ -16,7 +16,7 @@
 
 ## Requerimiento
 
-El sistema debe permitir al administrador activar o desactivar cuentas de usuario. Un usuario desactivado no debe poder iniciar sesión. Si el usuario desactivado tiene una sesión activa, su token debe invalidarse. El sistema debe impedir que el administrador se desactive a sí mismo.
+El sistema debe permitir al administrador activar o desactivar cuentas de usuario. Un usuario desactivado no debe poder iniciar sesión. **Nota:** los tokens JWT ya emitidos no se invalidan al desactivar (siguen válidos hasta su expiración); la desactivación se valida en el login y en `CustomUserDetailsService`. El sistema debe impedir que el administrador se desactive a sí mismo.
 
 ## Criterios de Aceptación
 
@@ -57,9 +57,9 @@ Entonces: el sistema rechaza la operación y muestra el mensaje "No puede desact
 | No | Descripción |
 |---|---|
 | 1 | Implementar toggle de activar/desactivar en la lista de usuarios del frontend |
-| 2 | Implementar endpoint PATCH /api/admin/users/{id}/status en Spring Boot |
+| 2 | Implementar endpoint PATCH /admin/users/{id}/status en Spring Boot |
 | 3 | Agregar validación que impida al administrador desactivarse a sí mismo |
-| 4 | Implementar invalidación de token JWT del usuario al ser desactivado |
+| 4 | ~~Invalidar token JWT del usuario al ser desactivado~~ — gap conocido (HU-07): la desactivación no invalida tokens existentes |
 | 5 | Mostrar diálogo de confirmación antes de ejecutar el cambio de estado |
 | 6 | Registrar la acción de cambio de estado en logs del sistema |
 

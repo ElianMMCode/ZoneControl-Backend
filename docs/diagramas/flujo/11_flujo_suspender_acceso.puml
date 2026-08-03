@@ -33,7 +33,7 @@ start
 
 :Definir fecha de reactivación;
 
-:Enviar PATCH /api/permisos/{id}/suspender;
+:Enviar PATCH /permisos/{id}/suspender;
 
 |Backend|
 :Actualizar estado a "suspendido";

@@ -65,7 +65,7 @@ Entonces: el número de identificación interno sigue el formato EMP-XXXXXX, es 
 | No | Descripción |
 |---|---|
 | 1 | Diseñar formulario de registro de personal con campos: tipo de documento (select: CC, CE, TI, PA, RC), número de documento de identidad, nombres, apellidos, cargo, departamento (select), estado (select) |
-| 2 | Implementar endpoint POST /api/personal en Spring Boot que reciba los datos del empleado sin el ID interno |
+| 2 | Implementar endpoint POST /personal en Spring Boot que reciba los datos del empleado sin el ID interno |
 | 3 | Implementar lógica de generación automática de número de identificación interno con formato EMP-XXXXXX (secuencial, autoincremental desde 000001) |
 | 4 | Validar unicidad de la combinación tipo de documento + número de documento de identidad antes de la inserción |
 | 5 | Validar que el tipo de documento sea uno de los documentos colombianos permitidos (CC, CE, TI, PA, RC) |
