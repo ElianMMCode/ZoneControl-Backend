@@ -27,6 +27,7 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDate;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Map;
@@ -166,6 +167,38 @@ class HistoryControllerTest {
 
     @Test
     void getStats_returnsCounts() throws Exception {
+        // Capturamos el baseline (DataInitializer puede haber sembrado
+        // registros de hoy) y validamos solo los deltas introducidos
+        // por este test: +3 accesos (2 AUTHORIZED + 1 DENIED) y
+        // +1 permiso ACTIVO y +1 SUSPENDIDO.
+        long baseTotal = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now()))
+                .count();
+        long baseAutorizados = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() == AccessResult.AUTHORIZED)
+                .count();
+        long baseDenegados = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() == AccessResult.DENIED)
+                .count();
+        long baseNoRegistrados = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() == AccessResult.UNREGISTERED)
+                .count();
+        long baseAccesosSuspendidos = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() == AccessResult.SUSPENDED)
+                .count();
+        long baseActivos = accessPermissionRepository.countByStatus(PermissionStatus.ACTIVO);
+        long baseSuspendidos = accessPermissionRepository.countByStatus(PermissionStatus.SUSPENDIDO);
+        long baseEmpleadosConAcceso = accessPermissionRepository.countDistinctEmployeesWithActivePermissions();
+
         Employee emp = employeeRepository.save(Employee.builder()
                 .employeeCode("EMP-STS-01")
                 .documentType(DocumentType.CC)
@@ -200,13 +233,13 @@ class HistoryControllerTest {
 
         mockMvc.perform(get("/api/historial/stats"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.totalAccesosHoy").value(3))
-                .andExpect(jsonPath("$.accesosAutorizadosHoy").value(2))
-                .andExpect(jsonPath("$.accesosDenegadosHoy").value(1))
-                .andExpect(jsonPath("$.accesosNoRegistradosHoy").value(0))
-                .andExpect(jsonPath("$.accesosSuspendidosHoy").value(0))
-                .andExpect(jsonPath("$.totalPermisosActivos").value(1))
-                .andExpect(jsonPath("$.totalPermisosSuspendidos").value(1))
-                .andExpect(jsonPath("$.empleadosConAcceso").value(1));
+                .andExpect(jsonPath("$.totalAccesosHoy").value(baseTotal + 3))
+                .andExpect(jsonPath("$.accesosAutorizadosHoy").value(baseAutorizados + 2))
+                .andExpect(jsonPath("$.accesosDenegadosHoy").value(baseDenegados + 1))
+                .andExpect(jsonPath("$.accesosNoRegistradosHoy").value(baseNoRegistrados))
+                .andExpect(jsonPath("$.accesosSuspendidosHoy").value(baseAccesosSuspendidos))
+                .andExpect(jsonPath("$.totalPermisosActivos").value(baseActivos + 1))
+                .andExpect(jsonPath("$.totalPermisosSuspendidos").value(baseSuspendidos + 1))
+                .andExpect(jsonPath("$.empleadosConAcceso").value(baseEmpleadosConAcceso + 1));
     }
 }
