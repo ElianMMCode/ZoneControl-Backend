@@ -81,6 +81,7 @@ public class PublicServiceImpl implements PublicService {
         List<Office> offices = officeRepository.findAll();
         return offices.stream()
                 .map(o -> OfficeResponse.builder()
+                        .id(o.getId())
                         .name(o.getName())
                         .address(o.getAddress())
                         .openingHours(o.getOpeningHours())
@@ -96,6 +97,7 @@ public class PublicServiceImpl implements PublicService {
         List<ProductCatalog> products = productCatalogRepository.findAll();
         return products.stream()
                 .map(p -> CatalogResponse.builder()
+                        .id(p.getId())
                         .name(p.getName())
                         .description(p.getDescription())
                         .activeIngredient(p.getActiveIngredient())

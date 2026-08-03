@@ -18,6 +18,20 @@
 
 El sistema debe permitir al administrador editar la información institucional, los datos de contacto, la ubicación de sedes, el catálogo de servicios y productos farmacéuticos, así como cargar y actualizar el folleto informativo en formato PDF. El folleto debe cumplir con restricciones de formato y peso. Si no hay folleto cargado, el botón de descarga no debe mostrarse en el módulo público.
 
+## Contrato de los endpoints
+
+- `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT|LOCATIONS}` (body `Record<string,string>`) → `{ message }`. Para INSTITUTIONAL/CONTACT reemplaza todos los pares clave-valor de la sección e invalida la caché pública correspondiente.
+- `POST /api/admin/contenido-publico/folleto` (multipart, campo `file`, PDF ≤ 10MB) → `{ message }`.
+- `DELETE /api/admin/contenido-publico/folleto` → `{ message }`.
+- `POST /api/admin/contenido-publico/sedes` (body `OfficeRequest{name, address, openingHours, latitude?, longitude?}`) → `{ id, name }` (201).
+- `PUT /api/admin/contenido-publico/sedes/{id}` (body `OfficeRequest`) → `{ id, name }`.
+- `DELETE /api/admin/contenido-publico/sedes/{id}` → `{ message }`.
+- `POST /api/admin/contenido-publico/productos` (body `ProductRequest{name, description, activeIngredient, presentation, productionArea}`) → `{ id, name }` (201).
+- `PUT /api/admin/contenido-publico/productos/{id}` (body `ProductRequest`) → `{ id, name }`.
+- `DELETE /api/admin/contenido-publico/productos/{id}` → `{ message }`.
+
+**Origen de los identificadores para editar/eliminar sedes y productos:** los GET públicos (`/api/public/sedes`, `/api/public/catalogo`) exponen el campo `id` para que el panel admin pueda referenciar cada elemento sin necesidad de un endpoint admin adicional. El landing ignora el `id`; el admin lo usa para los `PUT/DELETE /{id}`.
+
 ## Criterios de Aceptación
 
 Condición 01

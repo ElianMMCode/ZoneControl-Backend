@@ -18,6 +18,14 @@
 
 Permitir al público general consultar información institucional básica sin autenticación, incluyendo datos de la empresa, el catálogo de servicios y productos farmacéuticos, información de contacto y ubicación de las sedes de producción.
 
+## Contrato de los endpoints públicos
+
+- `GET /api/public/institucional` → `{ info: { companyName, mission, vision, description, productionAreas } }` (mapa clave-valor).
+- `GET /api/public/contacto` → `{ contact: { phone, email, socialMedia } }`.
+- `GET /api/public/sedes` → `[{ id, name, address, openingHours, latitude, longitude }]`. El `id` se incluye para que el panel admin de HU-19 pueda referenciar la sede al editar/eliminar sin necesidad de un endpoint admin adicional.
+- `GET /api/public/catalogo` → `[{ id, name, description, activeIngredient, presentation, productionArea }]`. El `id` se incluye por la misma razón que en sedes.
+- `GET /api/public/folleto` → PDF binario (`Folleto_Laboratorio_XYZ.pdf`) o 404 si no hay folleto cargado.
+
 ## Criterios de Aceptación
 
 Condición 01

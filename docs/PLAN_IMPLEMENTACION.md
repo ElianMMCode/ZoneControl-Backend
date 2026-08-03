@@ -270,25 +270,28 @@ Crear `import.sql` o `DataInitializer` que inserte:
 
 **HU-01: Consulta Información Pública**
 - Endpoints GET públicos (sin auth):
-  - `GET /api/public/institucional` — misión, visión, descripción, áreas de producción
-  - `GET /api/public/contacto` — teléfonos, email, redes sociales
-  - `GET /api/public/sedes` — direcciones, mapa, horarios
-  - `GET /api/public/catalogo` — lista de productos farmacéuticos
+  - `GET /api/public/institucional` — `{ info: { companyName, mission, vision, description, productionAreas } }`
+  - `GET /api/public/contacto` — `{ contact: { phone, email, socialMedia } }`
+  - `GET /api/public/sedes` — `[{ id, name, address, openingHours, latitude, longitude }]`
+  - `GET /api/public/catalogo` — `[{ id, name, description, activeIngredient, presentation, productionArea }]`
+  - Los `id` de sedes y productos se exponen en la respuesta pública para que el panel admin de HU-19 pueda referenciar cada elemento al editar/eliminar sin necesidad de un endpoint admin con id. El landing los ignora; el admin los usa para los `PUT/DELETE /{id}`.
 - Cachear respuestas (Spring Cache con ConcurrentMapCacheManager)
-- TDD: tests de integración verificando HTTP 200 y estructura JSON
+- TDD: tests de integración verificando HTTP 200 y estructura JSON (incluyendo el `id`)
 
 **HU-02: Descargar Folleto**
 - `GET /api/public/folleto` — servir PDF estático
-- Frontend: botón "Descargar Folleto" condicionado a que exista archivo
+- Frontend: botón "Descargar Folleto" condicionado a que exista archivo (HEAD → 200/404)
 - TDD: test de descarga exitosa y error 404 si no hay folleto
 
 **HU-19: Gestionar Contenido Público (requiere Fase 2 — auth)**
 - CRUD de contenido público (solo ADMIN)
-- PUT/POST `/api/admin/contenido-publico/{seccion}`
+- PUT/POST `/api/admin/contenido-publico/{seccion}` (`INSTITUTIONAL`|`CONTACT`|`LOCATIONS`; body `Record<string,string>`; PUT invalida la caché pública)
 - POST `/api/admin/contenido-publico/folleto` (multipart, validar .pdf, max 10MB)
 - DELETE `/api/admin/contenido-publico/folleto`
-- Frontend: pestañas por sección, cargador de PDF
-- TDD: tests de creación, actualización, validación de formato y tamaño
+- CRUD de sedes: POST/PUT/DELETE `/api/admin/contenido-publico/sedes[/{id}]` con `OfficeRequest`
+- CRUD de productos: POST/PUT/DELETE `/api/admin/contenido-publico/productos[/{id}]` con `ProductRequest`
+- Frontend: pestañas por sección, cargador de PDF, tablas editables de sedes y catálogo
+- TDD: tests de creación, actualización, validación de formato y tamaño, e invalidación de caché
 
 ### Fase 2 — Autenticación (HU-03)
 
@@ -496,8 +499,8 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 |--------|----------|------|--------|-----|
 | GET | /api/public/institucional | No | Público | 01 |
 | GET | /api/public/contacto | No | Público | 01 |
-| GET | /api/public/sedes | No | Público | 01 |
-| GET | /api/public/catalogo | No | Público | 01 |
+| GET | /api/public/sedes (respuesta incluye `id` para el panel admin) | No | Público | 01 |
+| GET | /api/public/catalogo (respuesta incluye `id` para el panel admin) | No | Público | 01 |
 | GET | /api/public/folleto | No | Público | 02 |
 | POST | /api/auth/login | No | Autenticación | 03 |
 | POST | /api/auth/change-password | Autenticado | Autenticación | 03 |

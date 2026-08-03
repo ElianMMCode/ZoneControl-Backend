@@ -101,6 +101,7 @@ class AdminPublicContentControllerTest {
                                 "productionArea", "Sala Blanca A"
                         ))))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.name").value("Test Product"));
     }
 
@@ -173,6 +174,7 @@ class AdminPublicContentControllerTest {
                                 "longitude", -74.1
                         ))))
                 .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.id").exists())
                 .andExpect(jsonPath("$.name").value("Sede Principal"));
     }
 
