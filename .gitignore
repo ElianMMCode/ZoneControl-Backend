@@ -55,3 +55,7 @@ AGENTS.md
 .prompt/
 
 uploads/
+
+# Frontend (Vite)
+node_modules/
+src/main/frontend/dist/
