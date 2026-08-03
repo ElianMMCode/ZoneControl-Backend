@@ -57,7 +57,7 @@ Entonces: el sistema muestra "ACCESO SUSPENDIDO" en color rojo y registra el int
 | No | Descripción |
 |---|---|
 | 1 | Diseñar formulario de validación de acceso con campo de código de empleado |
-| 2 | Implementar endpoint POST /access/validate en Spring Boot (con autenticación JWT) |
+| 2 | Implementar endpoint POST /api/access/validate en Spring Boot (con autenticación JWT) |
 | 3 | Consultar existencia del empleado por código en PostgreSQL |
 | 4 | Validar estado del empleado: activo, inactivo o no registrado |
 | 5 | Verificar permisos de acceso vigentes para empleados activos (fecha actual dentro del rango, estado no suspendido) |

@@ -108,7 +108,7 @@ class EmployeeCascadeTest {
         Employee emp = createEmployee("EMP-CSC-01", "800000001", "csc.down@test.com");
         createPermission(emp);
 
-        mockMvc.perform(patch("/personal/{id}", emp.getId())
+        mockMvc.perform(patch("/api/personal/{id}", emp.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "INACTIVO"))))
                 .andExpect(status().isOk())
@@ -126,7 +126,7 @@ class EmployeeCascadeTest {
         Employee emp = createEmployee("EMP-CSC-02", "800000002", "csc.up@test.com");
         UUID permId = createPermission(emp);
 
-        mockMvc.perform(patch("/personal/{id}", emp.getId())
+        mockMvc.perform(patch("/api/personal/{id}", emp.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "INACTIVO"))))
                 .andExpect(status().isOk());
@@ -134,7 +134,7 @@ class EmployeeCascadeTest {
         assertThat(accessPermissionRepository.findById(permId))
                 .hasValueSatisfying(p -> assertThat(p.getStatus()).isEqualTo(PermissionStatus.SUSPENDIDO));
 
-        mockMvc.perform(patch("/personal/{id}", emp.getId())
+        mockMvc.perform(patch("/api/personal/{id}", emp.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "ACTIVO"))))
                 .andExpect(status().isOk())

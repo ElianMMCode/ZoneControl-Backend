@@ -96,7 +96,7 @@ class HistoryControllerTest {
 
     @Test
     void getHistory_validRange_returns200() throws Exception {
-        mockMvc.perform(get("/historial")
+        mockMvc.perform(get("/api/historial")
                         .param("fechaInicio", "2026-07-01")
                         .param("fechaFin", "2026-07-31")
                         .param("page", "0")
@@ -108,7 +108,7 @@ class HistoryControllerTest {
 
     @Test
     void getHistory_invalidRange_returns400() throws Exception {
-        mockMvc.perform(get("/historial")
+        mockMvc.perform(get("/api/historial")
                         .param("fechaInicio", "2026-08-01")
                         .param("fechaFin", "2026-07-01"))
                 .andExpect(status().isBadRequest())
@@ -117,7 +117,7 @@ class HistoryControllerTest {
 
     @Test
     void getHistory_noResults_returnsEmptyPage() throws Exception {
-        mockMvc.perform(get("/historial")
+        mockMvc.perform(get("/api/historial")
                         .param("fechaInicio", "2025-01-01")
                         .param("fechaFin", "2025-01-31"))
                 .andExpect(status().isOk())
@@ -126,7 +126,7 @@ class HistoryControllerTest {
 
     @Test
     void exportHistory_validCsv_returns200() throws Exception {
-        mockMvc.perform(post("/historial/export")
+        mockMvc.perform(post("/api/historial/export")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "formato", "CSV",
@@ -139,7 +139,7 @@ class HistoryControllerTest {
 
     @Test
     void exportHistory_validExcel_returns200() throws Exception {
-        mockMvc.perform(post("/historial/export")
+        mockMvc.perform(post("/api/historial/export")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "formato", "EXCEL",
@@ -153,7 +153,7 @@ class HistoryControllerTest {
 
     @Test
     void exportHistory_noData_returns400() throws Exception {
-        mockMvc.perform(post("/historial/export")
+        mockMvc.perform(post("/api/historial/export")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "formato", "CSV",
@@ -198,7 +198,7 @@ class HistoryControllerTest {
                 .startDate(LocalDate.now()).expirationDate(LocalDate.now().plusMonths(1))
                 .startTime(LocalTime.of(8, 0)).endTime(LocalTime.of(17, 0)).build());
 
-        mockMvc.perform(get("/historial/stats"))
+        mockMvc.perform(get("/api/historial/stats"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalAccesosHoy").value(3))
                 .andExpect(jsonPath("$.accesosAutorizadosHoy").value(2))

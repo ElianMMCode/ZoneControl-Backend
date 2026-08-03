@@ -73,7 +73,7 @@ class PeriodicReportControllerTest {
 
     @Test
     void periodicReport_validCsv_returns200() throws Exception {
-        mockMvc.perform(post("/reportes/archivo-periodico")
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "mes", LocalDateTime.now().getMonthValue(),
@@ -86,7 +86,7 @@ class PeriodicReportControllerTest {
 
     @Test
     void periodicReport_validExcel_returns200() throws Exception {
-        mockMvc.perform(post("/reportes/archivo-periodico")
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "mes", LocalDateTime.now().getMonthValue(),
@@ -100,7 +100,7 @@ class PeriodicReportControllerTest {
 
     @Test
     void periodicReport_noData_returns400() throws Exception {
-        mockMvc.perform(post("/reportes/archivo-periodico")
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "mes", 1,

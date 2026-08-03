@@ -21,7 +21,7 @@ import java.util.Map;
  * cuando hace clic en el enlace recibido por email.
  */
 @RestController
-@RequestMapping("/setup-password")
+@RequestMapping("/api/setup-password")
 @RequiredArgsConstructor
 public class SetupPasswordController {
 

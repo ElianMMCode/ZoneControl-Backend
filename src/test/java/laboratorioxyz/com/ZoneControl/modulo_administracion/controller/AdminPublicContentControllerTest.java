@@ -41,7 +41,7 @@ class AdminPublicContentControllerTest {
 
     @Test
     void updateSection_valid_returns200() throws Exception {
-        mockMvc.perform(put("/admin/contenido-publico/INSTITUTIONAL")
+        mockMvc.perform(put("/api/admin/contenido-publico/INSTITUTIONAL")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "mission", "Test mission",
@@ -53,7 +53,7 @@ class AdminPublicContentControllerTest {
 
     @Test
     void updateSection_invalidSection_returns400() throws Exception {
-        mockMvc.perform(put("/admin/contenido-publico/INVALID")
+        mockMvc.perform(put("/api/admin/contenido-publico/INVALID")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{}"))
                 .andExpect(status().isBadRequest())
@@ -66,7 +66,7 @@ class AdminPublicContentControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.pdf", "application/pdf", "%PDF-1.4 test content".getBytes());
 
-        mockMvc.perform(multipart("/admin/contenido-publico/folleto").file(file))
+        mockMvc.perform(multipart("/api/admin/contenido-publico/folleto").file(file))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Folleto cargado exitosamente"));
     }
@@ -76,7 +76,7 @@ class AdminPublicContentControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "test.txt", "text/plain", "not a pdf".getBytes());
 
-        mockMvc.perform(multipart("/admin/contenido-publico/folleto").file(file))
+        mockMvc.perform(multipart("/api/admin/contenido-publico/folleto").file(file))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(
                         "Formato no permitido. Solo se aceptan archivos PDF"));
@@ -84,14 +84,14 @@ class AdminPublicContentControllerTest {
 
     @Test
     void deleteBrochure_returns200() throws Exception {
-        mockMvc.perform(delete("/admin/contenido-publico/folleto"))
+        mockMvc.perform(delete("/api/admin/contenido-publico/folleto"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Folleto eliminado correctamente"));
     }
 
     @Test
     void createProduct_valid_returns201() throws Exception {
-        mockMvc.perform(post("/admin/contenido-publico/productos")
+        mockMvc.perform(post("/api/admin/contenido-publico/productos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Test Product",
@@ -106,7 +106,7 @@ class AdminPublicContentControllerTest {
 
     @Test
     void createProduct_missingName_returns400() throws Exception {
-        mockMvc.perform(post("/admin/contenido-publico/productos")
+        mockMvc.perform(post("/api/admin/contenido-publico/productos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "description", "Test"
@@ -121,7 +121,7 @@ class AdminPublicContentControllerTest {
                 .description("Original desc")
                 .build());
 
-        mockMvc.perform(put("/admin/contenido-publico/productos/{id}", product.getId())
+        mockMvc.perform(put("/api/admin/contenido-publico/productos/{id}", product.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Updated",
@@ -133,7 +133,7 @@ class AdminPublicContentControllerTest {
 
     @Test
     void updateProduct_nonExistent_returns404() throws Exception {
-        mockMvc.perform(put("/admin/contenido-publico/productos/{id}", UUID.randomUUID())
+        mockMvc.perform(put("/api/admin/contenido-publico/productos/{id}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Any",
@@ -149,21 +149,21 @@ class AdminPublicContentControllerTest {
                 .name("To Delete")
                 .build());
 
-        mockMvc.perform(delete("/admin/contenido-publico/productos/{id}", product.getId()))
+        mockMvc.perform(delete("/api/admin/contenido-publico/productos/{id}", product.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Producto eliminado correctamente"));
     }
 
     @Test
     void deleteProduct_nonExistent_returns404() throws Exception {
-        mockMvc.perform(delete("/admin/contenido-publico/productos/{id}", UUID.randomUUID()))
+        mockMvc.perform(delete("/api/admin/contenido-publico/productos/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Producto no encontrado"));
     }
 
     @Test
     void createOffice_valid_returns201() throws Exception {
-        mockMvc.perform(post("/admin/contenido-publico/sedes")
+        mockMvc.perform(post("/api/admin/contenido-publico/sedes")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Sede Principal",
@@ -178,7 +178,7 @@ class AdminPublicContentControllerTest {
 
     @Test
     void updateOffice_nonExistent_returns404() throws Exception {
-        mockMvc.perform(put("/admin/contenido-publico/sedes/{id}", UUID.randomUUID())
+        mockMvc.perform(put("/api/admin/contenido-publico/sedes/{id}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "name", "Any",
@@ -190,7 +190,7 @@ class AdminPublicContentControllerTest {
 
     @Test
     void deleteOffice_nonExistent_returns404() throws Exception {
-        mockMvc.perform(delete("/admin/contenido-publico/sedes/{id}", UUID.randomUUID()))
+        mockMvc.perform(delete("/api/admin/contenido-publico/sedes/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Sede no encontrada"));
     }

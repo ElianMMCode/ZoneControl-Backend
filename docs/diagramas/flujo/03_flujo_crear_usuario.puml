@@ -37,7 +37,7 @@ start
 :Validar requisitos de contraseña\n(mín 8 caracteres, 1 mayúscula,\n1 minúscula, 1 dígito,\n1 carácter especial @$!%*?&);
 
 if (¿Formulario válido?) then (Sí)
-  :Enviar POST /admin/users;
+  :Enviar POST /api/admin/users;
 
   |Backend|
   :Recibir datos;

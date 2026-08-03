@@ -18,7 +18,7 @@
 
 El sistema debe permitir al gestor de personal otorgar autorización de ingreso a áreas restringidas para empleados activos. Se deben poder seleccionar múltiples áreas (una por permiso), definir horarios de acceso, fecha de inicio y fecha de expiración. El sistema debe verificar que no exista un permiso previo para la misma combinación empleado-área.
 
-**Regla de unicidad**: un permiso por (empleado, área). Si el empleado ya tiene un permiso (cualquier estado) para esa área, no se crea uno nuevo — se debe editar el permiso existente mediante PATCH /permisos/{id}.
+**Regla de unicidad**: un permiso por (empleado, área). Si el empleado ya tiene un permiso (cualquier estado) para esa área, no se crea uno nuevo — se debe editar el permiso existente mediante PATCH /api/permisos/{id}.
 
 ## Criterios de Aceptación
 
@@ -51,14 +51,14 @@ Entonces: el sistema retorna error con el mensaje "No se puede otorgar acceso a 
 | No | Descripción |
 |---|---|
 | 1 | Diseñar interfaz de gestión de permisos con búsqueda de empleado por código o nombre |
-| 2 | Implementar selector de áreas restringidas de producción (catálogo GET /permisos/areas) |
+| 2 | Implementar selector de áreas restringidas de producción (catálogo GET /api/permisos/areas) |
 | 3 | Implementar definición de horarios de acceso (hora inicio, hora fin) |
 | 4 | Implementar selectores de fecha de inicio y fecha de expiración |
-| 5 | Implementar endpoint POST /permisos en Spring Boot |
+| 5 | Implementar endpoint POST /api/permisos en Spring Boot |
 | 6 | Validar que el empleado esté activo antes de otorgar el permiso |
 | 7 | Verificar y prevenir duplicados (regla un permiso por empleado+área) |
 | 8 | Registrar el permiso otorgado en el historial de la base de datos |
-| 9 | Implementar endpoint PATCH /permisos/{id} para editar un permiso existente (v1.1) |
+| 9 | Implementar endpoint PATCH /api/permisos/{id} para editar un permiso existente (v1.1) |
 
 ## Control de Versiones
 

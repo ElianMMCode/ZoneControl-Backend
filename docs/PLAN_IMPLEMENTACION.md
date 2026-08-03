@@ -188,7 +188,7 @@ Crear en orden de dependencia:
 
 Unique constraint: (tipoDocumento, numeroDocumento)
 
-**Nota:** El estado del empleado usa `EmployeeStatus` (ACTIVO, INACTIVO, SUSPENDIDO), distinto de `UserStatus` que solo tiene ACTIVO/INACTIVO. El cascade es **bidireccional**: si un empleado pasa a INACTIVO o SUSPENDIDO, sus permisos se marcan SUSPENDIDO y su usuario de sistema se marca INACTIVO; si el empleado vuelve a ACTIVO (o el usuario es reactivado vía `PATCH /admin/users/{id}/status`), permisos y usuario se restauran automáticamente.
+**Nota:** El estado del empleado usa `EmployeeStatus` (ACTIVO, INACTIVO, SUSPENDIDO), distinto de `UserStatus` que solo tiene ACTIVO/INACTIVO. El cascade es **bidireccional**: si un empleado pasa a INACTIVO o SUSPENDIDO, sus permisos se marcan SUSPENDIDO y su usuario de sistema se marca INACTIVO; si el empleado vuelve a ACTIVO (o el usuario es reactivado vía `PATCH /api/admin/users/{id}/status`), permisos y usuario se restauran automáticamente.
 
 ### 2.4 `AreaProduccion`
 
@@ -270,35 +270,35 @@ Crear `import.sql` o `DataInitializer` que inserte:
 
 **HU-01: Consulta Información Pública**
 - Endpoints GET públicos (sin auth):
-  - `GET /public/institucional` — misión, visión, descripción, áreas de producción
-  - `GET /public/contacto` — teléfonos, email, redes sociales
-  - `GET /public/sedes` — direcciones, mapa, horarios
-  - `GET /public/catalogo` — lista de productos farmacéuticos
+  - `GET /api/public/institucional` — misión, visión, descripción, áreas de producción
+  - `GET /api/public/contacto` — teléfonos, email, redes sociales
+  - `GET /api/public/sedes` — direcciones, mapa, horarios
+  - `GET /api/public/catalogo` — lista de productos farmacéuticos
 - Cachear respuestas (Spring Cache con ConcurrentMapCacheManager)
 - TDD: tests de integración verificando HTTP 200 y estructura JSON
 
 **HU-02: Descargar Folleto**
-- `GET /public/folleto` — servir PDF estático
+- `GET /api/public/folleto` — servir PDF estático
 - Frontend: botón "Descargar Folleto" condicionado a que exista archivo
 - TDD: test de descarga exitosa y error 404 si no hay folleto
 
 **HU-19: Gestionar Contenido Público (requiere Fase 2 — auth)**
 - CRUD de contenido público (solo ADMIN)
-- PUT/POST `/admin/contenido-publico/{seccion}`
-- POST `/admin/contenido-publico/folleto` (multipart, validar .pdf, max 10MB)
-- DELETE `/admin/contenido-publico/folleto`
+- PUT/POST `/api/admin/contenido-publico/{seccion}`
+- POST `/api/admin/contenido-publico/folleto` (multipart, validar .pdf, max 10MB)
+- DELETE `/api/admin/contenido-publico/folleto`
 - Frontend: pestañas por sección, cargador de PDF
 - TDD: tests de creación, actualización, validación de formato y tamaño
 
 ### Fase 2 — Autenticación (HU-03)
 
 **HU-03: Iniciar Sesión**
-- `POST /auth/login` — recibe email+password, retorna JWT + datos usuario
+- `POST /api/auth/login` — recibe email+password, retorna JWT + datos usuario
 - SecurityConfig con Spring Security:
-  - `/public/**` y `/auth/**` y `/access/**` → permitAll()
-  - `/admin/**` → hasRole(ADMIN)
-  - `/personal/**` → hasAnyRole(ADMIN, GESTOR_PERSONAL)
-  - `/reportes/**` → hasAnyRole(ADMIN, SUPERVISOR_AUDITOR)
+  - `/api/public/**` y `/api/auth/**` y `/api/access/**` → permitAll()
+  - `/api/admin/**` → hasRole(ADMIN)
+  - `/api/personal/**` → hasAnyRole(ADMIN, GESTOR_PERSONAL)
+  - `/api/reportes/**` → hasAnyRole(ADMIN, SUPERVISOR_AUDITOR)
 - JwtAuthenticationFilter que extrae token del header Authorization: Bearer
 - BCryptPasswordEncoder para validar contraseñas
 - Manejar: 200 (éxito con token), 401 (credenciales incorrectas), 403 (cuenta desactivada), 404 (usuario no encontrado)
@@ -308,13 +308,13 @@ Crear `import.sql` o `DataInitializer` que inserte:
   - Redirección a dashboard según rol
 - TDD: 4 condiciones de aceptación → 4 tests
 
-- **Adicional (dashboard admin)**: `GET /admin/stats` — contadores agregados para las tarjetas KPI del dashboard del administrador (usuarios por estado, pendientes de configuración de contraseña, empleados, permisos). Solo ADMIN. TDD: 1 test de conteos delta.
-- **Adicional (ajustes)**: `POST /auth/change-password` — cambio de contraseña voluntario por el usuario autenticado. Requiere token JWT válido (SecurityConfig: regla auth/change-password → authenticated() antes del permitAll de /auth/**). TDD: 5 tests (éxito, actual incorrecta, misma contraseña, validación, sin token).
+- **Adicional (dashboard admin)**: `GET /api/admin/stats` — contadores agregados para las tarjetas KPI del dashboard del administrador (usuarios por estado, pendientes de configuración de contraseña, empleados, permisos). Solo ADMIN. TDD: 1 test de conteos delta.
+- **Adicional (ajustes)**: `POST /api/auth/change-password` — cambio de contraseña voluntario por el usuario autenticado. Requiere token JWT válido (SecurityConfig: regla auth/change-password → authenticated() antes del permitAll de /api/auth/**). TDD: 5 tests (éxito, actual incorrecta, misma contraseña, validación, sin token).
 
 ### Fase 3 — Administración (HU-05, HU-06, HU-07, HU-08)
 
 **HU-05: Crear Usuario Interno**
-- `POST /admin/users`
+- `POST /api/admin/users`
 - **No recibe password ni email**: ambos se derivan del `Employee` asociado (`employeeCode` obligatorio en el request)
 - Validar email único (HTTP 409 si duplicado) y empleado no vinculado a otro usuario (HTTP 409)
 - Genera `setupToken` criptográfico (96 hex, hash SHA-256, expiración 24h) y envía magic link al correo del empleado vía `MagicLinkNotifier` (logueado en consola, sin SMTP aún)
@@ -323,19 +323,19 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - TDD: test creación exitosa (retorna id + token), email duplicado, empleado sin email, empleado ya vinculado
 
 **HU-06: Editar Usuario**
-- `PUT /admin/users/{id}`
+- `PUT /api/admin/users/{id}`
 - Validar nuevo email no duplicado (excluyendo al mismo usuario)
 - HTTP 404 si usuario no existe
 - TDD: test actualización exitosa, email duplicado, usuario inexistente
 
 **HU-07: Activar/Desactivar Usuario**
-- `PATCH /admin/users/{id}/status` — body: { "estado": "ACTIVO"|"INACTIVO" }
+- `PATCH /api/admin/users/{id}/status` — body: { "estado": "ACTIVO"|"INACTIVO" }
 - Impedir auto-desactivación (comparar ID del token con ID del usuario)
 - Diálogo de confirmación en frontend
 - TDD: test activación, desactivación, auto-desactivación rechazada
 
 **HU-08: Restablecer Contraseña**
-- `POST /admin/users/{id}/reset-password`
+- `POST /api/admin/users/{id}/reset-password`
 - Alineada con HU-05: invalidar password actual (null), generar setupToken criptográfico de 96 hex, hash SHA-256 con expiración 24h, enviar magic link al correo personal del empleado (sin contraseña temporal visible al admin)
 - HTTP 400 si el empleado no tiene correo registrado, 404 si usuario no existe
 - Reutilizar pantalla /configurar-contrasena del flujo HU-05 para completar el restablecimiento
@@ -347,14 +347,14 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - Frontend: tabla con checkmarks por (módulo, rol)
 
 **Vista transversal: Ajustes y Perfil** (`settings.html`)
-- Perfil del usuario autenticado + cambio de contraseña (`POST /auth/change-password`)
+- Perfil del usuario autenticado + cambio de contraseña (`POST /api/auth/change-password`)
 - Aplica a los tres roles (CU-02 transversal); no es exclusiva del admin
 - Vista compartida en los 3 dashboards
 
 ### Fase 4 — Gestión de Personal (HU-09, HU-14, HU-10, HU-11, HU-12, HU-13)
 
 **HU-09: Registrar Personal Individual**
-- `POST /personal`
+- `POST /api/personal`
 - Generar EMP-XXXXXX automáticamente (secuencia desde 000001)
 - Validar tipoDocumento en {CC, CE, TI, PA, RC}
 - Validar (tipoDocumento + numeroDocumento) único → HTTP 409
@@ -363,15 +363,15 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - TDD: 5 condiciones de aceptación → 5 tests
 
 **HU-14: Buscar Personal por Filtros**
-- `GET /personal?tipoDocumento=&numeroDocumento=&nombres=&apellidos=&departmentName=&status=&page=&size=`
+- `GET /api/personal?tipoDocumento=&numeroDocumento=&nombres=&apellidos=&departmentName=&status=&page=&size=`
 - Al menos 1 filtro obligatorio (HTTP 400 si ninguno)
 - Lógica AND entre filtros, paginación, ordenamiento
 - Frontend: tabla paginada con acciones (ver detalle, editar, gestionar permisos)
 - TDD: test búsqueda con resultados, sin resultados, sin filtros
 
 **HU-10: Carga Masiva de Personal**
-- `GET /personal/bulk/plantilla` — descargar CSV plantilla con encabezados + fila ejemplo
-- `POST /personal/bulk` (multipart) — recibir CSV/TXT
+- `GET /api/personal/bulk/plantilla` — descargar CSV plantilla con encabezados + fila ejemplo
+- `POST /api/personal/bulk` (multipart) — recibir CSV/TXT
 - Validar: extensión (.csv/.txt), encabezados exactos, cada fila individualmente
 - Batch insert para registros válidos, reporte de errores para inválidos
 - Límite: 10MB, 1000 registros
@@ -379,26 +379,26 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - TDD: test carga exitosa, errores de validación, límites excedidos, plantilla descargable
 
 **HU-11: Otorgar Acceso a Áreas**
-- `POST /permisos`
+- `POST /api/permisos`
 - Validar empleado activo, detectar conflictos de permisos (misma área, horario, empleado → HTTP 409)
 - Frontend: selector múltiple de áreas, horarios, fechas
 - TDD: test otorgar, conflicto, empleado inactivo
 
 **HU-12: Revocar Acceso**
-- `DELETE /permisos/{id}`
+- `DELETE /api/permisos/{id}`
 - Diálogo de confirmación "acción permanente"
 - HTTP 404 si permiso no existe
 - TDD: test revocación exitosa, permiso inexistente
 
 **HU-13: Suspender Acceso**
-- `PATCH /permisos/{id}/suspend` — body: { "fechaReactivacion": "2026-08-15" }
-- La suspensión guarda `fechaReactivacion` para referencia, pero **NO hay job `@Scheduled` de auto-reactivación** (se eliminó en commit fc377cf). El permiso se reactiva manualmente vía `PATCH /permisos/{id}` o por el cascade al volver el empleado a ACTIVO.
+- `PATCH /api/permisos/{id}/suspend` — body: { "fechaReactivacion": "2026-08-15" }
+- La suspensión guarda `fechaReactivacion` para referencia, pero **NO hay job `@Scheduled` de auto-reactivación** (se eliminó en commit fc377cf). El permiso se reactiva manualmente vía `PATCH /api/permisos/{id}` o por el cascade al volver el empleado a ACTIVO.
 - TDD: test suspender, test permiso inexistente
 
 ### Fase 5 — Control de Acceso Físico (HU-18)
 
 **HU-18: Validar Acceso Físico**
-- `POST /access/validate` — body: { "employeeCode": "EMP-000001" }
+- `POST /api/access/validate` — body: { "employeeCode": "EMP-000001" }
 - Requiere rol: ADMIN, SUPERVISOR_AUDITOR
 - Lógica:
   1. ¿Empleado existe? No → "NO REGISTRADO" (amarillo)
@@ -412,26 +412,26 @@ Crear `import.sql` o `DataInitializer` que inserte:
 ### Fase 6 — Reportes y Auditoría (HU-15, HU-16, HU-17)
 
 **HU-15: Consultar Historial de Accesos**
-- `GET /historial?fechaInicio=&fechaFin=&employeeCode=&resultado=&page=&size=`
+- `GET /api/historial?fechaInicio=&fechaFin=&employeeCode=&resultado=&page=&size=`
 - Fecha inicio y fin obligatorias. Validar fechaInicio ≤ fechaFin
 - Filtros opcionales: `employeeCode`, `resultado` (AND). **No hay filtro por departamento.**
 - Frontend: date pickers, tabla paginada con resultados
 - TDD: test consulta con datos, sin datos, rango inválido
 
 **HU-16: Generar Documento Descargable**
-- `POST /historial/export` — body: { "formato": "CSV"|"EXCEL", "filtros": {...} }
+- `POST /api/historial/export` — body: { "formato": "CSV"|"EXCEL", "filtros": {...} }
 - Generar archivo con encabezado, fecha, filtros, tabla de datos, resumen estadístico
 - **Implementado solo CSV y EXCEL** (Apache POI). **PDF pendiente** (pom incluye itextpdf 5 pero no se usa aún)
 - `ExportRequest` acepta `employeeCode`, `resultado`, `departamentoName` pero el filtro solo aplica los dos primeros
 - TDD: test CSV, test Excel, test sin datos (400)
 
 **HU-17: Archivo Periódico para Socios**
-- `POST /reportes/archivo-periodico` — body: { "mes": 7, "anio": 2026, "formato": "CSV"|"EXCEL" }
+- `POST /api/reportes/archivo-periodico` — body: { "mes": 7, "anio": 2026, "formato": "CSV"|"EXCEL" }
 - **Gap vs plan**: el plan exige consulta agregada por departamento SIN datos personales (solo columnas: Departamento, Período, Total, Autorizados, Denegados, No Registrados, Suspendidos). La implementación actual emite **filas por empleado con datos personales** y no agrega por departamento; `departamentosIds` no existe en el request.
 - TDD: test CSV, test Excel, test sin datos (400)
 
 **Dashboard del Supervisor** (adición de coherencia)
-- `GET /historial/stats` — indicadores agregados: accesos del día por resultado, permisos activos/suspendidos, empleados con acceso vigente
+- `GET /api/historial/stats` — indicadores agregados: accesos del día por resultado, permisos activos/suspendidos, empleados con acceso vigente
 - Tags: **Módulo Reportes**, solo ADMIN y SUPERVISOR_AUDITOR
 - Vista `supervisor-dashboard.html`: tarjetas KPI + actividad reciente
 - TDD: 1 test de conteos delta
@@ -494,44 +494,44 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 
 | Método | Endpoint | Auth | Módulo | HU |
 |--------|----------|------|--------|-----|
-| GET | /public/institucional | No | Público | 01 |
-| GET | /public/contacto | No | Público | 01 |
-| GET | /public/sedes | No | Público | 01 |
-| GET | /public/catalogo | No | Público | 01 |
-| GET | /public/folleto | No | Público | 02 |
-| POST | /auth/login | No | Autenticación | 03 |
-| POST | /auth/change-password | Autenticado | Autenticación | 03 |
-| GET | /setup-password?token= | No | Autenticación | 05/08 |
-| POST | /setup-password | No | Autenticación | 05/08 |
-| GET | /admin/users | Admin | Administración | 05 |
-| GET | /admin/users/{id} | Admin | Administración | 05 |
-| POST | /admin/users | Admin | Administración | 05 |
-| PUT | /admin/users/{id} | Admin | Administración | 06 |
-| PATCH | /admin/users/{id}/status | Admin | Administración | 07 |
-| POST | /admin/users/{id}/reset-password | Admin | Administración | 08 |
-| GET | /admin/stats | Admin | Administración | — |
-| PUT | /admin/contenido-publico/{seccion} | Admin | Administración | 19 |
-| POST | /admin/contenido-publico/folleto | Admin | Administración | 19 |
-| DELETE | /admin/contenido-publico/folleto | Admin | Administración | 19 |
-| POST/PUT/DELETE | /admin/contenido-publico/productos[/{id}] | Admin | Administración | 19 |
-| POST/PUT/DELETE | /admin/contenido-publico/sedes[/{id}] | Admin | Administración | 19 |
-| POST | /personal | Gestor/Admin | Gestión Personal | 09 |
-| GET | /personal | Gestor/Admin | Gestión Personal | 14 |
-| GET | /personal/{id} | Gestor/Admin | Gestión Personal | 14 |
-| PATCH | /personal/{id} | Gestor/Admin | Gestión Personal | 14 |
-| GET | /personal/bulk/plantilla | Gestor/Admin | Gestión Personal | 10 |
-| POST | /personal/bulk | Gestor/Admin | Gestión Personal | 10 |
-| POST | /permisos | Gestor/Admin | Gestión Personal | 11 |
-| GET | /permisos | Gestor/Admin | Gestión Personal | 11 |
-| GET | /permisos/areas | Gestor/Admin | Gestión Personal | 11 |
-| PATCH | /permisos/{id} | Gestor/Admin | Gestión Personal | 11 |
-| DELETE | /permisos/{id} | Gestor/Admin | Gestión Personal | 12 |
-| PATCH | /permisos/{id}/suspend | Gestor/Admin | Gestión Personal | 13 |
-| POST | /access/validate | Admin, Supervisor | Control Acceso | 18 |
-| GET | /historial | Supervisor/Admin | Reportes | 15 |
-| GET | /historial/stats | Supervisor/Admin | Reportes | — |
-| POST | /historial/export | Supervisor/Admin | Reportes | 16 |
-| POST | /reportes/archivo-periodico | Supervisor/Admin | Reportes | 17 |
+| GET | /api/public/institucional | No | Público | 01 |
+| GET | /api/public/contacto | No | Público | 01 |
+| GET | /api/public/sedes | No | Público | 01 |
+| GET | /api/public/catalogo | No | Público | 01 |
+| GET | /api/public/folleto | No | Público | 02 |
+| POST | /api/auth/login | No | Autenticación | 03 |
+| POST | /api/auth/change-password | Autenticado | Autenticación | 03 |
+| GET | /api/setup-password?token= | No | Autenticación | 05/08 |
+| POST | /api/setup-password | No | Autenticación | 05/08 |
+| GET | /api/admin/users | Admin | Administración | 05 |
+| GET | /api/admin/users/{id} | Admin | Administración | 05 |
+| POST | /api/admin/users | Admin | Administración | 05 |
+| PUT | /api/admin/users/{id} | Admin | Administración | 06 |
+| PATCH | /api/admin/users/{id}/status | Admin | Administración | 07 |
+| POST | /api/admin/users/{id}/reset-password | Admin | Administración | 08 |
+| GET | /api/admin/stats | Admin | Administración | — |
+| PUT | /api/admin/contenido-publico/{seccion} | Admin | Administración | 19 |
+| POST | /api/admin/contenido-publico/folleto | Admin | Administración | 19 |
+| DELETE | /api/admin/contenido-publico/folleto | Admin | Administración | 19 |
+| POST/PUT/DELETE | /api/admin/contenido-publico/productos[/{id}] | Admin | Administración | 19 |
+| POST/PUT/DELETE | /api/admin/contenido-publico/sedes[/{id}] | Admin | Administración | 19 |
+| POST | /api/personal | Gestor/Admin | Gestión Personal | 09 |
+| GET | /api/personal | Gestor/Admin | Gestión Personal | 14 |
+| GET | /api/personal/{id} | Gestor/Admin | Gestión Personal | 14 |
+| PATCH | /api/personal/{id} | Gestor/Admin | Gestión Personal | 14 |
+| GET | /api/personal/bulk/plantilla | Gestor/Admin | Gestión Personal | 10 |
+| POST | /api/personal/bulk | Gestor/Admin | Gestión Personal | 10 |
+| POST | /api/permisos | Gestor/Admin | Gestión Personal | 11 |
+| GET | /api/permisos | Gestor/Admin | Gestión Personal | 11 |
+| GET | /api/permisos/areas | Gestor/Admin | Gestión Personal | 11 |
+| PATCH | /api/permisos/{id} | Gestor/Admin | Gestión Personal | 11 |
+| DELETE | /api/permisos/{id} | Gestor/Admin | Gestión Personal | 12 |
+| PATCH | /api/permisos/{id}/suspend | Gestor/Admin | Gestión Personal | 13 |
+| POST | /api/access/validate | Admin, Supervisor | Control Acceso | 18 |
+| GET | /api/historial | Supervisor/Admin | Reportes | 15 |
+| GET | /api/historial/stats | Supervisor/Admin | Reportes | — |
+| POST | /api/historial/export | Supervisor/Admin | Reportes | 16 |
+| POST | /api/reportes/archivo-periodico | Supervisor/Admin | Reportes | 17 |
 
 ---
 
@@ -550,7 +550,7 @@ Fase 6: HU-05 → HU-06 → HU-07 → HU-08 (admin usuarios)      ✓
 Fase 7: HU-15 → HU-16 → HU-17 (reportes y auditoría)        ✓
 ```
 
-Adiciones de coherencia posteriores también implementadas: `GET /admin/stats`, `GET /historial/stats`, `GET /permisos` + `GET /permisos/areas` + `PATCH /permisos/{id}`, `POST /auth/change-password`, y flujo de magic link para contraseñas (HU-05/08).
+Adiciones de coherencia posteriores también implementadas: `GET /api/admin/stats`, `GET /api/historial/stats`, `GET /api/permisos` + `GET /api/permisos/areas` + `PATCH /api/permisos/{id}`, `POST /api/auth/change-password`, y flujo de magic link para contraseñas (HU-05/08).
 
 **Pendiente global:** solo el frontend React (esqueleto en `../ZoneControl-Frontend`, sin código aún), los gaps documentados en §4/§7/§8 y en AGENTS.md.
 
@@ -570,8 +570,8 @@ Todos los endpoints que reciben UUIDs para referenciar entidades fueron migrados
 | `CreatePermissionRequest` | `employeeId` + `productionAreaId` | `employeeCode` + `productionAreaName` | `findByEmployeeCode()` + `findByName()` |
 | `ValidateAccessRequest` | `productionAreaId` | `productionAreaName` | `ProductionAreaRepository.findByName()` |
 | `ExportRequest` | `personalId` + `departamentoId` | `employeeCode` + `departamentoName` | `findByEmployeeCode()` + `findByName()` |
-| `GET /personal` | `departmentId` (filtro) | `departmentName` | JPA Criteria `root.get("department").get("name")` |
-| `GET /historial` | `personalId` (filtro) | `employeeCode` | JPA Criteria `root.get("employee").get("employeeCode")` |
+| `GET /api/personal` | `departmentId` (filtro) | `departmentName` | JPA Criteria `root.get("department").get("name")` |
+| `GET /api/historial` | `personalId` (filtro) | `employeeCode` | JPA Criteria `root.get("employee").get("employeeCode")` |
 
 **Beneficio:** el frontend envía texto plano (código de empleado, nombre de departamento, nombre de área) y el backend traduce a la entidad correspondiente, eliminando el flujo de 2 pasos (buscar UUID → usar UUID).
 
@@ -583,10 +583,10 @@ Los mockups finales en `.stitch/screens/` (marca Laboratorio XYZ) asumen funcion
 
 | Mockup | Funcionalidad asumida | Estado en backend |
 |--------|----------------------|-------------------|
-| `22_...gesti-n-de-reas-de-producci-n` | CRUD de áreas de producción y terminales biométricos | Solo `GET /permisos/areas` (catálogo de lectura, seed en `DataInitializer`). Pendiente CRUD |
-| `16_...matriz-de-roles-y-permisos` | Matriz de roles/permisos editable | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). Pendiente edición |
-| `28_...dashboard-de-administraci-n` | Mapa de accesos en tiempo real, "Súper Usuario" | `/admin/stats` solo entrega contadores KPI. Pendiente decidir si se implementa el mapa |
-| `09_...panel-de-supervisi-n-corporativo` | Estado de zonas (A-12, B-04) y alertas críticas en vivo | `/historial/stats` solo entrega contadores KPI; las zonas A-12/B-04 no existen en el seed. Decorativo por ahora |
+| `22_...gesti-n-de-reas-de-producci-n` | CRUD de áreas de producción y terminales biométricos | Solo `GET /api/permisos/areas` (catálogo de lectura, seed en `DataInitializer`). Pendiente CRUD |
+| `16_...matriz-de-roles-y-permisos` | Matriz de roles/api/permisos editable | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). Pendiente edición |
+| `28_...dashboard-de-administraci-n` | Mapa de accesos en tiempo real, "Súper Usuario" | `/api/admin/stats` solo entrega contadores KPI. Pendiente decidir si se implementa el mapa |
+| `09_...panel-de-supervisi-n-corporativo` | Estado de zonas (A-12, B-04) y alertas críticas en vivo | `/api/historial/stats` solo entrega contadores KPI; las zonas A-12/B-04 no existen en el seed. Decorativo por ahora |
 | `42_...registro-de-personal` | Fotografía del empleado (opcional) | `RegisterEmployeeRequest` no tiene campo foto. Frontend-only pendiente |
-| `46_...inicio-de-sesi-n-interno` | "¿Olvidó su contraseña?" | No hay flujo público de recovery; solo reset vía `POST /admin/users/{id}/reset-password` (magic link) |
+| `46_...inicio-de-sesi-n-interno` | "¿Olvidó su contraseña?" | No hay flujo público de recovery; solo reset vía `POST /api/admin/users/{id}/reset-password` (magic link) |
 | `37_...reportes-de-auditor-a` | Exportar PDF | Pendiente implementar (pom incluye itextpdf 5; hoy solo CSV/EXCEL). Excepción aprobada: se implementa después |

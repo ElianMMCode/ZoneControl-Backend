@@ -78,20 +78,20 @@ Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene
 
 ### Dependencia: Employee debe existir antes que User
 
-- `POST /admin/users` requiere `employeeCode` de un `Employee` ya registrado en el sistema
+- `POST /api/admin/users` requiere `employeeCode` de un `Employee` ya registrado en el sistema
 - Relación `@OneToOne` con `employee_id NOT NULL UNIQUE` en la tabla `users`
 - Un `Employee` solo puede tener un `User` asociado (error HTTP 409 si ya existe uno)
 - No todo `Employee` necesita un `User` de sistema (empleados con solo permiso de acceso físico no requieren credenciales del sistema)
 - Flujo correcto:
-  1. `POST /personal` → registra `Employee` (genera código EMP-XXXXXX)
-  2. `POST /admin/users` con `employeeCode` → crea `User` vinculado
+  1. `POST /api/personal` → registra `Employee` (genera código EMP-XXXXXX)
+  2. `POST /api/admin/users` con `employeeCode` → crea `User` vinculado
 
 ### Orden de creación
 
 ```
 ┌─────────────────────────────────────┐
 │  Paso 1: Registrar empleado         │
-│  POST /personal                     │
+│  POST /api/personal                     │
 │  → Crea Employee con EMP-XXXXXX     │
 │  → Retorna { id, employeeCode }     │
 └─────────────────────────────────────┘
@@ -99,7 +99,7 @@ Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene
               ▼
 ┌─────────────────────────────────────┐
 │  Paso 2: Crear usuario sistema      │
-│  POST /admin/users                  │
+│  POST /api/admin/users                  │
 │  { employeeCode: "EMP-000001", ... }│
 │  → Valida que Employee exista       │
 │  → Valida que no tenga User ya      │
@@ -112,14 +112,14 @@ Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene
 | No | Descripción |
 |---|---|---|
 | 1 | Diseñar formulario de creación de usuario con campos: empleado (selector que busca empleados existentes y muestra cargo), nombre completo (readonly desde empleado), cargo (readonly), rol (select: ADMIN/GESTOR_PERSONAL/SUPERVISOR_AUDITOR), estado (select: ACTIVO/INACTIVO). Sin campos de contraseña ni email |
-| 2 | Implementar endpoint POST /admin/users en Spring Boot que: valida empleado existente y sin User previo, valida que el empleado tenga email registrado, valida email único, deriva firstName/lastName/email del Employee, genera setupToken criptográfico de 96 caracteres hex, lo hashea con SHA-256, guarda User con password=null y setupTokenExpiry=now+24h |
+| 2 | Implementar endpoint POST /api/admin/users en Spring Boot que: valida empleado existente y sin User previo, valida que el empleado tenga email registrado, valida email único, deriva firstName/lastName/email del Employee, genera setupToken criptográfico de 96 caracteres hex, lo hashea con SHA-256, guarda User con password=null y setupTokenExpiry=now+24h |
 | 3 | Implementar servicio MagicLinkNotifier que construye el magic link con el setupToken sin hashear: {app.app-url}/configurar-contrasena?token={rawToken}. Actualmente registra el enlace en log; se reemplazará por JavaMailSender cuando exista SMTP |
-| 4 | Implementar endpoint GET /setup-password?token=... que valida el token contra el hash SHA-256 en BD, verifica expiración y devuelve datos del usuario para la pantalla de configuración |
-| 5 | Implementar endpoint POST /setup-password que recibe token + nueva contraseña, valida requisitos de seguridad (mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 dígito, 1 carácter especial @$!%*?&), encripta con BCrypt, guarda en password, limpia setupToken y setupTokenExpiry, marca requirePasswordChange=false |
+| 4 | Implementar endpoint GET /api/setup-password?token=... que valida el token contra el hash SHA-256 en BD, verifica expiración y devuelve datos del usuario para la pantalla de configuración |
+| 5 | Implementar endpoint POST /api/setup-password que recibe token + nueva contraseña, valida requisitos de seguridad (mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 dígito, 1 carácter especial @$!%*?&), encripta con BCrypt, guarda en password, limpia setupToken y setupTokenExpiry, marca requirePasswordChange=false |
 | 6 | Agregar en User.java: setupToken (String, unique, nullable), setupTokenExpiry (LocalDateTime, nullable), password ahora nullable = true |
 | 7 | Agregar email personal (nullable) en Employee.java, RegisterEmployeeRequest y UpdateEmployeeRequest |
-| 8 | Implementar GET /admin/users con búsqueda (nombre/email/código), filtros por rol y estado, y paginación |
-| 9 | Implementar GET /admin/users/{id} con detalle del usuario y su empleado vinculado |
+| 8 | Implementar GET /api/admin/users con búsqueda (nombre/email/código), filtros por rol y estado, y paginación |
+| 9 | Implementar GET /api/admin/users/{id} con detalle del usuario y su empleado vinculado |
 | 10 | Retornar HTTP 201 con ID del usuario creado y mostrar notificación de éxito en el frontend indicando que se envió magic link |
 | 11 | Manejar respuestas de error: 409 para email duplicado o empleado ya vinculado, 400 para empleado inexistente o sin email, 410 para token expirado, 404 para token inválido |
 

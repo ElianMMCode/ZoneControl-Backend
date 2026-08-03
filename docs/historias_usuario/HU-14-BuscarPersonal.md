@@ -67,17 +67,17 @@ Entonces: el sistema guarda los cambios, y si el nuevo estado es INACTIVO o SUSP
 | No | Descripción |
 |---|---|
 | 1 | Diseñar formulario de búsqueda con filtros: número de identificación, nombre, apellido, departamento (dropdown), estado |
-| 2 | Implementar endpoint GET /personal con query parameters dinámicos en Spring Boot |
+| 2 | Implementar endpoint GET /api/personal con query parameters dinámicos en Spring Boot |
 | 3 | Construir consulta SQL dinámica en el backend aplicando lógica AND entre filtros |
 | 4 | Validar en frontend y backend que al menos un filtro esté presente antes de ejecutar la consulta |
 | 5 | Implementar paginación de resultados en frontend y backend |
 | 6 | Implementar ordenamiento de resultados por columna en la tabla |
-| 7 | Agregar acciones por fila: ver detalle (GET /personal/{id}), editar empleado (PATCH /personal/{id}), gestionar permisos |
-| 8 | Implementar GET /personal/{id} que retorna detalle completo del empleado con HTTP 200 o 404 |
-| 9 | Implementar PATCH /personal/{id} con patch parcial: firstName, lastName, position, documentType, documentNumber, departmentId, status |
+| 7 | Agregar acciones por fila: ver detalle (GET /api/personal/{id}), editar empleado (PATCH /api/personal/{id}), gestionar permisos |
+| 8 | Implementar GET /api/personal/{id} que retorna detalle completo del empleado con HTTP 200 o 404 |
+| 9 | Implementar PATCH /api/personal/{id} con patch parcial: firstName, lastName, position, documentType, documentNumber, departmentId, status |
 | 10 | Validar unicidad (tipoDocumento+numeroDocumento) al cambiar documento |
 | 11 | Implementar cascade: al cambiar status a INACTIVO o SUSPENDIDO → permisos → SUSPENDIDO y User vinculado → INACTIVO |
-| 12 | Agregar filtro status (ACTIVO/INACTIVO/SUSPENDIDO) en GET /personal |
+| 12 | Agregar filtro status (ACTIVO/INACTIVO/SUSPENDIDO) en GET /api/personal |
 
 ## Control de Versiones
 

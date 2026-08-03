@@ -139,7 +139,7 @@ class AdminStatsControllerTest {
                 .endTime(LocalTime.of(17, 0))
                 .build());
 
-        mockMvc.perform(get("/admin/stats"))
+        mockMvc.perform(get("/api/admin/stats"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.totalUsuarios").value(baseUsers + 2))
                 .andExpect(jsonPath("$.usuariosActivos").value(baseActiveUsers + 1))

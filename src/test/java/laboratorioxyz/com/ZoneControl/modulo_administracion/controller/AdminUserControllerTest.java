@@ -113,7 +113,7 @@ class AdminUserControllerTest {
 
     @Test
     void deactivateUser_cascadesToEmployeeAndPermissions() throws Exception {
-        mockMvc.perform(patch("/admin/users/{id}/status", testUser.getId())
+        mockMvc.perform(patch("/api/admin/users/{id}/status", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "INACTIVO"))))
                 .andExpect(status().isOk())
@@ -134,7 +134,7 @@ class AdminUserControllerTest {
         accessPermissionRepository.updateStatusByEmployeeId(testEmployee.getId(), PermissionStatus.SUSPENDIDO);
         userRepository.save(testUser);
 
-        mockMvc.perform(patch("/admin/users/{id}/status", testUser.getId())
+        mockMvc.perform(patch("/api/admin/users/{id}/status", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "ACTIVO"))))
                 .andExpect(status().isOk())
@@ -151,7 +151,7 @@ class AdminUserControllerTest {
     void deactivateSelf_returns400() throws Exception {
         User admin = userRepository.findByEmail("admin@zonecontrol.com").orElseThrow();
 
-        mockMvc.perform(patch("/admin/users/{id}/status", admin.getId())
+        mockMvc.perform(patch("/api/admin/users/{id}/status", admin.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "INACTIVO"))))
                 .andExpect(status().isBadRequest())
@@ -160,7 +160,7 @@ class AdminUserControllerTest {
 
     @Test
     void updateStatus_nonExistentUser_returns404() throws Exception {
-        mockMvc.perform(patch("/admin/users/{id}/status", UUID.randomUUID())
+        mockMvc.perform(patch("/api/admin/users/{id}/status", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "ACTIVO"))))
                 .andExpect(status().isNotFound())
@@ -169,7 +169,7 @@ class AdminUserControllerTest {
 
     @Test
     void updateStatus_invalidStatus_returns400() throws Exception {
-        mockMvc.perform(patch("/admin/users/{id}/status", testUser.getId())
+        mockMvc.perform(patch("/api/admin/users/{id}/status", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", ""))))
                 .andExpect(status().isBadRequest());
@@ -177,7 +177,7 @@ class AdminUserControllerTest {
 
     @Test
     void updateUser_validData_returns200() throws Exception {
-        mockMvc.perform(put("/admin/users/{id}", testUser.getId())
+        mockMvc.perform(put("/api/admin/users/{id}", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "firstName", "Updated",
@@ -196,7 +196,7 @@ class AdminUserControllerTest {
     void updateUser_duplicateEmail_returns409() throws Exception {
         User admin = userRepository.findByEmail("admin@zonecontrol.com").orElseThrow();
 
-        mockMvc.perform(put("/admin/users/{id}", testUser.getId())
+        mockMvc.perform(put("/api/admin/users/{id}", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("email", admin.getEmail()))))
                 .andExpect(status().isConflict())
@@ -205,7 +205,7 @@ class AdminUserControllerTest {
 
     @Test
     void updateUser_nonExistentUser_returns404() throws Exception {
-        mockMvc.perform(put("/admin/users/{id}", UUID.randomUUID())
+        mockMvc.perform(put("/api/admin/users/{id}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("firstName", "Any"))))
                 .andExpect(status().isNotFound())
@@ -214,7 +214,7 @@ class AdminUserControllerTest {
 
     @Test
     void resetPassword_validUser_returns200() throws Exception {
-        mockMvc.perform(post("/admin/users/{id}/reset-password", testUser.getId()))
+        mockMvc.perform(post("/api/admin/users/{id}/reset-password", testUser.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message")
                         .value("Enlace de configuración enviado al correo del usuario"));
@@ -227,7 +227,7 @@ class AdminUserControllerTest {
 
     @Test
     void resetPassword_nonExistentUser_returns404() throws Exception {
-        mockMvc.perform(post("/admin/users/{id}/reset-password", UUID.randomUUID()))
+        mockMvc.perform(post("/api/admin/users/{id}/reset-password", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
     }
@@ -255,7 +255,7 @@ class AdminUserControllerTest {
                 .employee(noEmailEmployee)
                 .build());
 
-        mockMvc.perform(post("/admin/users/{id}/reset-password", noEmailUser.getId()))
+        mockMvc.perform(post("/api/admin/users/{id}/reset-password", noEmailUser.getId()))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error")
                         .value("El empleado no tiene un correo registrado. Regístrelo en Gestión Personal para restablecer la contraseña"));
@@ -276,7 +276,7 @@ class AdminUserControllerTest {
                 .status(EmployeeStatus.ACTIVO)
                 .build());
 
-        mockMvc.perform(post("/admin/users")
+        mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "employeeCode", "EMP-ADM-02",
@@ -313,7 +313,7 @@ class AdminUserControllerTest {
                 .status(EmployeeStatus.ACTIVO)
                 .build());
 
-        mockMvc.perform(post("/admin/users")
+        mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "employeeCode", "EMP-ADM-03",
@@ -330,7 +330,7 @@ class AdminUserControllerTest {
         testEmployee.setEmail("nuevo@test.com");
         employeeRepository.save(testEmployee);
 
-        mockMvc.perform(post("/admin/users")
+        mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "employeeCode", "EMP-ADM-01",
@@ -344,7 +344,7 @@ class AdminUserControllerTest {
 
     @Test
     void listUsers_returnsPaginatedResults() throws Exception {
-        mockMvc.perform(get("/admin/users")
+        mockMvc.perform(get("/api/admin/users")
                         .param("search", "EMP-ADM-01"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -354,7 +354,7 @@ class AdminUserControllerTest {
 
     @Test
     void getUserById_returnsDetail() throws Exception {
-        mockMvc.perform(get("/admin/users/{id}", testUser.getId()))
+        mockMvc.perform(get("/api/admin/users/{id}", testUser.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.id").value(testUser.getId().toString()))
                 .andExpect(jsonPath("$.email").value("admin.test@test.com"))
@@ -365,7 +365,7 @@ class AdminUserControllerTest {
 
     @Test
     void getUserById_nonExistentUser_returns404() throws Exception {
-        mockMvc.perform(get("/admin/users/{id}", UUID.randomUUID()))
+        mockMvc.perform(get("/api/admin/users/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
     }

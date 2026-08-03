@@ -21,7 +21,7 @@ import java.time.LocalDate;
 
 
 @RestController
-@RequestMapping("/historial")
+@RequestMapping("/api/historial")
 @RequiredArgsConstructor
 @Tag(name = "Módulo Reportes", description = "Historial de accesos y reportes (SUPERVISOR_AUDITOR)")
 public class HistoryController {

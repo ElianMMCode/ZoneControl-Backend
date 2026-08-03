@@ -49,7 +49,7 @@ Entonces: el sistema retorna error 404 con el mensaje "Usuario no encontrado"
 | No | Descripción |
 |---|---|
 | 1 | Diseñar formulario de edición con datos precargados del usuario seleccionado |
-| 2 | Implementar endpoint PUT /admin/users/{id} en Spring Boot |
+| 2 | Implementar endpoint PUT /api/admin/users/{id} en Spring Boot |
 | 3 | Validar que el nuevo email no esté en uso por otro usuario antes de actualizar |
 | 4 | Implementar validaciones en frontend (campos obligatorios, formato de email) |
 | 5 | Actualizar la fila correspondiente en la tabla de usuarios tras edición exitosa |

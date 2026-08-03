@@ -57,7 +57,7 @@ Entonces: el sistema muestra el mensaje "No hay registros para el período selec
 | No | Descripción |
 |---|---|
 | 1 | Diseñar formulario de consulta con date pickers de fecha inicio y fecha fin, y filtros opcionales (empleado, departamento, resultado) |
-| 2 | Implementar endpoint GET /historial con query parameters en Spring Boot |
+| 2 | Implementar endpoint GET /api/historial con query parameters en Spring Boot |
 | 3 | Validar que la fecha de inicio no sea posterior a la fecha de fin |
 | 4 | Construir consulta SQL dinámica con filtros opcionales aplicando lógica AND |
 | 5 | Mostrar resultados en tabla paginada con columnas: fecha, hora, ID, empleado, departamento, resultado |

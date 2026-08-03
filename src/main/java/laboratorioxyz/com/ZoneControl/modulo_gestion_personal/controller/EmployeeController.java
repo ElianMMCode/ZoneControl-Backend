@@ -33,7 +33,7 @@ import java.util.UUID;
  * - 409 Conflict si ya existe la combinación tipo+número de documento
  */
 @RestController
-@RequestMapping("/personal")
+@RequestMapping("/api/personal")
 @RequiredArgsConstructor
 public class EmployeeController {
 

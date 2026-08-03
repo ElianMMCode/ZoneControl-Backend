@@ -21,7 +21,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/admin/contenido-publico")
+@RequestMapping("/api/admin/contenido-publico")
 @RequiredArgsConstructor
 public class AdminPublicContentController {
 

@@ -45,7 +45,7 @@ class EmployeeControllerTest {
                 .departmentName("Control de Calidad")
                 .build();
 
-        mockMvc.perform(post("/personal")
+        mockMvc.perform(post("/api/personal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -66,12 +66,12 @@ class EmployeeControllerTest {
                 .departmentName("Control de Calidad")
                 .build();
 
-        mockMvc.perform(post("/personal")
+        mockMvc.perform(post("/api/personal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(post("/personal")
+        mockMvc.perform(post("/api/personal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -90,7 +90,7 @@ class EmployeeControllerTest {
                 .departmentName(null)
                 .build();
 
-        mockMvc.perform(post("/personal")
+        mockMvc.perform(post("/api/personal")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest());

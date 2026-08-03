@@ -53,7 +53,7 @@ class BulkUploadControllerTest {
 
     @Test
     void downloadTemplate_returnsCsv() throws Exception {
-        mockMvc.perform(get("/personal/bulk/plantilla"))
+        mockMvc.perform(get("/api/personal/bulk/plantilla"))
                 .andExpect(status().isOk())
                 .andExpect(content().contentType("text/csv"))
                 .andExpect(content().string(
@@ -69,7 +69,7 @@ class BulkUploadControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "empleados.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(multipart("/personal/bulk").file(file))
+        mockMvc.perform(multipart("/api/personal/bulk").file(file))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").value(2))
                 .andExpect(jsonPath("$.successes").value(2))
@@ -81,7 +81,7 @@ class BulkUploadControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "empleados.pdf", "application/pdf", "fake content".getBytes());
 
-        mockMvc.perform(multipart("/personal/bulk").file(file))
+        mockMvc.perform(multipart("/api/personal/bulk").file(file))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(
                         "Extensión de archivo no permitida. Solo se aceptan archivos .csv y .txt"));
@@ -95,7 +95,7 @@ class BulkUploadControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "mal.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(multipart("/personal/bulk").file(file))
+        mockMvc.perform(multipart("/api/personal/bulk").file(file))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(
                         org.hamcrest.Matchers.containsString("encabezados")));
@@ -111,7 +111,7 @@ class BulkUploadControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(multipart("/personal/bulk").file(file))
+        mockMvc.perform(multipart("/api/personal/bulk").file(file))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").value(3))
                 .andExpect(jsonPath("$.successes").value(2))
@@ -140,7 +140,7 @@ class BulkUploadControllerTest {
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(multipart("/personal/bulk").file(file))
+        mockMvc.perform(multipart("/api/personal/bulk").file(file))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.total").value(2))
                 .andExpect(jsonPath("$.successes").value(1))
@@ -150,7 +150,7 @@ class BulkUploadControllerTest {
     @Test
     void uploadBulk_noFile_returns400() throws Exception {
         MockMultipartFile empty = new MockMultipartFile("file", new byte[0]);
-        mockMvc.perform(multipart("/personal/bulk").file(empty))
+        mockMvc.perform(multipart("/api/personal/bulk").file(empty))
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value("Debe adjuntar un archivo para procesar"));
     }

@@ -11,7 +11,7 @@ skinparam swimlane {
 |Frontend (React / Vue)|
 start
 :Ingresar código de empleado;
-:Enviar petición (POST /access/validate);
+:Enviar petición (POST /api/access/validate);
 
 |Backend (Spring Boot)|
 :Recibir petición;

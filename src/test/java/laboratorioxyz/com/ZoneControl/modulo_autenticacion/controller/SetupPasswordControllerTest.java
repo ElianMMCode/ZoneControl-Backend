@@ -89,7 +89,7 @@ class SetupPasswordControllerTest {
 
     @Test
     void validateToken_validToken_returns200() throws Exception {
-        mockMvc.perform(get("/setup-password").param("token", rawToken))
+        mockMvc.perform(get("/api/setup-password").param("token", rawToken))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.valid").value(true))
                 .andExpect(jsonPath("$.userId").value(userWithToken.getId().toString()))
@@ -99,7 +99,7 @@ class SetupPasswordControllerTest {
 
     @Test
     void validateToken_invalidToken_returns404() throws Exception {
-        mockMvc.perform(get("/setup-password").param("token", "token-invalido"))
+        mockMvc.perform(get("/api/setup-password").param("token", "token-invalido"))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error")
                         .value("El enlace de configuración es inválido. Solicite un nuevo enlace al administrador"));
@@ -110,7 +110,7 @@ class SetupPasswordControllerTest {
         userWithToken.setSetupTokenExpiry(LocalDateTime.now().minusMinutes(1));
         userRepository.save(userWithToken);
 
-        mockMvc.perform(get("/setup-password").param("token", rawToken))
+        mockMvc.perform(get("/api/setup-password").param("token", rawToken))
                 .andExpect(status().isGone())
                 .andExpect(jsonPath("$.error")
                         .value("El enlace de configuración ha expirado. Contacte al administrador para generar un nuevo enlace"));
@@ -118,7 +118,7 @@ class SetupPasswordControllerTest {
 
     @Test
     void completeSetup_validToken_setsPasswordAndClearsToken() throws Exception {
-        mockMvc.perform(post("/setup-password")
+        mockMvc.perform(post("/api/setup-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "token", rawToken,
@@ -140,7 +140,7 @@ class SetupPasswordControllerTest {
 
     @Test
     void completeSetup_weakPassword_returns400() throws Exception {
-        mockMvc.perform(post("/setup-password")
+        mockMvc.perform(post("/api/setup-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "token", rawToken,
@@ -151,7 +151,7 @@ class SetupPasswordControllerTest {
 
     @Test
     void completeSetup_invalidToken_returns404() throws Exception {
-        mockMvc.perform(post("/setup-password")
+        mockMvc.perform(post("/api/setup-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "token", UUID.randomUUID().toString(),

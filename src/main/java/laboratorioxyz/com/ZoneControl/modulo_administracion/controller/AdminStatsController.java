@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/admin/stats")
+@RequestMapping("/api/admin/stats")
 @RequiredArgsConstructor
 @Tag(name = "Módulo Administración", description = "Gestión de usuarios internos (solo ADMIN)")
 public class AdminStatsController {

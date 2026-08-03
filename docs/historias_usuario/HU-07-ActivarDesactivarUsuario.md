@@ -57,7 +57,7 @@ Entonces: el sistema rechaza la operación y muestra el mensaje "No puede desact
 | No | Descripción |
 |---|---|
 | 1 | Implementar toggle de activar/desactivar en la lista de usuarios del frontend |
-| 2 | Implementar endpoint PATCH /admin/users/{id}/status en Spring Boot |
+| 2 | Implementar endpoint PATCH /api/admin/users/{id}/status en Spring Boot |
 | 3 | Agregar validación que impida al administrador desactivarse a sí mismo |
 | 4 | ~~Invalidar token JWT del usuario al ser desactivado~~ — gap conocido (HU-07): la desactivación no invalida tokens existentes |
 | 5 | Mostrar diálogo de confirmación antes de ejecutar el cambio de estado |

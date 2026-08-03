@@ -29,7 +29,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/auth")
+@RequestMapping("/api/auth")
 @RequiredArgsConstructor
 @Tag(name = "Módulo Autenticación", description = "Login JWT, cambio de contraseña y configuración inicial")
 public class AuthController {

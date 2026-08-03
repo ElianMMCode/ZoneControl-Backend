@@ -33,7 +33,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/admin/users")
+@RequestMapping("/api/admin/users")
 @RequiredArgsConstructor
 @Tag(name = "Módulo Administración", description = "Gestión de usuarios internos (solo ADMIN)")
 public class AdminUserController {

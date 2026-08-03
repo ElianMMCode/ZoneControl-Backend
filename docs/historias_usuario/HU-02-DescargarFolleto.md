@@ -41,7 +41,7 @@ Entonces: el sistema muestra un mensaje de error indicando que la descarga no es
 | No | Descripción |
 |---|---|
 | 1 | Diseñar y maquetar el folleto informativo de Laboratorio XYZ en PDF |
-| 2 | Implementar endpoint GET /public/folleto en Spring Boot para servir el archivo PDF |
+| 2 | Implementar endpoint GET /api/public/folleto en Spring Boot para servir el archivo PDF |
 | 3 | Agregar botón "Descargar Folleto" en la sección de información institucional del frontend |
 | 4 | Implementar manejo de errores cuando el archivo no esté disponible |
 | 5 | Verificar que el tamaño del PDF no exceda 5MB para descarga rápida |

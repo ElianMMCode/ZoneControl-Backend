@@ -74,7 +74,7 @@ cada vista debe aparecer en el dashboard de su actor.
 | **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `supervisor-dashboard.html`, `access-validation.html`, `audit-reports.html` |
 
 > **Nota**: `settings.html` es transversal porque el perfil y el cambio de contraseña
-> (`POST /auth/change-password`) aplican a los tres roles autenticados (CU-02).
+> (`POST /api/auth/change-password`) aplican a los tres roles autenticados (CU-02).
 > La vista de validación de acceso (`access-validation.html`) pertenece al Supervisor
 > y al Empleado según CU-11, **no** al Administrador.
 

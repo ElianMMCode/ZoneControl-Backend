@@ -50,7 +50,7 @@ Entonces: el sistema retorna error 404 con el mensaje "Permiso no encontrado"
 |---|---|
 | 1 | Diseñar la vista de permisos activos del empleado con opción de revocar cada permiso |
 | 2 | Implementar diálogo de confirmación de revocación con advertencia de que la acción es permanente |
-| 3 | Implementar endpoint DELETE /permisos/{id} en Spring Boot |
+| 3 | Implementar endpoint DELETE /api/permisos/{id} en Spring Boot |
 | 4 | Eliminar el registro de permiso en PostgreSQL |
 | 5 | Registrar la acción de revocación en logs del sistema |
 | 6 | Actualizar la lista de permisos en el frontend tras la revocación exitosa |

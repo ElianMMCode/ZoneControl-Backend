@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/permisos")
+@RequestMapping("/api/permisos")
 @RequiredArgsConstructor
 @Tag(name = "Módulo Gestión Personal", description = "Gestión de permisos de acceso a áreas (GESTOR_PERSONAL)")
 public class PermissionController {

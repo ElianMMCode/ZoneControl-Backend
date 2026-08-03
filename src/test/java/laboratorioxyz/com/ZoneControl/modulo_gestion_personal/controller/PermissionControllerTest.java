@@ -79,7 +79,7 @@ class PermissionControllerTest {
             public String endTime = "17:00";
         };
 
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -101,7 +101,7 @@ class PermissionControllerTest {
             public String endTime = "17:00";
         };
 
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
@@ -119,12 +119,12 @@ class PermissionControllerTest {
             public String endTime = "17:00";
         };
 
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
 
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isConflict())
@@ -142,7 +142,7 @@ class PermissionControllerTest {
             public String endTime = "17:00";
         };
 
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isNotFound())
@@ -159,21 +159,21 @@ class PermissionControllerTest {
             public String startTime = "08:00";
             public String endTime = "17:00";
         };
-        String json = mockMvc.perform(post("/permisos")
+        String json = mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
                 .andReturn().getResponse().getContentAsString();
         UUID permId = UUID.fromString(objectMapper.readTree(json).get("id").asText());
 
-        mockMvc.perform(delete("/permisos/{id}", permId))
+        mockMvc.perform(delete("/api/permisos/{id}", permId))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message").value("Permiso revocado exitosamente"));
     }
 
     @Test
     void revokePermission_nonExistent_returns404() throws Exception {
-        mockMvc.perform(delete("/permisos/{id}", UUID.randomUUID()))
+        mockMvc.perform(delete("/api/permisos/{id}", UUID.randomUUID()))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Permiso no encontrado"));
     }
@@ -188,7 +188,7 @@ class PermissionControllerTest {
             public String startTime = "08:00";
             public String endTime = "17:00";
         };
-        String json = mockMvc.perform(post("/permisos")
+        String json = mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated())
@@ -199,7 +199,7 @@ class PermissionControllerTest {
             public String reactivationDate = LocalDate.now().plusDays(7).toString();
         };
 
-        mockMvc.perform(patch("/permisos/{id}/suspend", permId)
+        mockMvc.perform(patch("/api/permisos/{id}/suspend", permId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(suspendRequest)))
                 .andExpect(status().isOk())
@@ -213,7 +213,7 @@ class PermissionControllerTest {
             public String reactivationDate = LocalDate.now().plusDays(7).toString();
         };
 
-        mockMvc.perform(patch("/permisos/{id}/suspend", UUID.randomUUID())
+        mockMvc.perform(patch("/api/permisos/{id}/suspend", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(suspendRequest)))
                 .andExpect(status().isNotFound())
@@ -229,7 +229,7 @@ class PermissionControllerTest {
             public String startTime = "08:00";
             public String endTime = "17:00";
         };
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isCreated());
@@ -239,7 +239,7 @@ class PermissionControllerTest {
     void listPermissions_returnsPaginatedResults() throws Exception {
         grantPermission();
 
-        mockMvc.perform(get("/permisos")
+        mockMvc.perform(get("/api/permisos")
                         .param("search", "EMP-PRM-01"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -251,18 +251,18 @@ class PermissionControllerTest {
     void listPermissions_filtersByStatus() throws Exception {
         grantPermission();
         UUID permId = UUID.fromString(objectMapper.readTree(
-                mockMvc.perform(get("/permisos").param("search", "EMP-PRM-01"))
+                mockMvc.perform(get("/api/permisos").param("search", "EMP-PRM-01"))
                         .andReturn().getResponse().getContentAsString())
                 .get("content").get(0).get("id").asText());
         var suspendBody = new Object() {
             public String reactivationDate = LocalDate.now().plusDays(7).toString();
         };
-        mockMvc.perform(patch("/permisos/{id}/suspend", permId)
+        mockMvc.perform(patch("/api/permisos/{id}/suspend", permId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(suspendBody)))
                 .andExpect(status().isOk());
 
-        mockMvc.perform(get("/permisos")
+        mockMvc.perform(get("/api/permisos")
                         .param("status", "SUSPENDIDO")
                         .param("search", "EMP-PRM-01"))
                 .andExpect(status().isOk())
@@ -273,7 +273,7 @@ class PermissionControllerTest {
     void listPermissions_searchByEmployeeName() throws Exception {
         grantPermission();
 
-        mockMvc.perform(get("/permisos")
+        mockMvc.perform(get("/api/permisos")
                         .param("search", "Test"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
@@ -282,7 +282,7 @@ class PermissionControllerTest {
 
     @Test
     void listPermissions_noMatch_returnsEmptyPage() throws Exception {
-        mockMvc.perform(get("/permisos")
+        mockMvc.perform(get("/api/permisos")
                         .param("search", "NOEXISTE"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isEmpty())
@@ -291,7 +291,7 @@ class PermissionControllerTest {
 
     @Test
     void listAreas_returnsAllAreas() throws Exception {
-        mockMvc.perform(get("/permisos/areas"))
+        mockMvc.perform(get("/api/permisos/areas"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$[0].name").exists())
                 .andExpect(jsonPath("$.length()").value(org.hamcrest.Matchers.greaterThanOrEqualTo(5)));
@@ -307,7 +307,7 @@ class PermissionControllerTest {
             public String startTime = "08:00";
             public String endTime = "12:00";
         };
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request1)))
                 .andExpect(status().isCreated());
@@ -320,7 +320,7 @@ class PermissionControllerTest {
             public String startTime = "13:00";
             public String endTime = "17:00";
         };
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isConflict())
@@ -337,7 +337,7 @@ class PermissionControllerTest {
             public String startTime = "08:00";
             public String endTime = "17:00";
         };
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request1)))
                 .andExpect(status().isCreated());
@@ -350,7 +350,7 @@ class PermissionControllerTest {
             public String startTime = "08:00";
             public String endTime = "17:00";
         };
-        mockMvc.perform(post("/permisos")
+        mockMvc.perform(post("/api/permisos")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(request2)))
                 .andExpect(status().isCreated())
@@ -361,7 +361,7 @@ class PermissionControllerTest {
     void editPermission_validData_returns200() throws Exception {
         grantPermission();
         UUID permId = UUID.fromString(objectMapper.readTree(
-                mockMvc.perform(get("/permisos").param("search", "EMP-PRM-01"))
+                mockMvc.perform(get("/api/permisos").param("search", "EMP-PRM-01"))
                         .andReturn().getResponse().getContentAsString())
                 .get("content").get(0).get("id").asText());
 
@@ -371,7 +371,7 @@ class PermissionControllerTest {
             public String startDate = LocalDate.now().plusDays(1).toString();
             public String expirationDate = LocalDate.now().plusMonths(2).toString();
         };
-        mockMvc.perform(patch("/permisos/{id}", permId)
+        mockMvc.perform(patch("/api/permisos/{id}", permId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editBody)))
                 .andExpect(status().isOk())
@@ -385,7 +385,7 @@ class PermissionControllerTest {
             public String startTime = "06:00";
             public String endTime = "14:00";
         };
-        mockMvc.perform(patch("/permisos/{id}", UUID.randomUUID())
+        mockMvc.perform(patch("/api/permisos/{id}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editBody)))
                 .andExpect(status().isNotFound())
@@ -396,13 +396,13 @@ class PermissionControllerTest {
     void editPermission_suspended_returns400() throws Exception {
         grantPermission();
         UUID permId = UUID.fromString(objectMapper.readTree(
-                mockMvc.perform(get("/permisos").param("search", "EMP-PRM-01"))
+                mockMvc.perform(get("/api/permisos").param("search", "EMP-PRM-01"))
                         .andReturn().getResponse().getContentAsString())
                 .get("content").get(0).get("id").asText());
         var suspendBody = new Object() {
             public String reactivationDate = LocalDate.now().plusDays(7).toString();
         };
-        mockMvc.perform(patch("/permisos/{id}/suspend", permId)
+        mockMvc.perform(patch("/api/permisos/{id}/suspend", permId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(suspendBody)))
                 .andExpect(status().isOk());
@@ -411,7 +411,7 @@ class PermissionControllerTest {
             public String startTime = "06:00";
             public String endTime = "14:00";
         };
-        mockMvc.perform(patch("/permisos/{id}", permId)
+        mockMvc.perform(patch("/api/permisos/{id}", permId)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(editBody)))
                 .andExpect(status().isBadRequest())

@@ -23,7 +23,7 @@ import java.util.List;
  * de productos y descargar el folleto PDF de Laboratorio XYZ.
  */
 @RestController
-@RequestMapping("/public")
+@RequestMapping("/api/public")
 @RequiredArgsConstructor
 public class PublicController {
 

@@ -62,7 +62,7 @@ split
   :Ver detalle del empleado;
 split again
   :Editar empleado;
-  note right: PATCH /personal/{id}\n(cambio de datos\ny/o estado)
+  note right: PATCH /api/personal/{id}\n(cambio de datos\ny/o estado)
 split again
   :Gestionar permisos;
 end split

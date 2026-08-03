@@ -26,7 +26,7 @@ start
 |Frontend|
 :Validar campos;
 
-:Enviar PATCH /personal/{id};
+:Enviar PATCH /api/personal/{id};
 
 |Backend|
 :Recibir actualización;

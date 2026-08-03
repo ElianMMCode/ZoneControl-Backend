@@ -53,7 +53,7 @@ class AuthControllerTest {
     void login_validCredentials_returns200() throws Exception {
         var body = Map.of("email", adminEmail, "password", adminPassword);
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
@@ -67,7 +67,7 @@ class AuthControllerTest {
     void login_emailNotFound_returns404() throws Exception {
         var body = Map.of("email", "noexiste@correo.com", "password", "pass123");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isNotFound())
@@ -78,7 +78,7 @@ class AuthControllerTest {
     void login_wrongPassword_returns401() throws Exception {
         var body = Map.of("email", adminEmail, "password", "WrongPass123!");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isUnauthorized())
@@ -94,7 +94,7 @@ class AuthControllerTest {
 
         var body = Map.of("email", adminEmail, "password", adminPassword);
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isForbidden())
@@ -105,7 +105,7 @@ class AuthControllerTest {
     void login_emptyEmail_returns400() throws Exception {
         var body = Map.of("email", "", "password", "somepass");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest());
@@ -115,7 +115,7 @@ class AuthControllerTest {
     void login_emptyPassword_returns400() throws Exception {
         var body = Map.of("email", adminEmail, "password", "");
 
-        mockMvc.perform(post("/auth/login")
+        mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isBadRequest());
@@ -123,7 +123,7 @@ class AuthControllerTest {
 
     private String loginAndGetToken() throws Exception {
         var body = Map.of("email", adminEmail, "password", adminPassword);
-        var result = mockMvc.perform(post("/auth/login")
+        var result = mockMvc.perform(post("/api/auth/login")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isOk())
@@ -136,7 +136,7 @@ class AuthControllerTest {
         String token = loginAndGetToken();
         var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
 
-        mockMvc.perform(post("/auth/change-password")
+        mockMvc.perform(post("/api/auth/change-password")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -154,7 +154,7 @@ class AuthControllerTest {
         String token = loginAndGetToken();
         var body = Map.of("currentPassword", "Incorrecta1!", "newPassword", "NuevaPass123!");
 
-        mockMvc.perform(post("/auth/change-password")
+        mockMvc.perform(post("/api/auth/change-password")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -167,7 +167,7 @@ class AuthControllerTest {
         String token = loginAndGetToken();
         var body = Map.of("currentPassword", adminPassword, "newPassword", adminPassword);
 
-        mockMvc.perform(post("/auth/change-password")
+        mockMvc.perform(post("/api/auth/change-password")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -180,7 +180,7 @@ class AuthControllerTest {
         String token = loginAndGetToken();
         var body = Map.of("currentPassword", adminPassword, "newPassword", "weak");
 
-        mockMvc.perform(post("/auth/change-password")
+        mockMvc.perform(post("/api/auth/change-password")
                         .header("Authorization", "Bearer " + token)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -193,7 +193,7 @@ class AuthControllerTest {
         var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
         String tamperedToken = token.substring(0, token.length() - 4) + "xxxx";
 
-        mockMvc.perform(post("/auth/change-password")
+        mockMvc.perform(post("/api/auth/change-password")
                         .header("Authorization", "Bearer " + tamperedToken)
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
@@ -204,7 +204,7 @@ class AuthControllerTest {
     void changePassword_withoutToken_returns403() throws Exception {
         var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
 
-        mockMvc.perform(post("/auth/change-password")
+        mockMvc.perform(post("/api/auth/change-password")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isForbidden());

@@ -57,7 +57,7 @@ Entonces: el sistema muestra el mensaje "Cuenta desactivada, contacte al adminis
 | No | Descripción |
 |---|---|
 | 1 | Diseñar formulario de login con campos de email y contraseña en el frontend |
-| 2 | Implementar endpoint POST /auth/login en Spring Boot |
+| 2 | Implementar endpoint POST /api/auth/login en Spring Boot |
 | 3 | Configurar validación de credenciales contra tabla de usuarios en PostgreSQL |
 | 4 | Implementar encriptación de contraseñas con BCrypt |
 | 5 | Implementar generación de token JWT con clave secreta y tiempo de expiración |

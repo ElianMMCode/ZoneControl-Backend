@@ -99,7 +99,7 @@ class AccessControllerTest {
         Employee emp = createEmployee("EMP-TEST-01", "1111111111", EmployeeStatus.ACTIVO);
         grantPermission(emp);
 
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-01", areaName)))
                 .andExpect(status().isOk())
@@ -111,7 +111,7 @@ class AccessControllerTest {
     void validate_inactiveEmployee_returnsDenied() throws Exception {
         Employee emp = createEmployee("EMP-TEST-02", "2222222222", EmployeeStatus.INACTIVO);
 
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-02", areaName)))
                 .andExpect(status().isOk())
@@ -123,7 +123,7 @@ class AccessControllerTest {
     void validate_suspendedEmployee_returnsDenied() throws Exception {
         Employee emp = createEmployee("EMP-TEST-03", "3333333333", EmployeeStatus.SUSPENDIDO);
 
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-03", areaName)))
                 .andExpect(status().isOk())
@@ -133,7 +133,7 @@ class AccessControllerTest {
 
     @Test
     void validate_unregisteredEmployee_returnsUnregistered() throws Exception {
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-999999", areaName)))
                 .andExpect(status().isOk())
@@ -145,7 +145,7 @@ class AccessControllerTest {
     void validate_noValidPermission_returnsSuspended() throws Exception {
         Employee emp = createEmployee("EMP-TEST-04", "4444444444", EmployeeStatus.ACTIVO);
 
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-04", areaName)))
                 .andExpect(status().isOk())
@@ -158,7 +158,7 @@ class AccessControllerTest {
         Employee emp = createEmployee("EMP-TEST-05", "5555555555", EmployeeStatus.ACTIVO);
         grantPermission(emp);
 
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-05", "Sala Blanca B")))
                 .andExpect(status().isOk())
@@ -171,7 +171,7 @@ class AccessControllerTest {
         Employee emp = createEmployee("EMP-TEST-06", "6666666666", EmployeeStatus.ACTIVO);
         grantPermission(emp);
 
-        mockMvc.perform(post("/access/validate")
+        mockMvc.perform(post("/api/access/validate")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(requestBody("EMP-TEST-06", areaName)))
                 .andExpect(status().isOk())

@@ -38,16 +38,16 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/error").permitAll()
-                .requestMatchers(HttpMethod.POST, "/auth/change-password").authenticated()
-                .requestMatchers("/public/**", "/auth/**", "/setup-password/**",
+                .requestMatchers(HttpMethod.POST, "/api/auth/change-password").authenticated()
+                .requestMatchers("/api/public/**", "/api/auth/**", "/api/setup-password/**",
                         "/swagger-ui.html", "/swagger-ui/**", "/webjars/**",
                         "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
-                .requestMatchers("/admin/**").hasRole("ADMIN")
-                .requestMatchers("/personal/**", "/permisos/**")
+                .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers("/api/personal/**", "/api/permisos/**")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL")
-                .requestMatchers("/access/**")
+                .requestMatchers("/api/access/**")
                     .hasAnyRole("ADMIN", "SUPERVISOR_AUDITOR")
-                .requestMatchers("/historial/**", "/reportes/**")
+                .requestMatchers("/api/historial/**", "/api/reportes/**")
                     .hasAnyRole("ADMIN", "SUPERVISOR_AUDITOR")
                 .anyRequest().authenticated()
             )
