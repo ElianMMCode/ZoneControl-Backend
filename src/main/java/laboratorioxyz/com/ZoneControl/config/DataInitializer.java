@@ -67,6 +67,7 @@ public class DataInitializer implements CommandLineRunner {
         seedPublicContent();
         seedOffices();
         seedProductCatalog();
+        seedCandidateEmployees();
         log.info("Seed completed successfully");
     }
 
@@ -221,5 +222,48 @@ public class DataInitializer implements CommandLineRunner {
                 .productionArea("Sala Blanca B")
                 .build());
         log.info("Seeded {} products", 2);
+    }
+
+    /**
+     * Siembra 2 empleados candidatos a ser activados como usuarios del sistema:
+     * tienen systemRole + email, pero no están vinculados a un User. Sirven para
+     * que el Admin los vea en el panel "Empleados pendientes de activación" y en
+     * la página de Gestión de Usuarios.
+     */
+    private void seedCandidateEmployees() {
+        long existing = employeeRepository.findAll().stream()
+                .filter(e -> e.getSystemRole() != null)
+                .filter(e -> userRepository.findByEmployee_Id(e.getId()).isEmpty())
+                .count();
+        if (existing > 0) {
+            log.info("Candidate employees already exist — skipping");
+            return;
+        }
+        Department calidad = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-000002")
+                .documentType(DocumentType.CC)
+                .documentNumber("0000000002")
+                .firstName("Lucía")
+                .lastName("Fernandez")
+                .position("Coordinadora de Personal")
+                .email("lucia.fernandez@laboratorioxzy.com.co")
+                .department(calidad)
+                .status(EmployeeStatus.ACTIVO)
+                .systemRole(Role.GESTOR_PERSONAL)
+                .build());
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-000003")
+                .documentType(DocumentType.CC)
+                .documentNumber("0000000003")
+                .firstName("Roberto")
+                .lastName("Gómez")
+                .position("Auditor Interno")
+                .email("roberto.gomez@laboratorioxzy.com.co")
+                .department(calidad)
+                .status(EmployeeStatus.ACTIVO)
+                .systemRole(Role.SUPERVISOR_AUDITOR)
+                .build());
+        log.info("Seeded 2 candidate employees for activation");
     }
 }

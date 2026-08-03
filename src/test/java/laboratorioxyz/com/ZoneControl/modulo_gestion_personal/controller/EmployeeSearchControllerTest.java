@@ -76,10 +76,13 @@ class EmployeeSearchControllerTest {
     }
 
     @Test
-    void searchEmployees_noFilters_returns400() throws Exception {
+    void searchEmployees_noFilters_returnsEmptyPage() throws Exception {
+        // Antes exigía al menos un filtro (400). Ahora se permite paginar sin
+        // filtros para que el selector de "Crear Usuario" pueda listar todos
+        // los candidatos sin necesidad de teclear criterios.
         mockMvc.perform(get("/api/personal"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("Debe seleccionar al menos un filtro de búsqueda"));
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content").isArray());
     }
 
     @Test

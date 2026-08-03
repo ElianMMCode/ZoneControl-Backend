@@ -8,6 +8,7 @@ import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.UserResponse;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto.CreateUserRequest;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 
@@ -19,7 +20,8 @@ public interface AdminUserService {
     Map<String, Object> updateStatus(UUID id, StatusUpdateRequest request, String currentUserEmail);
     Map<String, Object> update(UUID id, UpdateUserRequest request);
     ResetPasswordResponse resetPassword(UUID id);
-    Page<UserResponse> list(String search, Role role, UserStatus status, Pageable pageable);
+    Page<UserResponse> list(String search, Role role, UserStatus status, Boolean pendientesConfiguracion, Pageable pageable);
     UserResponse getById(UUID id);
     AdminStatsResponse getStats();
+    Page<EmployeeSearchResponse> listActivationCandidates(Pageable pageable);
 }

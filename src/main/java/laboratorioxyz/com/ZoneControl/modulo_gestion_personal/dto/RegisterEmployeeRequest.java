@@ -4,6 +4,7 @@ import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
+import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -54,4 +55,11 @@ public class RegisterEmployeeRequest {
     @Email
     @Size(max = 100)
     private String email;
+
+    /**
+     * Rol de sistema opcional. Si se asigna, el empleado aparecerá
+     * como candidato en el panel "Empleados pendientes de activación"
+     * del Admin. Nulo = empleado de solo acceso físico.
+     */
+    private Role systemRole;
 }

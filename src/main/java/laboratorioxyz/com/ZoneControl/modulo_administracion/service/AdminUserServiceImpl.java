@@ -16,6 +16,7 @@ import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserReposi
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.service.MagicLinkNotifier;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.service.SetupPasswordService;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
 import lombok.RequiredArgsConstructor;
@@ -224,7 +225,8 @@ public class AdminUserServiceImpl implements AdminUserService {
 
     @Override
     @Transactional(readOnly = true)
-    public Page<UserResponse> list(String search, Role role, UserStatus status, Pageable pageable) {
+    public Page<UserResponse> list(String search, Role role, UserStatus status,
+                                    Boolean pendientesConfiguracion, Pageable pageable) {
         Specification<User> spec = (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
             if (search != null && !search.isBlank()) {
@@ -242,6 +244,9 @@ public class AdminUserServiceImpl implements AdminUserService {
             }
             if (status != null) {
                 predicate = cb.and(predicate, cb.equal(root.get("status"), status));
+            }
+            if (Boolean.TRUE.equals(pendientesConfiguracion)) {
+                predicate = cb.and(predicate, cb.isNotNull(root.get("setupToken")));
             }
             return predicate;
         };
@@ -271,6 +276,29 @@ public class AdminUserServiceImpl implements AdminUserService {
                 accessPermissionRepository.countByStatus(PermissionStatus.ACTIVO),
                 accessPermissionRepository.countByStatus(PermissionStatus.SUSPENDIDO)
         );
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public Page<EmployeeSearchResponse> listActivationCandidates(Pageable pageable) {
+        return employeeRepository.findActivationCandidates(pageable)
+                .map(this::toEmployeeResponse);
+    }
+
+    private EmployeeSearchResponse toEmployeeResponse(Employee employee) {
+        return EmployeeSearchResponse.builder()
+                .id(employee.getId())
+                .employeeCode(employee.getEmployeeCode())
+                .documentType(employee.getDocumentType())
+                .documentNumber(employee.getDocumentNumber())
+                .firstName(employee.getFirstName())
+                .lastName(employee.getLastName())
+                .position(employee.getPosition())
+                .email(employee.getEmail())
+                .departmentName(employee.getDepartment().getName())
+                .status(employee.getStatus())
+                .systemRole(employee.getSystemRole())
+                .build();
     }
 
     private UserResponse toUserResponse(User user) {

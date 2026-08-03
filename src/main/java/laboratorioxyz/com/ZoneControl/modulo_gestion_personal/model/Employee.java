@@ -6,6 +6,7 @@ import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.entity.Department;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
+import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import lombok.*;
 
 import java.util.UUID;
@@ -70,4 +71,15 @@ public class Employee {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "department_id", nullable = false)
     private Department department;
+
+    /**
+     * Rol de sistema que el Gestor de Personal asigna al empleado.
+     * Cuando es no nulo, indica que este empleado es candidato a
+     * ser activado como usuario del sistema (Admin podrá entonces
+     * crear la cuenta y enviarle el magic link). Es nulo para
+     * empleados que solo requieren acceso físico.
+     */
+    @Enumerated(EnumType.STRING)
+    @Column(name = "system_role", length = 20, nullable = true)
+    private Role systemRole;
 }

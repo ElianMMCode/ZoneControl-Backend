@@ -32,4 +32,15 @@ public interface EmployeeRepository extends JpaRepository<Employee, UUID>, JpaSp
     String findMaxEmployeeCode();
 
     long countByStatus(EmployeeStatus status);
+
+    /**
+     * Empleados candidatos a ser activados como usuarios del sistema:
+     * tienen un systemRole asignado (gestor los marcó como candidatos),
+     * tienen correo registrado (necesario para el magic link) y todavía
+     * no tienen una cuenta de usuario asociada.
+     */
+    @Query("SELECT e FROM Employee e WHERE e.systemRole IS NOT NULL " +
+           "AND e.email IS NOT NULL AND e.email <> '' " +
+           "AND NOT EXISTS (SELECT u FROM User u WHERE u.employee = e)")
+    org.springframework.data.domain.Page<Employee> findActivationCandidates(org.springframework.data.domain.Pageable pageable);
 }

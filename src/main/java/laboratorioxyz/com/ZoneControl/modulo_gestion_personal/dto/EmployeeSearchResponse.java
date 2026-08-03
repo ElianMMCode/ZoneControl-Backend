@@ -2,6 +2,7 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto;
 
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
+import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -22,4 +23,5 @@ public class EmployeeSearchResponse {
     private String email;
     private String departmentName;
     private EmployeeStatus status;
+    private Role systemRole;
 }

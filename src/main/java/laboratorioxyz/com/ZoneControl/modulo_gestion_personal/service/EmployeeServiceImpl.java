@@ -68,6 +68,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .position(request.getPosition())
                 .email(request.getEmail())
                 .department(department)
+                .systemRole(request.getSystemRole())
                 .build();
 
         employee = employeeRepository.save(employee);
@@ -95,12 +96,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                                                 String firstName, String lastName,
                                                 String departmentName, EmployeeStatus status,
                                                 Pageable pageable) {
-        if (documentType == null && documentNumber == null && firstName == null
-                && lastName == null && departmentName == null && status == null) {
-            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Debe seleccionar al menos un filtro de búsqueda");
-        }
-
         Specification<Employee> spec = (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
             if (documentType != null && !documentType.isBlank()) {
@@ -193,6 +188,9 @@ public class EmployeeServiceImpl implements EmployeeService {
                     && previousStatus != EmployeeStatus.ACTIVO) {
                 cascadeReactivate(employee.getId());
             }
+        }
+        if (request.getSystemRole() != null) {
+            employee.setSystemRole(request.getSystemRole());
         }
 
         employee = employeeRepository.save(employee);
@@ -441,6 +439,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .email(employee.getEmail())
                 .departmentName(employee.getDepartment().getName())
                 .status(employee.getStatus())
+                .systemRole(employee.getSystemRole())
                 .build();
     }
 }

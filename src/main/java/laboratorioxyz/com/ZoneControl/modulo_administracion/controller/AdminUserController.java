@@ -6,6 +6,7 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ResetPasswordResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.StatusUpdateRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.UpdateUserRequest;
@@ -49,8 +50,20 @@ public class AdminUserController {
             @RequestParam(required = false) String search,
             @RequestParam(required = false) Role role,
             @RequestParam(required = false) UserStatus status,
+            @RequestParam(required = false) Boolean pendientesConfiguracion,
             @PageableDefault(size = 10) Pageable pageable) {
-        return ResponseEntity.ok(adminUserService.list(search, role, status, pageable));
+        return ResponseEntity.ok(adminUserService.list(search, role, status, pendientesConfiguracion, pageable));
+    }
+
+    @Operation(summary = "Empleados candidatos a ser activados como usuarios",
+            description = "Lista de empleados que el Gestor marcó con systemRole y que aún no tienen " +
+                    "cuenta de sistema (tienen correo registrado y no están vinculados a un User). " +
+                    "El Admin puede activar a cualquiera desde el dashboard o la página de Usuarios.")
+    @ApiResponse(responseCode = "200", description = "Lista paginada de candidatos a activación")
+    @GetMapping("/candidatos")
+    public ResponseEntity<Page<EmployeeSearchResponse>> listActivationCandidates(
+            @PageableDefault(size = 20) Pageable pageable) {
+        return ResponseEntity.ok(adminUserService.listActivationCandidates(pageable));
     }
 
     @Operation(summary = "Detalle de un usuario",
