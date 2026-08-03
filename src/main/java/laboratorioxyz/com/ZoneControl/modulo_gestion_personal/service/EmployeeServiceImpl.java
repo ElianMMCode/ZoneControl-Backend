@@ -645,7 +645,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private byte[] defaultEmployeePhoto() {
-        try (var in = getClass().getResourceAsStream("/static/images/default-employee.png")) {
+        try (var in = getClass().getResourceAsStream("/employee-default.png")) {
             if (in == null) {
                 throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "Imagen por defecto no encontrada en el classpath");
