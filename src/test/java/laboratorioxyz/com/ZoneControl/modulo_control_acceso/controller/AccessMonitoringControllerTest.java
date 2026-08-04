@@ -194,4 +194,21 @@ class AccessMonitoringControllerTest {
         mockMvc.perform(get("/api/access/stream"))
                 .andExpect(request().asyncStarted());
     }
+
+    @Test
+    void markAlertLeido_marksAlertAsRead() throws Exception {
+        AccessAlert alert = accessAlertRepository.save(AccessAlert.builder()
+                .tipo(AccessAlert.AlertType.DENEGACIONES_REPETIDAS)
+                .severidad(AccessAlert.AlertSeverity.MEDIUM)
+                .message("≥3 intentos denegados")
+                .timestamp(java.time.LocalDateTime.now())
+                .build());
+
+        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders
+                        .patch("/api/access/alerts/{id}/leido", alert.getId()))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.message").value("Alerta marcada como leída"));
+
+        assertTrue(accessAlertRepository.findById(alert.getId()).orElseThrow().isLeido());
+    }
 }

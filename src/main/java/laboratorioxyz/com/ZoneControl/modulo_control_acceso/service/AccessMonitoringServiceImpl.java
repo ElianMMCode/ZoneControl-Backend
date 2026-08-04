@@ -21,6 +21,7 @@ import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
@@ -105,5 +106,16 @@ public class AccessMonitoringServiceImpl implements AccessMonitoringService {
                 .filter(a -> desde == null || !a.getTimestamp().isBefore(desde))
                 .filter(a -> leido == null || a.isLeido() == leido)
                 .toList();
+    }
+
+    @Override
+    @Transactional
+    public void markAlertLeido(UUID id) {
+        AccessAlert alert = accessAlertRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Alerta no encontrada"));
+        alert.setLeido(true);
+        accessAlertRepository.save(alert);
+        log.info("Alert {} marked as read", id);
     }
 }

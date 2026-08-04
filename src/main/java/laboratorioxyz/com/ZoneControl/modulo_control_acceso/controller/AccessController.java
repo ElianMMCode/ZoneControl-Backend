@@ -19,6 +19,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 
 @RestController
 @RequestMapping("/api/access")
@@ -61,6 +62,12 @@ public class AccessController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime desde,
             @RequestParam(required = false) Boolean leido) {
         return ResponseEntity.ok(accessMonitoringService.alerts(desde, leido));
+    }
+
+    @PatchMapping("/alerts/{id}/leido")
+    public ResponseEntity<Map<String, String>> markAlertLeido(@PathVariable UUID id) {
+        accessMonitoringService.markAlertLeido(id);
+        return ResponseEntity.ok(Map.of("message", "Alerta marcada como leída"));
     }
 
     @GetMapping("/stream")
