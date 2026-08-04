@@ -121,10 +121,13 @@ class AdminDashboardDataTest {
     }
 
     @Test
-    void candidatos_includesSeededCandidatesFromDataInitializer() throws Exception {
+    void candidatos_includesEligibleEmployeesFromDatabase() throws Exception {
+        newEmployee("EMP-DASH-C5", "800000015", "dashc5@test.com", Role.GESTOR_PERSONAL, false);
+        newEmployee("EMP-DASH-C6", "800000016", "dashc6@test.com", Role.SUPERVISOR_AUDITOR, false);
+
         mockMvc.perform(get("/api/admin/users/candidatos"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.content[?(@.employeeCode=='EMP-000002')]").exists())
-                .andExpect(jsonPath("$.content[?(@.employeeCode=='EMP-000003')]").exists());
+                .andExpect(jsonPath("$.content[?(@.employeeCode=='EMP-DASH-C5')]").exists())
+                .andExpect(jsonPath("$.content[?(@.employeeCode=='EMP-DASH-C6')]").exists());
     }
 }
