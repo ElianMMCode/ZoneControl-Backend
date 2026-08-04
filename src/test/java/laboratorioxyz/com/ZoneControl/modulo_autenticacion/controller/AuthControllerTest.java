@@ -23,6 +23,7 @@ import java.util.UUID;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.put;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 @SpringBootTest
@@ -205,6 +206,60 @@ class AuthControllerTest {
         var body = Map.of("currentPassword", adminPassword, "newPassword", "NuevaPass123!");
 
         mockMvc.perform(post("/api/auth/change-password")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isForbidden());
+    }
+
+    @Test
+    void updateProfile_validData_returns200AndUpdates() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("firstName", "Admin", "lastName", "Actualizado", "email", "admin.actualizado@zonecontrol.com");
+
+        mockMvc.perform(put("/api/auth/profile")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.firstName").value("Admin"))
+                .andExpect(jsonPath("$.lastName").value("Actualizado"))
+                .andExpect(jsonPath("$.email").value("admin.actualizado@zonecontrol.com"));
+
+        userRepository.findByEmail("admin.actualizado@zonecontrol.com").ifPresent(user -> {
+            assertThat(user.getLastName()).isEqualTo("Actualizado");
+        });
+    }
+
+    @Test
+    void updateProfile_duplicateEmail_returns409() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("firstName", "Admin", "lastName", "ZoneControl", "email", "gestor@zonecontrol.com");
+
+        mockMvc.perform(put("/api/auth/profile")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isConflict())
+                .andExpect(jsonPath("$.error").value("El email ya está registrado"));
+    }
+
+    @Test
+    void updateProfile_invalidFields_returns400() throws Exception {
+        String token = loginAndGetToken();
+        var body = Map.of("firstName", "", "lastName", "ZoneControl", "email", "correo-invalido");
+
+        mockMvc.perform(put("/api/auth/profile")
+                        .header("Authorization", "Bearer " + token)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(body)))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    void updateProfile_withoutToken_returns403() throws Exception {
+        var body = Map.of("firstName", "Admin", "lastName", "ZoneControl", "email", "admin@zonecontrol.com");
+
+        mockMvc.perform(put("/api/auth/profile")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(body)))
                 .andExpect(status().isForbidden());

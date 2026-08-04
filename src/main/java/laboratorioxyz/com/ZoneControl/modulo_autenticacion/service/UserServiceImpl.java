@@ -1,6 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_autenticacion.service;
 
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto.UpdateProfileRequest;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
@@ -65,5 +66,32 @@ public class UserServiceImpl implements UserService {
         userRepository.save(user);
         log.info("Password changed for user {}", userId);
         return Map.of("message", "Contraseña actualizada correctamente");
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> updateProfile(UUID userId, UpdateProfileRequest request) {
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Usuario no encontrado"));
+
+        if (!request.email().equals(user.getEmail()) && userRepository.existsByEmail(request.email())) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "El email ya está registrado");
+        }
+
+        user.setFirstName(request.firstName());
+        user.setLastName(request.lastName());
+        user.setEmail(request.email());
+        userRepository.save(user);
+        log.info("Profile updated for user {}", userId);
+
+        return Map.of(
+                "id", user.getId(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "email", user.getEmail(),
+                "role", user.getRole().name()
+        );
     }
 }

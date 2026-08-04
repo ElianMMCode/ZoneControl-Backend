@@ -7,6 +7,7 @@ import jakarta.validation.Valid;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto.ChangePasswordRequest;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto.LoginRequest;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto.LoginResponse;
+import laboratorioxyz.com.ZoneControl.modulo_autenticacion.dto.UpdateProfileRequest;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserRepository;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.service.UserService;
@@ -20,6 +21,7 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -93,5 +95,19 @@ public class AuthController {
     public ResponseEntity<Map<String, String>> changePassword(@Valid @RequestBody ChangePasswordRequest request) {
         String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
         return ResponseEntity.ok(userService.changePassword(UUID.fromString(currentUserId), request.currentPassword(), request.newPassword()));
+    }
+
+    @Operation(summary = "Actualizar perfil propio",
+            description = "Permite al usuario autenticado actualizar sus propios datos de cuenta " +
+                    "(nombre, apellido y correo). Valida que el correo no esté en uso por otro usuario.")
+    @ApiResponse(responseCode = "200", description = "Perfil actualizado")
+    @ApiResponse(responseCode = "400", description = "Validación de campos")
+    @ApiResponse(responseCode = "401", description = "Token JWT inválido o expirado")
+    @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
+    @ApiResponse(responseCode = "409", description = "El email ya está registrado")
+    @PutMapping("/profile")
+    public ResponseEntity<Map<String, Object>> updateProfile(@Valid @RequestBody UpdateProfileRequest request) {
+        String currentUserId = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(userService.updateProfile(UUID.fromString(currentUserId), request));
     }
 }

@@ -39,6 +39,7 @@ public class SecurityConfig {
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/error").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/change-password").authenticated()
+                .requestMatchers(HttpMethod.PUT, "/api/auth/profile").authenticated()
                 .requestMatchers("/api/public/**", "/api/auth/**", "/api/setup-password/**",
                         "/swagger-ui.html", "/swagger-ui/**", "/webjars/**",
                         "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
