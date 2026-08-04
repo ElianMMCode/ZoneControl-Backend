@@ -15,6 +15,7 @@ import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermis
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PermissionScheduleRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -52,6 +53,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final OfficeRepository officeRepository;
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
+    private final PermissionScheduleRepository permissionScheduleRepository;
     private final UserService userService;
 
     @Override
@@ -269,6 +271,12 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (originalFilename == null || (!originalFilename.endsWith(".csv") && !originalFilename.endsWith(".txt"))) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Extensión de archivo no permitida. Solo se aceptan archivos .csv y .txt");
+        }
+
+        if (file.getSize() > MAX_BULK_BYTES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El archivo excede el límite permitido de 10MB o 1000 registros. "
+                    + "Por favor, divida el archivo en partes más pequeñas");
         }
 
         List<String[]> rows;
@@ -534,6 +542,11 @@ public class EmployeeServiceImpl implements EmployeeService {
     }
 
     private PermissionResponse toPermissionResponse(AccessPermission permission) {
+        List<PermissionResponse.PermissionScheduleItem> schedules =
+                permissionScheduleRepository.findByPermission_Id(permission.getId()).stream()
+                        .map(s -> new PermissionResponse.PermissionScheduleItem(
+                                s.getDayOfWeek().name(), s.getStartTime(), s.getEndTime()))
+                        .toList();
         return PermissionResponse.builder()
                 .id(permission.getId())
                 .employeeCode(permission.getEmployee().getEmployeeCode())
@@ -546,6 +559,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .reactivationDate(permission.getReactivationDate())
                 .startTime(permission.getStartTime())
                 .endTime(permission.getEndTime())
+                .schedules(schedules)
                 .build();
     }
 
@@ -575,6 +589,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private static final Path PHOTO_DIR = Paths.get("uploads", "photos");
     private static final Set<String> ALLOWED_PHOTO_EXT = Set.of("jpg", "jpeg", "png", "webp");
     private static final long MAX_PHOTO_BYTES = 2L * 1024 * 1024; // 2 MB
+    private static final long MAX_BULK_BYTES = 10L * 1024 * 1024; // 10 MB
 
     @PostConstruct
     void initPhotoDir() {
