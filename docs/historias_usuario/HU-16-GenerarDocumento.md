@@ -56,6 +56,12 @@ Entonces: el sistema muestra el mensaje "No hay datos para exportar"
 | 6 | Configurar descarga automática del archivo generado en el navegador |
 | 7 | Validar que existan datos antes de permitir la exportación |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `POST /api/historial/export` (CSV y EXCEL con Apache POI; retorna `byte[]` con `Content-Disposition`). **Pendiente PDF** (ítem 1.1 de la §9; itextpdf 5 en `pom.xml` sin uso).
+- **Frontend**: ✓ — botones CSV/Excel en `ReportsView` (`/supervisor/reportes`, mockup 37) con descarga automática del archivo.
+- **Notas**: `ExportRequest.departamentoName` se acepta pero el filtro no lo aplica (gap backend §8/§9 item 1.3).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

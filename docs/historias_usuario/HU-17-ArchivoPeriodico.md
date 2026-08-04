@@ -73,6 +73,12 @@ Entonces: el sistema registra la acción en los logs de auditoría con la fecha,
 | 7 | Registrar en logs de auditoría cada generación y envío de archivo periódico con todos los metadatos relevantes |
 | 8 | Permitir la descarga local del archivo generado y opcionalmente registrar el envío al socio internacional |
 
+## Estado de Implementación
+
+- **Backend**: ✓ (parcial) — `POST /api/reportes/archivo-periodico` (mes/anio/formato; CSV/EXCEL). **Gap vs plan**: emite filas por empleado con datos personales y NO agrega por departamento; no existe `departmentNames` en el request (ver §8 y §9 item 1.2).
+- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato y descarga automática.
+- **Notas**: la agregación por departamento sin datos personales (normativa socio internacional) queda pendiente en backend.
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

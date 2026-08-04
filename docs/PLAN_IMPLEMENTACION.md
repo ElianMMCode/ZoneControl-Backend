@@ -575,6 +575,9 @@ Fase 8: Frontend React (rama `feat/frontend-gestor`)          en progreso
   ✓ Detalle de empleado (mockup 41): edición, foto, asignar área, acciones de permiso e historial completo
   ✓ Gestión de permisos (mockup 45): otorgar/editar/suspender/reactivar/revocar + KPIs derivables
   ✓ Dashboard del supervisor (mockup 09)
+  ✓ Validación de credencial (mockup 44) en `/supervisor/validar` — consume `POST /api/access/validate`
+  ✓ Reportes / historial (mockup 37) en `/supervisor/reportes` — filtros, export CSV/Excel y archivo periódico
+  ✓ Matriz de roles (mockup 16) en `/admin/matriz-roles` — solo lectura, reconstruida de `SecurityConfig`
   ✓ Ajustes/Perfil (mockup 00) con cambio de contraseña (HU-03 adicional)
   ✓ Sitio corporativo público (mockup 27) en `/`
   ✓ Gestión de contenido público (mockup 18) en `/admin/contenido-publico`
@@ -583,7 +586,7 @@ Fase 8: Frontend React (rama `feat/frontend-gestor`)          en progreso
 
 Adiciones de coherencia posteriores también implementadas: `GET /api/admin/stats`, `GET /api/historial/stats`, `GET /api/permisos` + `GET /api/permisos/areas` + `PATCH /api/permisos/{id}` + `PATCH /api/permisos/{id}/reactivate` + CRUD `POST/PUT/DELETE /api/permisos/areas`, `POST /api/auth/change-password`, fotografía de empleado (`POST/GET/DELETE /api/personal/{id}/photo`), `GET /api/personal/departamentos`, `GET /api/personal/sedes`, `GET /api/personal/{id}/permisos`, `GET /api/personal/{id}/accesos`, `GET /api/admin/users/candidatos` y flujo de magic link para contraseñas (HU-05/08).
 
-**Pendiente global (frontend):** validación de credencial (mockup 44), reportes/historial (mockup 37) y matriz de roles (mockup 16) — corresponden a los módulos de supervisor y admin, fuera del alcance del módulo del gestor (completado). Gaps de backend documentados en §4/§7/§8 y en AGENTS.md.
+**Pendiente global (frontend):** no quedan vistas pendientes de los mockups finales; todas las rutas documentadas están construidas. Gaps restantes son de **backend** (PDF en export/archivo periódico, agregación por departamento, filtro por departamento, matriz de roles endpoint, invalidación JWT, handlers 409/500, tiempo real/rol SEGURIDAD, turnos) — documentados en §4/§7/§8/§9.12 y en AGENTS.md.
 
 Cada HU = al menos 1 commit atómico. Cada HU completa sus tests TDD antes de pasar a la siguiente.
 
@@ -615,13 +618,13 @@ Los mockups finales en `.stitch/screens/` (marca Laboratorio XYZ) asumen funcion
 | Mockup | Funcionalidad asumida | Estado en backend |
 |--------|----------------------|-------------------|
 | `22_...gesti-n-de-reas-de-producci-n` | CRUD de áreas de producción y terminales biométricos | CRUD de áreas **implementado** (`POST/PUT/DELETE /api/permisos/areas`, §9 item 1.4) y frontend en `/admin/areas`. Terminales biométricos: no existen → pendiente de decidir |
-| `16_...matriz-de-roles-y-permisos` | Matriz de roles/api/permisos (consulta) | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). **Pendiente** endpoint `GET /api/admin/role-matrix` y vista frontend (HU-27) |
+| `16_...matriz-de-roles-y-permisos` | Matriz de roles/api/permisos (consulta) | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). Vista frontend **implementada** en `/admin/matriz-roles` (solo lectura, reconstruida de `SecurityConfig`). **Pendiente** endpoint `GET /api/admin/role-matrix` (HU-27, opcional según §9 fase B) |
 | `28_...dashboard-de-administraci-n` | Mapa de accesos en tiempo real, "Súper Usuario" | `/api/admin/stats` solo entrega contadores KPI. Pendiente decidir si se implementa el mapa |
 | `09_...panel-de-supervisi-n-corporativo` | Estado de zonas (A-12, B-04) y alertas críticas en vivo | `/api/historial/stats` solo entrega contadores KPI; las zonas A-12/B-04 no existen en el seed. Decorativo por ahora |
 | `42_...registro-de-personal` | Fotografía del empleado (opcional) | **Implementado** (HU-25, §9 item 3.1): `POST/GET/DELETE /api/personal/{id}/photo` + frontend en registro y detalle |
 | `46_...inicio-de-sesi-n-interno` | "¿Olvidó su contraseña?" | No hay flujo público de recovery; solo reset vía `POST /api/admin/users/{id}/reset-password` (magic link) |
-| `37_...reportes-de-auditor-a` | Exportar PDF | Pendiente implementar (pom incluye itextpdf 5; hoy solo CSV/EXCEL). Excepción aprobada: se implementa después |
-> **Cobertura:** la funcionalidad de los mockups 22 (CRUD áreas — backend ✓, frontend `/admin/areas`), 42 (foto — implementada), y la de 28/09 (mapa y alertas en vivo), 16 (matriz roles) y 37 (export PDF) está incorporada a la hoja de ruta de la §9. El flujo público de "¿Olvidó su contraseña?" (mockup 46) y la edición real de la matriz de permisos quedan fuera de alcance de §9.
+| `37_...reportes-de-auditor-a` | Exportar PDF | Frontend **implementado** en `/supervisor/reportes` (CSV/EXCEL + archivo periódico). **Pendiente backend**: export PDF (pom incluye itextpdf 5; hoy solo CSV/EXCEL). Excepción aprobada: se implementa después |
+> **Cobertura:** la funcionalidad de los mockups 22 (CRUD áreas — backend ✓, frontend `/admin/areas`), 42 (foto — implementada), 44 (validación — frontend `/supervisor/validar`), 37 (reportes — frontend `/supervisor/reportes`, PDF backend pendiente) y 16 (matriz — frontend `/admin/matriz-roles`, endpoint pendiente) está incorporada a la hoja de ruta de la §9. Lo que queda en la §9: 28/09 (mapa y alertas en vivo), export PDF, agregación por departamento, filtro por departamento, endpoint de matriz, invalidación JWT, handlers 409/500, tiempo real/rol SEGURIDAD y turnos. El flujo público de "¿Olvidó su contraseña?" (mockup 46) y la edición real de la matriz de permisos quedan fuera de alcance de §9.
 
 ---
 
@@ -863,7 +866,7 @@ Frontend integrado por fase, consumiendo los hooks y store ya existentes. Docume
 | 1.2 | Archivo periódico agregado por departamento | PENDIENTE |
 | 1.3 | Filtro por departamento en historial y export | PENDIENTE |
 | 1.4 | CRUD de áreas de producción (HU-20) | IMPLEMENTADO (backend) + frontend `/admin/areas` (admin) |
-| 1.5 | Matriz de roles solo consulta (HU-27) | PENDIENTE (endpoint + vista) |
+| 1.5 | Matriz de roles solo consulta (HU-27) | Vista frontend IMPLEMENTADA en `/admin/matriz-roles` (solo lectura). **Pendiente**: endpoint `GET /api/admin/role-matrix` |
 | 1.6 | Invalidar JWT al desactivar usuario (HU-07 gap) | PENDIENTE |
 | 1.7 | Handlers 409 y 500 en GlobalExceptionHandler | PENDIENTE |
 | 2.1–2.5 | Tiempo real (sesiones, emergencia, SSE, alertas, rol SEGURIDAD) | PENDIENTE |

@@ -63,6 +63,12 @@ Entonces: el sistema muestra el mensaje "No hay registros para el período selec
 | 5 | Mostrar resultados en tabla paginada con columnas: fecha, hora, ID, empleado, departamento, resultado |
 | 6 | Agregar opción de exportación desde la vista de resultados (conecta con HU-16) |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `GET /api/historial` (fechaInicio/fechaFin obligatorias + `employeeCode`, `resultado` opcionales, paginado). Tests verdes.
+- **Frontend**: ✓ — `ReportsView` (`/supervisor/reportes`, mockup 37) con KPIs, filtros de fecha/empleado/resultado, tabla paginada y export CSV/Excel.
+- **Notas**: el filtro por departamento no está disponible (gap backend §8).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

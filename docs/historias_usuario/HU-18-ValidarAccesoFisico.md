@@ -65,6 +65,12 @@ Entonces: el sistema muestra "ACCESO SUSPENDIDO" en color rojo y registra el int
 | 7 | Implementar alertas visuales en el frontend: verde (AUTORIZADO), rojo (DENEGADO/SUSPENDIDO), amarillo (NO REGISTRADO) |
 | 8 | Simular activación de mecanismo de apertura cuando el resultado sea AUTORIZADO |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `POST /api/access/validate` (AUTHORIZED / DENIED / UNREGISTERED / SUSPENDED) con registro en `AccessHistory`. Tests verdes.
+- **Frontend**: ✓ — `AccessValidationView` (`/supervisor/validar`, mockup 44) con selector de zona (áreas del seed), código de empleado y alerta de color por resultado (verde autorizado / rojo denegado-suspendido / amarillo no registrado).
+- **Notas**: la zona de acceso se selecciona del catálogo sembrado (el rol SUPERVISOR_AUDITOR no accede a `GET /api/permisos/areas`, por lo que la lista es estática en el frontend).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

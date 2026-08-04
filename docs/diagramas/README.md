@@ -71,16 +71,15 @@ definidas en `src/main/frontend/src/routes/index.tsx` (React Router).
 |-----------|------------|--------|
 | **Público** | Público General (CU-01) | `/` (`LandingView`) |
 | **Compartido** | Usuario Autenticado (CU-02) | `/login`, `/configurar-contrasena`, `/ajustes` (`SettingsView` — perfil + cambio de contraseña) |
-| **Admin** | Administrador (CU-03a/03b/03c) | `/admin/dashboard`, `/admin/usuarios`, `/admin/usuarios/nuevo`, `/admin/contenido-publico`, `/admin/areas` (CU-06a) |
+| **Admin** | Administrador (CU-03a/03b/03c/06a) | `/admin/dashboard`, `/admin/usuarios`, `/admin/usuarios/nuevo`, `/admin/contenido-publico`, `/admin/areas` (CU-06a), `/admin/matriz-roles` (CU-03c) |
 | **Gestor** | Gestor de Personal (CU-04/05/06/06a/07/07a/07b) | `/personal`, `/personal/nuevo`, `/personal/carga-masiva`, `/personal/:id`, `/permisos` |
-| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `/supervisor` |
+| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `/supervisor`, `/supervisor/validar` (CU-11), `/supervisor/reportes` (CU-08/09/10) |
 
 > **Nota**: `settings.html`/`/ajustes` es transversal porque el perfil y el cambio de contraseña
 > (`POST /api/auth/change-password`) aplican a los tres roles autenticados (CU-02).
-> La vista de validación de acceso (`access-validation.html`, mockup 44) y la de reportes
-> (`audit-reports.html`, mockup 37) pertenecen al Supervisor según CU-11/CU-08-10 — pendientes frontend.
-> La matriz de roles (mockup 16) pertenece al Administrador (CU-03c, solo consulta) — pendiente.
-> `CU-06a` (áreas) y `CU-07b` (fotografía) están implementados en backend y frontend.
+> Todas las vistas de los mockups finales están implementadas en el frontend. Lo pendiente es de
+> **backend**: export PDF, agregación/filtro por departamento, endpoint de matriz (`GET /api/admin/role-matrix`),
+> invalidación de JWT, handlers 409/500, tiempo real/rol SEGURIDAD y turnos (§9).
 
 ---
 
