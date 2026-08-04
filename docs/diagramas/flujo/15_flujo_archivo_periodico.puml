@@ -56,6 +56,14 @@ end note
 
 :Generar archivo anonimizado;
 
+note right
+  Gap 1.2 §9 IMPLEMENTADO:
+  agregación GROUP BY department,
+  sin datos personales, con filtro
+  opcional departmentNames y formato
+  PDF (1.1).
+end note
+
 :Retornar archivo;
 
 |Frontend|

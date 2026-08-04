@@ -16,7 +16,7 @@
 
 ## Requerimiento
 
-El sistema debe permitir al administrador activar o desactivar cuentas de usuario. Un usuario desactivado no debe poder iniciar sesión. **Nota:** los tokens JWT ya emitidos no se invalidan al desactivar (siguen válidos hasta su expiración); la desactivación se valida en el login y en `CustomUserDetailsService`. El sistema debe impedir que el administrador se desactive a sí mismo.
+El sistema debe permitir al administrador activar o desactivar cuentas de usuario. Un usuario desactivado no debe poder iniciar sesión **ni usar tokens JWT previamente emitidos** (gap 1.6 §9 implementado: `JwtAuthenticationFilter` valida `status == ACTIVO` en cada request y responde 401 si el usuario fue desactivado). El sistema debe impedir que el administrador se desactive a sí mismo.
 
 ## Criterios de Aceptación
 
@@ -52,6 +52,14 @@ Cuando: ejecuta la acción
 
 Entonces: el sistema rechaza la operación y muestra el mensaje "No puede desactivar su propia cuenta"
 
+Condición 05 (gap 1.6 §9)
+
+Dado: que un usuario fue desactivado
+
+Cuando: intenta usar un token JWT que recibió antes de la desactivación
+
+Entonces: el sistema rechaza la petición con HTTP 401 "Cuenta desactivada"
+
 ## Tareas
 
 | No | Descripción |
@@ -59,12 +67,18 @@ Entonces: el sistema rechaza la operación y muestra el mensaje "No puede desact
 | 1 | Implementar toggle de activar/desactivar en la lista de usuarios del frontend |
 | 2 | Implementar endpoint PATCH /api/admin/users/{id}/status en Spring Boot |
 | 3 | Agregar validación que impida al administrador desactivarse a sí mismo |
-| 4 | ~~Invalidar token JWT del usuario al ser desactivado~~ — gap conocido (HU-07): la desactivación no invalida tokens existentes |
+| 4 | Invalidar token JWT del usuario al ser desactivado (gap 1.6 §9, implementado) |
 | 5 | Mostrar diálogo de confirmación antes de ejecutar el cambio de estado |
 | 6 | Registrar la acción de cambio de estado en logs del sistema |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `PATCH /api/admin/users/{id}/status` con protección de auto-desactivación. **Gap 1.6 implementado**: el `JwtAuthenticationFilter` valida el estado del usuario en cada request (token de usuario desactivado → 401). Test: `JwtInvalidationTest`.
+- **Frontend**: ✓ — `UsersView` con toggle + diálogo de confirmación.
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-04 | | | Criterio 05: invalidación de tokens JWT al desactivar (gap 1.6 §9) | |

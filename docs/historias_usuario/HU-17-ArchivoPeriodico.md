@@ -75,12 +75,13 @@ Entonces: el sistema registra la acción en los logs de auditoría con la fecha,
 
 ## Estado de Implementación
 
-- **Backend**: ✓ (parcial) — `POST /api/reportes/archivo-periodico` (mes/anio/formato; CSV/EXCEL). **Gap vs plan**: emite filas por empleado con datos personales y NO agrega por departamento; no existe `departmentNames` en el request (ver §8 y §9 item 1.2).
-- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato y descarga automática.
-- **Notas**: la agregación por departamento sin datos personales (normativa socio internacional) queda pendiente en backend.
+- **Backend**: ✓ — `POST /api/reportes/archivo-periodico` con **agregación por departamento SIN datos personales** (columnas: Departamento, Período, Total, Autorizados, Denegados, No Registrados, Suspendidos) y filtro opcional `departmentNames` (gap 1.2 §9 implementado). Formatos CSV/EXCEL/PDF. Tests en `PeriodicReportControllerTest`.
+- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF) y descarga automática.
+- **Notas**: cumple la normativa del socio internacional al excluir datos personales.
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-04 | | | Reescritura: agregación por departamento sin datos personales + `departmentNames` (gap 1.2 §9) | |

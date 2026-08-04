@@ -58,12 +58,13 @@ Entonces: el sistema muestra el mensaje "No hay datos para exportar"
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `POST /api/historial/export` (CSV y EXCEL con Apache POI; retorna `byte[]` con `Content-Disposition`). **Pendiente PDF** (ítem 1.1 de la §9; itextpdf 5 en `pom.xml` sin uso).
-- **Frontend**: ✓ — botones CSV/Excel en `ReportsView` (`/supervisor/reportes`, mockup 37) con descarga automática del archivo.
-- **Notas**: `ExportRequest.departamentoName` se acepta pero el filtro no lo aplica (gap backend §8/§9 item 1.3).
+- **Backend**: ✓ — `POST /api/historial/export` (CSV, EXCEL y **PDF** con `PdfExporter`/itextpdf 5; retorna `byte[]` con `Content-Disposition`). **Gap 1.1 §9 implementado** (PDF). Tests en `HistoryControllerTest` (PDF no vacío, formato inválido 400).
+- **Frontend**: ✓ — botones CSV/Excel/**PDF** en `ReportsView` (`/supervisor/reportes`, mockup 37) con descarga automática.
+- **Notas**: `ExportRequest.departamentoName` se aplica (gap 1.3 §9).
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-04 | | | Criterio nuevo: formato PDF (gap 1.1 §9) | |

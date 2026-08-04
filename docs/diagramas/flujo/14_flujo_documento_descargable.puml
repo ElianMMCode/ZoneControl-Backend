@@ -51,12 +51,19 @@ end note
 :Generar archivo;
 
 if (¿Formato PDF?) then (Sí)
-  :Generar PDF con librería iText/PDFBox;
+  :Generar PDF con itextpdf 5\n(PdfExporter compartido);
 elseif (¿Formato CSV?) then (CSV)
   :Generar CSV con separador comma;
 else (Excel)
   :Generar XLSX con Apache POI;
 endif
+
+note right
+  Gap 1.1 §9 IMPLEMENTADO:
+  el formato PDF está disponible en
+  /api/historial/export y en el
+  archivo periódico.
+end note
 
 :Retornar archivo como descarga;
 

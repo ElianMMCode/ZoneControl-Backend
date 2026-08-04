@@ -65,12 +65,13 @@ Entonces: el sistema muestra el mensaje "No hay registros para el período selec
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `GET /api/historial` (fechaInicio/fechaFin obligatorias + `employeeCode`, `resultado` opcionales, paginado). Tests verdes.
-- **Frontend**: ✓ — `ReportsView` (`/supervisor/reportes`, mockup 37) con KPIs, filtros de fecha/empleado/resultado, tabla paginada y export CSV/Excel.
-- **Notas**: el filtro por departamento no está disponible (gap backend §8).
+- **Backend**: ✓ — `GET /api/historial` (fechaInicio/fechaFin obligatorias + `employeeCode`, `department`, `resultado` opcionales, paginado). **Gap 1.3 §9 implementado**: el filtro por `department` está disponible. Tests en `HistoryControllerTest`.
+- **Frontend**: ✓ — `ReportsView` (`/supervisor/reportes`, mockup 37) con KPIs, filtros de fecha/empleado/departamento/resultado, tabla paginada y export CSV/Excel/PDF.
+- **Notas**: el export aplica el mismo filtro de departamento vía `ExportRequest.departamentoName`.
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-04 | | | Criterio nuevo: filtro por departamento (gap 1.3 §9) | |

@@ -21,7 +21,7 @@ start
 |Supervisor / Auditor|
 :Seleccionar rango de fechas;
 
-:Aplicar filtros opcionales;
+:Aplicar filtros opcionales\n(empleado, departamento, resultado);
 
 :Presionar "Consultar";
 
@@ -29,10 +29,10 @@ start
 :Validar rango de fechas;
 
 if (¿Fechas válidas?) then (Sí)
-  :Enviar GET;
+  :Enviar GET\n(fechaInicio, fechaFin, employeeCode,\ndepartment, resultado);
 
   |Backend|
-  :Consultar historial en PostgreSQL;
+  :Consultar historial en PostgreSQL\ncon predicados AND;
 
   :Retornar registros;
 
@@ -45,6 +45,12 @@ else (No)
   :Pantalla: Error "Rango inválido";
 
 endif
+
+note right
+  Filtro por departamento (gap 1.3 §9,
+  implementado): GET /api/historial?department=
+  y ExportRequest.departamentoName.
+end note
 
 stop
 
