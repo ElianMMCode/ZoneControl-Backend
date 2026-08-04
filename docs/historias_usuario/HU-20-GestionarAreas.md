@@ -72,7 +72,8 @@ Entonces: el sistema retorna HTTP 409 y no permite la eliminación
 ## Estado de Implementación
 
 - **Backend**: ✓ — `POST/PUT/DELETE /api/permisos/areas` (gap 1.4 §9).
-- **Frontend**: ✓ — `AdminAreasView` en `/admin/areas` (solo ADMIN).
+- **Frontend**: ✓ — `AdminAreasView` en `/admin/areas` (solo ADMIN). Tabla con conteo de áreas, descripción truncada con tooltip y modal con textos de ayuda.
+- **Seed**: las áreas de producción del `DataInitializer` incluyen descripción (idempotente por nombre; actualiza la descripción si el área ya existe sin ella).
 - **Flujo**: `19_flujo_gestion_areas_produccion.puml` ✓.
 
 ## Control de Versiones

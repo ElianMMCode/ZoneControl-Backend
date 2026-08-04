@@ -120,24 +120,25 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedProductionAreas() {
-        if (productionAreaRepository.count() > 0) {
-            log.info("Production areas already exist — skipping");
-            return;
-        }
-        String[] names = {
-            "Sala Blanca A",
-            "Sala Blanca B",
-            "Laboratorio QC",
-            "Almacén Controlado",
-            "Zona de Empaque"
-        };
+        seedArea("Sala Blanca A", "Zona aséptica para el llenado de productos estériles");
+        seedArea("Sala Blanca B", "Área controlada para producción de líquidos y semisólidos");
+        seedArea("Laboratorio QC", "Laboratorio de control de calidad y análisis microbiológico");
+        seedArea("Almacén Controlado", "Bodega con clima controlado para materias primas y producto terminado");
+        seedArea("Zona de Empaque", "Área de acondicionamiento y empaque final de medicamentos");
+        log.info("Production areas seed finished");
+    }
 
-        for (String name : names) {
+    private void seedArea(String name, String description) {
+        ProductionArea existing = productionAreaRepository.findByName(name).orElse(null);
+        if (existing == null) {
             productionAreaRepository.save(ProductionArea.builder()
                     .name(name)
+                    .description(description)
                     .build());
+        } else if (existing.getDescription() == null || existing.getDescription().isBlank()) {
+            existing.setDescription(description);
+            productionAreaRepository.save(existing);
         }
-        log.info("Seeded {} production areas", names.length);
     }
 
     private void seedAdminUser() {
