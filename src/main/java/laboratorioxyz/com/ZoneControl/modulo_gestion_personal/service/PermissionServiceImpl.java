@@ -7,11 +7,15 @@ import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.CreatePermissionRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionResponse;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionScheduleRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdatePermissionRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.PermissionSchedule;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PermissionScheduleRepository;
+import laboratorioxyz.com.ZoneControl.model.enums.WeekDay;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.domain.Page;
@@ -23,6 +27,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
+import java.time.LocalTime;
 import java.util.List;
 import java.util.Map;
 import java.util.UUID;
@@ -35,6 +40,7 @@ public class PermissionServiceImpl implements PermissionService {
     private final EmployeeRepository employeeRepository;
     private final ProductionAreaRepository productionAreaRepository;
     private final AccessPermissionRepository accessPermissionRepository;
+    private final PermissionScheduleRepository permissionScheduleRepository;
 
     @Override
     @Transactional
@@ -70,6 +76,8 @@ public class PermissionServiceImpl implements PermissionService {
                 .build();
 
         permission = accessPermissionRepository.save(permission);
+        applySchedules(permission, request.getSchedules(),
+                request.getStartTime(), request.getEndTime());
         log.info("Permission granted: employee={}, area={}, id={}",
                 employee.getEmployeeCode(), area.getName(), permission.getId());
 
@@ -240,9 +248,44 @@ public class PermissionServiceImpl implements PermissionService {
         if (request.endTime() != null) {
             permission.setEndTime(request.endTime());
         }
+        // Si se envían schedules, reemplazan los existentes; si no, se conservan.
+        if (request.schedules() != null) {
+            permissionScheduleRepository.deleteByPermission_Id(permission.getId());
+            applySchedules(permission, request.schedules(),
+                    permission.getStartTime(), permission.getEndTime());
+        }
         permission = accessPermissionRepository.save(permission);
         log.info("Permission updated: id={}", id);
         return toResponse(permission);
+    }
+
+    /**
+     * Crea los turnos por día de un permiso (3.2 §9). Si no se envían schedules
+     * se genera el schedule LUN-DOM con los horarios base (migración implícita
+     * para los permisos existentes). Los horarios con startTime > endTime
+     * representan un turno nocturno que cruza la medianoche.
+     */
+    private void applySchedules(AccessPermission permission, List<PermissionScheduleRequest> schedules,
+                                LocalTime defaultStart, LocalTime defaultEnd) {
+        if (schedules == null || schedules.isEmpty()) {
+            for (WeekDay day : WeekDay.values()) {
+                permissionScheduleRepository.save(PermissionSchedule.builder()
+                        .permission(permission)
+                        .dayOfWeek(day)
+                        .startTime(defaultStart)
+                        .endTime(defaultEnd)
+                        .build());
+            }
+            return;
+        }
+        for (PermissionScheduleRequest req : schedules) {
+            permissionScheduleRepository.save(PermissionSchedule.builder()
+                    .permission(permission)
+                    .dayOfWeek(WeekDay.valueOf(req.dayOfWeek()))
+                    .startTime(req.startTime())
+                    .endTime(req.endTime())
+                    .build());
+        }
     }
 
     private PermissionResponse toResponse(AccessPermission permission) {

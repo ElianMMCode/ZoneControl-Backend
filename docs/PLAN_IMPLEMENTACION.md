@@ -775,7 +775,7 @@ Decisiones de diseño confirmadas:
 - **Tests**: validación con turno del día correcto, día sin turno → SUSPENDIDO, hora fuera de ventana → SUSPENDIDO, migración correcta de permisos existentes, criterios ya existentes de HU-18/11 siguen verdes.
 - **Esfuerzo**: medio-alto (2-3 días, toca la query de validación núcleo).
 
-> **Estado 3.2 — PENDIENTE**: no existe `PermissionSchedule` ni la entidad `AccessPermission.hasValidPermission` con ventana por día.
+> **Estado 3.2 — IMPLEMENTADO**: `PermissionSchedule` (LUN..DOM) + migración idempotente en `DataInitializer`, query `hasValidPermission` exige schedule del día + ventana (con fallback para permisos sin schedules), `Create/UpdatePermissionRequest.schedules` opcionales y selector de días en `PermissionFormModal`. Tests en `PermissionScheduleControllerTest`. HU-26 creada.
 
 ### 9.5 Nuevas Historias de Usuario
 
@@ -874,4 +874,4 @@ Frontend integrado por fase, consumiendo los hooks y store ya existentes. Docume
 | 2.1–2.4 | Tiempo real para ADMIN/SUPERVISOR (ocupación, emergencia, SSE, alertas) | IMPLEMENTADO (backend + frontend `/supervisor/zones`); sin rol SEGURIDAD |
 | 2.5 | Rol SEGURIDAD / consola del guardia / SecurityActionLog | ELIMINADO (decisión de proyecto) |
 | 3.1 | Fotografía del empleado (HU-25) | IMPLEMENTADO (backend + frontend) |
-| 3.2 | Turnos y horarios por día (HU-26) | PENDIENTE |
+| 3.2 | Turnos y horarios por día (HU-26) | IMPLEMENTADO (entidad PermissionSchedule + validación por día + frontend) |

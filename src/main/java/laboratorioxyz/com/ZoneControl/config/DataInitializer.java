@@ -11,6 +11,7 @@ import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.UserStatus;
+import laboratorioxyz.com.ZoneControl.model.enums.WeekDay;
 import laboratorioxyz.com.ZoneControl.model.enums.WorkShift;
 import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
@@ -20,8 +21,10 @@ import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.PermissionSchedule;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PermissionScheduleRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
@@ -36,6 +39,7 @@ import org.springframework.stereotype.Component;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * Inicializador de datos semilla para la base de datos.
@@ -66,6 +70,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductCatalogRepository productCatalogRepository;
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
+    private final PermissionScheduleRepository permissionScheduleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     private Department adminDepartment;
@@ -86,6 +91,7 @@ public class DataInitializer implements CommandLineRunner {
         seedCandidateEmployees();
         seedGestorSampleData();
         seedAccessHistory();
+        migratePermissionSchedules();
         log.info("Seed completed successfully");
     }
 
@@ -613,5 +619,30 @@ public class DataInitializer implements CommandLineRunner {
                     .build();
             return employeeRepository.save(employee);
         });
+    }
+
+    /**
+     * Migración idempotente de turnos (3.2 §9): todo permiso existente sin
+     * schedules recibe el schedule LUN-DOM con sus horarios base.
+     */
+    private void migratePermissionSchedules() {
+        List<AccessPermission> permissions = accessPermissionRepository.findAll();
+        int migrated = 0;
+        for (AccessPermission p : permissions) {
+            if (!permissionScheduleRepository.existsByPermission_Id(p.getId())) {
+                for (WeekDay day : WeekDay.values()) {
+                    permissionScheduleRepository.save(PermissionSchedule.builder()
+                            .permission(p)
+                            .dayOfWeek(day)
+                            .startTime(p.getStartTime())
+                            .endTime(p.getEndTime())
+                            .build());
+                }
+                migrated++;
+            }
+        }
+        if (migrated > 0) {
+            log.info("Permission schedules migrated: {} permisos con schedule LUN-DOM", migrated);
+        }
     }
 }

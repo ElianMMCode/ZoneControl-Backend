@@ -35,11 +35,19 @@ public interface AccessPermissionRepository extends JpaRepository<AccessPermissi
             + "WHERE ap.employee.id = :employeeId AND ap.productionArea.id = :areaId "
             + "AND ap.status = 'ACTIVO' "
             + "AND ap.startDate <= :today AND ap.expirationDate >= :today "
-            + "AND ap.startTime <= :now AND ap.endTime >= :now")
+            + "AND ( "
+            + "  EXISTS (SELECT 1 FROM PermissionSchedule ps "
+            + "      WHERE ps.permission.id = ap.id AND ps.dayOfWeek = :dayOfWeek "
+            + "      AND ( (ps.startTime <= :now AND ps.endTime >= :now) "
+            + "            OR (ps.startTime > ps.endTime AND (:now >= ps.startTime OR :now <= ps.endTime)) ) ) "
+            + "  OR ( NOT EXISTS (SELECT 1 FROM PermissionSchedule ps WHERE ps.permission.id = ap.id) "
+            + "       AND ap.startTime <= :now AND ap.endTime >= :now ) "
+            + ")")
     boolean hasValidPermission(@Param("employeeId") UUID employeeId,
                                 @Param("areaId") UUID areaId,
                                 @Param("today") LocalDate today,
-                                @Param("now") LocalTime now);
+                                @Param("now") LocalTime now,
+                                @Param("dayOfWeek") laboratorioxyz.com.ZoneControl.model.enums.WeekDay dayOfWeek);
 
     long countByStatus(PermissionStatus status);
 

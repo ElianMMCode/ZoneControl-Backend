@@ -7,6 +7,7 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 
 @Data
@@ -20,4 +21,6 @@ public class CreatePermissionRequest {
     private LocalDate expirationDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    /** Turnos por día opcionales (3.2 §9). Si no vienen, se crea LUN-DOM con startTime/endTime. */
+    private List<PermissionScheduleRequest> schedules;
 }

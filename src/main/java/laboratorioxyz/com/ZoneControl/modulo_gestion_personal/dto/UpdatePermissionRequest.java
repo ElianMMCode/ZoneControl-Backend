@@ -2,6 +2,7 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 /**
  * DTO para PATCH /permisos/{id}.
@@ -13,5 +14,6 @@ public record UpdatePermissionRequest(
         LocalDate startDate,
         LocalDate expirationDate,
         LocalTime startTime,
-        LocalTime endTime
+        LocalTime endTime,
+        List<PermissionScheduleRequest> schedules
 ) {}

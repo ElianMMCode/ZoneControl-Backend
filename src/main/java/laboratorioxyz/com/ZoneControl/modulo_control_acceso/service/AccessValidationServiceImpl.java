@@ -71,7 +71,8 @@ public class AccessValidationServiceImpl implements AccessValidationService {
         }
 
         boolean hasValidPermission = accessPermissionRepository.hasValidPermission(
-                employee.getId(), area.getId(), LocalDate.now(), LocalTime.now());
+                employee.getId(), area.getId(), LocalDate.now(), LocalTime.now(),
+                laboratorioxyz.com.ZoneControl.model.enums.WeekDay.today());
 
         if (!hasValidPermission) {
             logAccess(employee, area.getName(), AccessResult.SUSPENDED);
