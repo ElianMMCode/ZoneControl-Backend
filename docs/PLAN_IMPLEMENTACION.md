@@ -279,6 +279,7 @@ Crear `import.sql` o `DataInitializer` que inserte:
   - Los `id` de sedes y productos se exponen en la respuesta pública para que el panel admin de HU-19 pueda referenciar cada elemento al editar/eliminar sin necesidad de un endpoint admin con id. El landing los ignora; el admin los usa para los `PUT/DELETE /{id}`.
 - Cachear respuestas (Spring Cache con ConcurrentMapCacheManager)
 - TDD: tests de integración verificando HTTP 200 y estructura JSON (incluyendo el `id`)
+- **Pendiente**: el criterio HU-01 cond. 03 pide "un mapa de ubicación" en el landing; por ahora `LocationsSection` muestra lat/long como texto. Implementar mapa embebido (iframe/leaflet) queda como pendiente.
 
 **HU-02: Descargar Folleto**
 - `GET /api/public/folleto` — servir PDF estático
@@ -287,7 +288,7 @@ Crear `import.sql` o `DataInitializer` que inserte:
 
 **HU-19: Gestionar Contenido Público (requiere Fase 2 — auth)**
 - CRUD de contenido público (solo ADMIN)
-- PUT/POST `/api/admin/contenido-publico/{seccion}` (`INSTITUTIONAL`|`CONTACT`|`LOCATIONS`; body `Record<string,string>`; PUT invalida la caché pública)
+- PUT/POST `/api/admin/contenido-publico/{seccion}` (`INSTITUTIONAL`|`CONTACT`; body `Record<string,string>`; PUT invalida la caché pública). Las sedes se gestionan solo vía el CRUD `sedes[/{id}]`.
 - POST `/api/admin/contenido-publico/folleto` (multipart, validar .pdf, max 10MB)
 - DELETE `/api/admin/contenido-publico/folleto`
 - CRUD de sedes: POST/PUT/DELETE `/api/admin/contenido-publico/sedes[/{id}]` con `OfficeRequest`
@@ -483,6 +484,7 @@ Comentar exclusivamente decisiones no obvias:
 - `ResponseStatusException` → HTTP 400/404/409/401 según el status lanzado desde servicios/controllers
 - `AccessDeniedException` → HTTP 403
 - `DataIntegrityViolationException` → HTTP 409 (gap 1.7 §9, implementado)
+- `MaxUploadSizeExceededException` → HTTP 400 "El archivo excede el tamaño máximo permitido de 10MB" (folleto HU-19, §9 1.7)
 - `Exception` genérica → HTTP 500 (gap 1.7 §9, implementado)
 
 ### Logging

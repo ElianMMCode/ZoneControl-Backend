@@ -20,7 +20,7 @@ El sistema debe permitir al administrador editar la información institucional, 
 
 ## Contrato de los endpoints
 
-- `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT|LOCATIONS}` (body `Record<string,string>`) → `{ message }`. Para INSTITUTIONAL/CONTACT reemplaza todos los pares clave-valor de la sección e invalida la caché pública correspondiente.
+- `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT}` (body `Record<string,string>`) → `{ message }`. Reemplaza todos los pares clave-valor de la sección e invalida la caché pública correspondiente. Las sedes no se gestionan por esta vía: tienen CRUD propio sobre `sedes[/{id}]` (tabla offices).
 - `POST /api/admin/contenido-publico/folleto` (multipart, campo `file`, PDF ≤ 10MB) → `{ message }`.
 - `DELETE /api/admin/contenido-publico/folleto` → `{ message }`.
 - `POST /api/admin/contenido-publico/sedes` (body `OfficeRequest{name, address, openingHours, latitude?, longitude?}`) → `{ id, name }` (201).

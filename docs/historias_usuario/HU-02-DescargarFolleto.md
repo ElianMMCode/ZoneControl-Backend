@@ -44,7 +44,7 @@ Entonces: el sistema muestra un mensaje de error indicando que la descarga no es
 | 2 | Implementar endpoint GET /api/public/folleto en Spring Boot para servir el archivo PDF |
 | 3 | Agregar botón "Descargar Folleto" en la sección de información institucional del frontend |
 | 4 | Implementar manejo de errores cuando el archivo no esté disponible |
-| 5 | Verificar que el tamaño del PDF no exceda 5MB para descarga rápida |
+| 5 | Verificar que el tamaño del PDF no exceda 10MB para descarga rápida (mismo límite que la carga de HU-19) |
 
 ## Control de Versiones
 
