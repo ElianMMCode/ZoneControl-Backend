@@ -155,7 +155,7 @@ class AdminUserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of("status", "INACTIVO"))))
                 .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.error").value("No puedes desactivar tu propia cuenta"));
+                .andExpect(jsonPath("$.error").value("No puede desactivar su propia cuenta"));
     }
 
     @Test

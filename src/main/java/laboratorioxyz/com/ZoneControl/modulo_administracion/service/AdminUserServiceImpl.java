@@ -112,7 +112,7 @@ public class AdminUserServiceImpl implements AdminUserService {
 
         if (newStatus == UserStatus.INACTIVO && currentUser.getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "No puedes desactivar tu propia cuenta");
+                    "No puede desactivar su propia cuenta");
         }
 
         user.setStatus(newStatus);
