@@ -26,7 +26,7 @@ Dado: que el gestor de personal está autenticado y accede a la sección "Carga 
 
 Cuando: presiona el botón "Descargar Plantilla"
 
-Entonces: el sistema genera y descarga un archivo CSV con el nombre "plantilla_carga_masiva_personal.csv" que contiene los encabezados exactos en la primera fila (tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado) y una segunda fila con datos de ejemplo (CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO) para guiar al usuario en el llenado correcto del archivo
+Entonces: el sistema genera y descarga un archivo CSV con el nombre "plantilla_carga_masiva_personal.csv" que contiene los encabezados exactos en la primera fila (tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso) y una segunda fila con datos de ejemplo (CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15) para guiar al usuario en el llenado correcto del archivo
 
 Condición 02
 
@@ -76,7 +76,7 @@ Entonces: el sistema rechaza la carga y muestra el mensaje "El archivo excede el
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados y fila ejemplo) y `POST /api/personal/bulk` (validación por fila, batch insert, reporte de errores en `errorReportUrl` como CSV inline). Tests verdes.
+- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados de 8 columnas —incluye `fecha_ingreso`— y fila ejemplo) y `POST /api/personal/bulk` (validación por fila, batch insert, reporte de errores en `errorReportUrl` como CSV inline). Límite de **10MB explícito** en el servicio (mensaje de la HU) y de **1000 registros**. Tests verdes.
 - **Frontend**: ✓ — `BulkUploadView` (`/personal/carga-masiva`, mockup 10) con descarga de plantilla, upload y **tabla de errores inline** (Fila/Campo/Detalle) además del reporte descargable.
 
 ## Control de Versiones

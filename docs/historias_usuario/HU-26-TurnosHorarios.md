@@ -64,8 +64,8 @@ Entonces: el sistema usa los horarios base del permiso (equivalente a LUN-DOM)
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — entidad, migración, query de validación por día y DTOs con schedules (3.2 §9). Tests en `PermissionScheduleControllerTest`.
-- **Frontend**: ✓ — selector de días (turnos) en `PermissionFormModal`.
+- **Backend**: ✓ — entidad, migración, query de validación por día y DTOs con schedules (3.2 §9). `PermissionResponse` expone `schedules` (lista `dayOfWeek`/`startTime`/`endTime`) para que el frontend pueda precargar y editar los turnos. Tests en `PermissionScheduleControllerTest`.
+- **Frontend**: ✓ — selector de días (turnos) en `PermissionFormModal`. Al **editar** un permiso se preseleccionan los días desde sus `schedules` reales y el PATCH incluye los `schedules` (se reemplazan en backend). Nota de diseño: el modal usa una sola ventana horaria aplicada a los días seleccionados; editar normaliza horarios por-día distintos a ese par.
 
 ## Control de Versiones
 

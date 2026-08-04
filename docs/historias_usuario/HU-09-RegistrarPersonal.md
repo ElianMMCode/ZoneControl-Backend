@@ -76,7 +76,7 @@ Entonces: el número de identificación interno sigue el formato EMP-XXXXXX, es 
 ## Estado de Implementación
 
 - **Backend**: ✓ — `POST /api/personal` (201, EMP-XXXXXX secuencial, unicidad tipo+número documento, validación de campos). Tests verdes.
-- **Frontend**: ✓ — `RegisterEmployeeView` (`/personal/nuevo`, mockup 42) con foto opcional (HU-25) y notificación con el código generado.
+- **Frontend**: ✓ — `RegisterEmployeeView` (`/personal/nuevo`, mockup 42) con foto opcional (HU-25), notificación con el código generado y **validación por campo** (errores debajo de cada input: documento obligatorio, nombres/apellidos ≥2 caracteres, cargo y departamento obligatorios).
 - **Notas**: el formulario incluye campos adicionales del modelo ampliado (tipo de contrato, sede base, turno, fechas de contrato).
 
 ## Control de Versiones

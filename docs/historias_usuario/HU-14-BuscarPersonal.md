@@ -30,11 +30,11 @@ Entonces: el sistema muestra una tabla paginada con los resultados, aplicando l�
 
 Condición 02
 
-Dado: que el gestor intenta buscar sin seleccionar ningún filtro
+Dado: que el gestor busca sin seleccionar ningún filtro
 
-Cuando: presiona "Buscar"
+Cuando: presiona "Buscar" (o ingresa a la sección)
 
-Entonces: el sistema muestra el mensaje "Debe seleccionar al menos un filtro de búsqueda"
+Entonces: el sistema lista todos los empleados paginados (los filtros son opcionales y se combinan con AND; no se exige al menos un filtro)
 
 Condición 03
 
@@ -60,7 +60,7 @@ Dado: que el gestor selecciona "Editar" en un empleado de la lista
 
 Cuando: modifica sus datos personales o cambia su estado (ACTIVO/INACTIVO/SUSPENDIDO)
 
-Entonces: el sistema guarda los cambios, y si el nuevo estado es INACTIVO o SUSPENDIDO, desactiva en cascada todos sus permisos de acceso (→ SUSPENDIDO) y su usuario de sistema asociado (→ INACTIVO). Si el estado vuelve a ACTIVO, no se restauran automáticamente.
+Entonces: el sistema guarda los cambios, y si el nuevo estado es INACTIVO o SUSPENDIDO, desactiva en cascada todos sus permisos de acceso (→ SUSPENDIDO) y su usuario de sistema asociado (→ INACTIVO). Si el estado vuelve a ACTIVO, el cascade es **bidireccional**: se restauran automáticamente los permisos (→ ACTIVO) y el usuario de sistema (→ ACTIVO).
 
 ## Tareas
 
@@ -81,8 +81,8 @@ Entonces: el sistema guarda los cambios, y si el nuevo estado es INACTIVO o SUSP
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `GET /api/personal` con filtros AND (`documentType`, `documentNumber`, `firstName`, `lastName`, `departmentName`, `status`) + paginación; 400 si no hay al menos un filtro. Tests verdes.
-- **Frontend**: ✓ — `EmployeeListView` (`/personal`, mockup 32) con filtros, KPIs de la página, tabla paginada y acceso al detalle. La edición (PATCH) y asignación de área se gestionan desde `EmployeeDetailView` (`/personal/:id`, mockup 41).
+- **Backend**: ✓ — `GET /api/personal` con filtros AND (`documentType`, `documentNumber`, `firstName`, `lastName`, `departmentName`, `status`) + paginación. Sin filtros lista todos los empleados (no se exige al menos un filtro). Tests verdes.
+- **Frontend**: ✓ — `EmployeeListView` (`/personal`, mockup 32) con filtros, KPIs de la página, tabla paginada y acceso al detalle. El filtro de departamento es un dropdown (`useDepartments`). La edición (PATCH, cascade bidireccional) y asignación de área se gestionan desde `EmployeeDetailView` (`/personal/:id`, mockup 41).
 
 ## Control de Versiones
 
