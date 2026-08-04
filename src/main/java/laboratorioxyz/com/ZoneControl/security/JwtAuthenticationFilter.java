@@ -64,6 +64,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         if (StringUtils.hasText(bearerToken) && bearerToken.startsWith("Bearer ")) {
             return bearerToken.substring(7);
         }
+        // SSE: EventSource no permite headers; el token viaja como query param
+        // únicamente en el endpoint de stream (2.3 §9).
+        if ("/api/access/stream".equals(request.getRequestURI())) {
+            String queryToken = request.getParameter("token");
+            if (StringUtils.hasText(queryToken)) {
+                return queryToken;
+            }
+        }
         return null;
     }
 }

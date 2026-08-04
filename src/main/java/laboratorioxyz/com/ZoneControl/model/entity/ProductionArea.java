@@ -29,4 +29,8 @@ public class ProductionArea {
     @Size(max = 200)
     @Column(length = 200)
     private String description;
+
+    @Column(nullable = false, columnDefinition = "boolean not null default false")
+    @Builder.Default
+    private boolean emergencyClosed = false;
 }

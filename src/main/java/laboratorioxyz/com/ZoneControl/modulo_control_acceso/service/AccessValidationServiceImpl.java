@@ -5,8 +5,12 @@ import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ValidateAccessResponse;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessAlert;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessSession;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessAlertRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessSessionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
@@ -20,6 +24,8 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.Map;
+import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
@@ -30,6 +36,9 @@ public class AccessValidationServiceImpl implements AccessValidationService {
     private final ProductionAreaRepository productionAreaRepository;
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
+    private final AccessSessionRepository accessSessionRepository;
+    private final AccessAlertRepository accessAlertRepository;
+    private final RealtimeEventPublisher realtimeEventPublisher;
 
     @Override
     @Transactional
@@ -38,15 +47,26 @@ public class AccessValidationServiceImpl implements AccessValidationService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Área de producción no encontrada: " + productionAreaName));
 
+        // Kill switch de emergencia (2.2): la zona cerrada deniega el ingreso.
+        if (area.isEmergencyClosed()) {
+            logAccess(null, area.getName(), AccessResult.DENIED);
+            publishValidated(null, area.getName(), AccessResult.DENIED,
+                    "ZONA CERRADA POR EMERGENCIA");
+            return new ValidateAccessResponse(AccessResult.DENIED, "ZONA CERRADA POR EMERGENCIA");
+        }
+
         Employee employee = employeeRepository.findByEmployeeCode(employeeCode).orElse(null);
 
         if (employee == null) {
             logAccess(null, area.getName(), AccessResult.UNREGISTERED);
+            publishValidated(null, area.getName(), AccessResult.UNREGISTERED, "NO REGISTRADO");
             return new ValidateAccessResponse(AccessResult.UNREGISTERED, "NO REGISTRADO");
         }
 
         if (employee.getStatus() != EmployeeStatus.ACTIVO) {
             logAccess(employee, area.getName(), AccessResult.DENIED);
+            maybeAlertRepeatedDenials(employee);
+            publishValidated(employee, area.getName(), AccessResult.DENIED, "INGRESO DENEGADO");
             return new ValidateAccessResponse(AccessResult.DENIED, "INGRESO DENEGADO");
         }
 
@@ -55,11 +75,78 @@ public class AccessValidationServiceImpl implements AccessValidationService {
 
         if (!hasValidPermission) {
             logAccess(employee, area.getName(), AccessResult.SUSPENDED);
+            publishValidated(employee, area.getName(), AccessResult.SUSPENDED, "ACCESO SUSPENDIDO");
             return new ValidateAccessResponse(AccessResult.SUSPENDED, "ACCESO SUSPENDIDO");
         }
 
+        // Acceso autorizado: cerrar sesión previa (si existe) y abrir una nueva (2.1).
+        closeOpenSession(employee.getId(), area.getId());
+        accessSessionRepository.save(AccessSession.builder()
+                .employee(employee)
+                .productionArea(area)
+                .entryTime(LocalDateTime.now())
+                .build());
+
         logAccess(employee, area.getName(), AccessResult.AUTHORIZED);
+        maybeAlertNocturnalAccess(employee, area.getName());
+        publishValidated(employee, area.getName(), AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
+        publishOccupancy();
         return new ValidateAccessResponse(AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
+    }
+
+    private void closeOpenSession(java.util.UUID employeeId, java.util.UUID areaId) {
+        Optional<AccessSession> open = accessSessionRepository
+                .findByEmployee_IdAndProductionArea_IdAndExitTimeIsNull(employeeId, areaId);
+        open.ifPresent(s -> {
+            s.setExitTime(LocalDateTime.now());
+            accessSessionRepository.save(s);
+        });
+    }
+
+    private void maybeAlertRepeatedDenials(Employee employee) {
+        LocalDateTime since = LocalDateTime.now().minusMinutes(15);
+        long denials = accessHistoryRepository.countByEmployeeAndResultSince(
+                employee.getId(), AccessResult.DENIED, since);
+        if (denials >= 3) {
+            createAlert(AccessAlert.AlertType.DENEGACIONES_REPETIDAS,
+                    AccessAlert.AlertSeverity.MEDIUM, employee.getEmployeeCode(), null,
+                    "≥3 intentos denegados del empleado " + employee.getEmployeeCode() + " en 15 min");
+        }
+    }
+
+    private void maybeAlertNocturnalAccess(Employee employee, String areaName) {
+        LocalTime now = LocalTime.now();
+        if (now.isAfter(LocalTime.MIDNIGHT) && now.isBefore(LocalTime.of(5, 0))) {
+            createAlert(AccessAlert.AlertType.ACCESO_NOCTURNO,
+                    AccessAlert.AlertSeverity.LOW, employee.getEmployeeCode(), areaName,
+                    "Acceso autorizado fuera del horario diurno (00:00-05:00)");
+        }
+    }
+
+    private void createAlert(AccessAlert.AlertType tipo, AccessAlert.AlertSeverity severidad,
+                             String employeeCode, String areaName, String message) {
+        AccessAlert alert = AccessAlert.builder()
+                .tipo(tipo).severidad(severidad)
+                .employeeCode(employeeCode).productionAreaName(areaName)
+                .message(message).timestamp(LocalDateTime.now())
+                .build();
+        accessAlertRepository.save(alert);
+        realtimeEventPublisher.publish("alert.created", Map.of(
+                "alert", alert));
+    }
+
+    private void publishValidated(Employee employee, String areaName, AccessResult result, String message) {
+        realtimeEventPublisher.publish("access.validated", Map.of(
+                "employeeCode", employee != null ? employee.getEmployeeCode() : "UNKNOWN",
+                "area", areaName,
+                "result", result.name(),
+                "message", message,
+                "timestamp", LocalDateTime.now().toString()));
+    }
+
+    private void publishOccupancy() {
+        realtimeEventPublisher.publish("occupancy.updated", Map.of(
+                "timestamp", LocalDateTime.now().toString()));
     }
 
     private void logAccess(Employee employee, String areaName, AccessResult result) {
@@ -71,7 +158,7 @@ public class AccessValidationServiceImpl implements AccessValidationService {
                 .result(result)
                 .build();
         accessHistoryRepository.save(history);
-        log.info("Access validation: employee={}, area={}, result={}", 
+        log.info("Access validation: employee={}, area={}, result={}",
                 employee != null ? employee.getEmployeeCode() : "UNKNOWN",
                 areaName, result);
     }

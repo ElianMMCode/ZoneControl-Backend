@@ -28,4 +28,10 @@ public interface AccessHistoryRepository extends JpaRepository<AccessHistory, UU
 
     @Query("SELECT COUNT(h) FROM AccessHistory h WHERE CAST(h.timestamp AS date) = CURRENT_DATE AND h.result = :result")
     long countTodayByResult(@Param("result") AccessResult result);
+
+    @Query("SELECT COUNT(h) FROM AccessHistory h WHERE h.employee.id = :employeeId "
+            + "AND h.result = :result AND h.timestamp >= :since")
+    long countByEmployeeAndResultSince(@Param("employeeId") UUID employeeId,
+                                       @Param("result") AccessResult result,
+                                       @Param("since") java.time.LocalDateTime since);
 }
