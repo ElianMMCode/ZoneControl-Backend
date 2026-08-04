@@ -126,6 +126,64 @@ class HistoryControllerTest {
     }
 
     @Test
+    void getHistory_filterByDepartment_returnsOnlyMatching() throws Exception {
+        Department produccion = departmentRepository.findByName("Producción Sólidos").orElseThrow();
+        Employee emp = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-DEPT-01")
+                .documentType(DocumentType.CC)
+                .documentNumber("7777777001")
+                .firstName("Depto")
+                .lastName("Test")
+                .position("Operario")
+                .department(produccion)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp)
+                .department(produccion.getName())
+                .productionAreaName("Sala Blanca B")
+                .timestamp(LocalDateTime.of(2026, 7, 10, 9, 0))
+                .result(AccessResult.AUTHORIZED)
+                .build());
+
+        mockMvc.perform(get("/api/historial")
+                        .param("fechaInicio", "2026-07-01")
+                        .param("fechaFin", "2026-07-31")
+                        .param("department", "Producción Sólidos"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].department").value("Producción Sólidos"));
+    }
+
+    @Test
+    void exportHistory_filterByDepartment_appliesFilter() throws Exception {
+        mockMvc.perform(post("/api/historial/export")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "formato", "CSV",
+                                "fechaInicio", "2026-07-01",
+                                "fechaFin", "2026-07-31",
+                                "departamentoName", "Control de Calidad"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("text/csv"));
+    }
+
+    @Test
+    void exportHistory_departmentWithoutData_returns400() throws Exception {
+        mockMvc.perform(post("/api/historial/export")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "formato", "CSV",
+                                "fechaInicio", "2026-07-01",
+                                "fechaFin", "2026-07-31",
+                                "departamentoName", "Departamento Inexistente"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("No hay datos para exportar"));
+    }
+
+    @Test
     void exportHistory_validCsv_returns200() throws Exception {
         mockMvc.perform(post("/api/historial/export")
                         .contentType(MediaType.APPLICATION_JSON)

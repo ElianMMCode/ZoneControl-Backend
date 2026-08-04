@@ -41,7 +41,7 @@ public class HistoryServiceImpl implements HistoryService {
     @Override
     @Transactional(readOnly = true)
     public Page<AccessHistoryResponse> search(LocalDate fechaInicio, LocalDate fechaFin,
-                                               String employeeCode, String resultado,
+                                               String employeeCode, String department, String resultado,
                                                Pageable pageable) {
         if (fechaInicio.isAfter(fechaFin)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
@@ -57,6 +57,10 @@ public class HistoryServiceImpl implements HistoryService {
             if (employeeCode != null && !employeeCode.isBlank()) {
                 predicate = cb.and(predicate,
                         cb.equal(root.get("employee").get("employeeCode"), employeeCode));
+            }
+            if (department != null && !department.isBlank()) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("department"), department));
             }
             if (resultado != null && !resultado.isBlank()) {
                 predicate = cb.and(predicate,
@@ -87,6 +91,10 @@ public class HistoryServiceImpl implements HistoryService {
             if (request.getEmployeeCode() != null && !request.getEmployeeCode().isBlank()) {
                 predicate = cb.and(predicate,
                         cb.equal(root.get("employee").get("employeeCode"), request.getEmployeeCode()));
+            }
+            if (request.getDepartamentoName() != null && !request.getDepartamentoName().isBlank()) {
+                predicate = cb.and(predicate,
+                        cb.equal(root.get("department"), request.getDepartamentoName()));
             }
             if (request.getResultado() != null && !request.getResultado().isBlank()) {
                 predicate = cb.and(predicate,
