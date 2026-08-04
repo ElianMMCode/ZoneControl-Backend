@@ -24,14 +24,15 @@ import org.springframework.http.MediaType;
 import org.springframework.security.test.context.support.WithMockUser;
 import org.springframework.test.annotation.Rollback;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.time.LocalDate;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -208,6 +209,35 @@ class HistoryControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith(
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+    }
+
+    @Test
+    void exportHistory_validPdf_returns200() throws Exception {
+        MvcResult res = mockMvc.perform(post("/api/historial/export")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "formato", "PDF",
+                                "fechaInicio", "2026-07-01",
+                                "fechaFin", "2026-07-31"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/pdf"))
+                .andReturn();
+        assertTrue(res.getResponse().getContentAsByteArray().length > 0,
+                "El PDF debe contener bytes");
+    }
+
+    @Test
+    void exportHistory_invalidFormat_returns400() throws Exception {
+        mockMvc.perform(post("/api/historial/export")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "formato", "XML",
+                                "fechaInicio", "2026-07-01",
+                                "fechaFin", "2026-07-31"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("Formato no soportado: XML"));
     }
 
     @Test

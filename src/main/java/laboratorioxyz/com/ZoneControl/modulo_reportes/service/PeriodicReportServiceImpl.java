@@ -4,6 +4,7 @@ import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportRequest;
+import laboratorioxyz.com.ZoneControl.modulo_reportes.util.PdfExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -23,6 +24,7 @@ import java.util.stream.Collectors;
 public class PeriodicReportServiceImpl implements PeriodicReportService {
 
     private final AccessHistoryRepository accessHistoryRepository;
+    private final PdfExporter pdfExporter;
 
     @Override
     public byte[] generate(PeriodicReportRequest request) {
@@ -39,9 +41,25 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
         return switch (request.getFormato().toUpperCase()) {
             case "CSV" -> generateCsv(records, request);
             case "EXCEL" -> generateExcel(records, request);
+            case "PDF" -> generatePdf(records, request);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Formato no soportado: " + request.getFormato());
         };
+    }
+
+    private byte[] generatePdf(List<AccessHistory> records, PeriodicReportRequest request) {
+        String[] headers = {"Fecha/Hora", "ID Empleado", "Nombre", "Cargo", "Departamento", "Resultado"};
+        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
+        List<String[]> rows = records.stream().map(h -> new String[]{
+                h.getTimestamp().format(dtf),
+                h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A",
+                h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A",
+                h.getEmployee() != null ? h.getEmployee().getPosition() : "",
+                h.getDepartment() != null ? h.getDepartment() : "",
+                h.getResult() != null ? h.getResult().name() : ""
+        }).toList();
+        String subtitle = "Período: " + request.getMes() + "/" + request.getAnio();
+        return pdfExporter.exportTable("Archivo Periódico", subtitle, headers, rows);
     }
 
     private byte[] generateCsv(List<AccessHistory> records, PeriodicReportRequest request) {

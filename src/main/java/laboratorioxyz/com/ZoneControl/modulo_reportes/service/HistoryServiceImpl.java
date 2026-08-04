@@ -9,6 +9,7 @@ import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessP
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.AccessHistoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.ExportRequest;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.SupervisorStatsResponse;
+import laboratorioxyz.com.ZoneControl.modulo_reportes.util.PdfExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.poi.ss.usermodel.*;
@@ -37,6 +38,7 @@ public class HistoryServiceImpl implements HistoryService {
 
     private final AccessHistoryRepository accessHistoryRepository;
     private final AccessPermissionRepository accessPermissionRepository;
+    private final PdfExporter pdfExporter;
 
     @Override
     @Transactional(readOnly = true)
@@ -113,9 +115,30 @@ public class HistoryServiceImpl implements HistoryService {
         return switch (request.getFormato().toUpperCase()) {
             case "CSV" -> generateCsv(records, fechaInicio, fechaFin);
             case "EXCEL" -> generateExcel(records, fechaInicio, fechaFin);
+            case "PDF" -> generatePdf(records, fechaInicio, fechaFin);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Formato no soportado: " + request.getFormato());
         };
+    }
+
+    private byte[] generatePdf(List<AccessHistory> records, LocalDate desde, LocalDate hasta) {
+        String[] headers = {"Fecha", "Hora", "ID Empleado", "Nombre", "Cargo", "Departamento", "Área", "Resultado"};
+        List<String[]> rows = records.stream().map(h -> new String[]{
+                h.getTimestamp().format(DateTimeFormatter.ofPattern("dd/MM/yyyy")),
+                h.getTimestamp().format(DateTimeFormatter.ofPattern("HH:mm:ss")),
+                h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A",
+                h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A",
+                h.getEmployee() != null ? h.getEmployee().getPosition() : "",
+                h.getDepartment() != null ? h.getDepartment() : "",
+                h.getProductionAreaName() != null ? h.getProductionAreaName() : "",
+                h.getResult() != null ? h.getResult().name() : ""
+        }).toList();
+        long autorizados = records.stream().filter(h -> h.getResult() == AccessResult.AUTHORIZED).count();
+        String subtitle = "Período: " + desde + " a " + hasta
+                + " — Total=" + records.size()
+                + ", Autorizados=" + autorizados
+                + ", Otros=" + (records.size() - autorizados);
+        return pdfExporter.exportTable("Historial de Accesos", subtitle, headers, rows);
     }
 
     private byte[] generateCsv(List<AccessHistory> records, LocalDate desde, LocalDate hasta) {

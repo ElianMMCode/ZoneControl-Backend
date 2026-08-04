@@ -99,6 +99,19 @@ class PeriodicReportControllerTest {
     }
 
     @Test
+    void periodicReport_validPdf_returns200() throws Exception {
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", LocalDateTime.now().getMonthValue(),
+                                "anio", LocalDateTime.now().getYear(),
+                                "formato", "PDF"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(content().contentTypeCompatibleWith("application/pdf"));
+    }
+
+    @Test
     void periodicReport_noData_returns400() throws Exception {
         mockMvc.perform(post("/api/reportes/archivo-periodico")
                         .contentType(MediaType.APPLICATION_JSON)

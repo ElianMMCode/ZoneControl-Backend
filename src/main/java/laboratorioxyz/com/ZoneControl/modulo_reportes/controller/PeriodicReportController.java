@@ -24,11 +24,13 @@ public class PeriodicReportController {
         String ext = switch (request.getFormato().toUpperCase()) {
             case "CSV" -> "csv";
             case "EXCEL" -> "xlsx";
+            case "PDF" -> "pdf";
             default -> "csv";
         };
         String contentType = switch (request.getFormato().toUpperCase()) {
             case "CSV" -> "text/csv";
             case "EXCEL" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+            case "PDF" -> "application/pdf";
             default -> "application/octet-stream";
         };
         return ResponseEntity.ok()
