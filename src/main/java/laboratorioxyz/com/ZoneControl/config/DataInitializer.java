@@ -17,7 +17,9 @@ import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserRepository;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessAlert;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessAlertRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
@@ -70,6 +72,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductCatalogRepository productCatalogRepository;
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
+    private final AccessAlertRepository accessAlertRepository;
     private final PermissionScheduleRepository permissionScheduleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
@@ -91,6 +94,7 @@ public class DataInitializer implements CommandLineRunner {
         seedCandidateEmployees();
         seedGestorSampleData();
         seedAccessHistory();
+        seedAccessAlerts();
         migratePermissionSchedules();
         log.info("Seed completed successfully");
     }
@@ -615,6 +619,51 @@ public class DataInitializer implements CommandLineRunner {
                 .timestamp(timestamp)
                 .result(result)
                 .build());
+    }
+
+    /**
+     * Siembra alertas de seguridad de ejemplo (sin leer) para que el panel
+     * "Alertas de seguridad" del dashboard del admin tenga contenido. Son
+     * datos transaccionales: solo se siembran si la tabla está vacía.
+     */
+    private void seedAccessAlerts() {
+        if (accessAlertRepository.count() > 0) {
+            log.info("Access alerts already exist — skipping");
+            return;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        accessAlertRepository.save(AccessAlert.builder()
+                .tipo(AccessAlert.AlertType.ACCESO_NOCTURNO)
+                .severidad(AccessAlert.AlertSeverity.LOW)
+                .employeeCode("EMP-000040")
+                .productionAreaName("Sala Blanca A")
+                .message("Acceso autorizado fuera del horario diurno (00:00-05:00)")
+                .timestamp(now.minusHours(2))
+                .build());
+        accessAlertRepository.save(AccessAlert.builder()
+                .tipo(AccessAlert.AlertType.DENEGACIONES_REPETIDAS)
+                .severidad(AccessAlert.AlertSeverity.MEDIUM)
+                .employeeCode("EMP-000042")
+                .productionAreaName("Sala Blanca A")
+                .message("≥3 intentos denegados del empleado EMP-000042 en 15 min")
+                .timestamp(now.minusHours(5))
+                .build());
+        accessAlertRepository.save(AccessAlert.builder()
+                .tipo(AccessAlert.AlertType.ZONA_EMERGENCIA)
+                .severidad(AccessAlert.AlertSeverity.MEDIUM)
+                .productionAreaName("Sala Blanca B")
+                .message("Zona Sala Blanca B CERRADA POR EMERGENCIA")
+                .timestamp(now.minusHours(26))
+                .build());
+        accessAlertRepository.save(AccessAlert.builder()
+                .tipo(AccessAlert.AlertType.ACCESO_NOCTURNO)
+                .severidad(AccessAlert.AlertSeverity.LOW)
+                .employeeCode("EMP-000100")
+                .productionAreaName("Laboratorio QC")
+                .message("Acceso autorizado fuera del horario diurno (00:00-05:00)")
+                .timestamp(now.minusDays(1).withHour(2).withMinute(40))
+                .build());
+        log.info("Seeded 4 access alerts");
     }
 
     private Employee saveEmployee(String code, String doc, String firstName, String lastName,
