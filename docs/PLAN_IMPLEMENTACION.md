@@ -550,6 +550,8 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | PATCH | /api/permisos/{id}/suspend | Gestor/Admin | Gestión Personal | 13 |
 | PATCH | /api/permisos/{id}/reactivate | Gestor/Admin | Gestión Personal | 13 |
 | POST | /api/access/validate | Admin, Supervisor | Control Acceso | 18 |
+| GET | /api/access/alerts | Admin, Supervisor | Control Acceso | 23 |
+| PATCH | /api/access/alerts/{id}/leido | Admin, Supervisor | Control Acceso | 23 |
 | GET | /api/historial | Supervisor/Admin | Reportes | 15 |
 | GET | /api/historial/stats | Supervisor/Admin | Reportes | — |
 | POST | /api/historial/export | Supervisor/Admin | Reportes | 16 |
@@ -754,7 +756,7 @@ Decisiones de diseño confirmadas:
   - Acceso autorizado entre 00:00-05:00 → alerta baja.
   - Cierre/reapertura de zona → alerta media.
 - Persistencia + emisión SSE (`alert.created`).
-- `GET /api/access/alerts?desde=&leido=` (ADMIN/SUPERVISOR) para el panel.
+- `GET /api/access/alerts?desde=&leido=` (ADMIN/SUPERVISOR) para el panel. `PATCH /api/access/alerts/{id}/leido` marca una alerta como leída (implementado; consumido por `SecurityAlertsPanel` del dashboard del admin).
 - **Tests**: disparo por 3 denegaciones, disparo nocturno, no-disparo en condiciones normales, listar alertas.
 - **Esfuerzo**: medio (2-3 días).
 
