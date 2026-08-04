@@ -315,7 +315,7 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - TDD: 4 condiciones de aceptación → 4 tests
 
 - **Adicional (dashboard admin)**: `GET /api/admin/stats` — contadores agregados para las tarjetas KPI del dashboard del administrador (usuarios por estado, pendientes de configuración de contraseña, empleados, permisos). Solo ADMIN. TDD: 1 test de conteos delta.
-- **Adicional (ajustes)**: `POST /api/auth/change-password` — cambio de contraseña voluntario por el usuario autenticado. Requiere token JWT válido (SecurityConfig: regla auth/change-password → authenticated() antes del permitAll de /api/auth/**). TDD: 5 tests (éxito, actual incorrecta, misma contraseña, validación, sin token).
+- **Adicional (ajustes)**: `POST /api/auth/change-password` — cambio de contraseña voluntario por el usuario autenticado. Requiere token JWT válido (SecurityConfig: regla auth/change-password → authenticated() antes del permitAll de /api/auth/**). TDD: 5 tests (éxito, actual incorrecta, misma contraseña, validación, sin token). Además, `PUT /api/auth/profile` permite al usuario editar sus propios datos de cuenta (nombre, apellido y correo; valida correo único → 409). TDD: 4 tests (éxito, email duplicado, validación, sin token).
 
 ### Fase 3 — Administración (HU-05, HU-06, HU-07, HU-08)
 
@@ -510,6 +510,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | GET | /api/public/folleto | No | Público | 02 |
 | POST | /api/auth/login | No | Autenticación | 03 |
 | POST | /api/auth/change-password | Autenticado | Autenticación | 03 |
+| PUT | /api/auth/profile | Autenticado | Autenticación | 03 |
 | GET | /api/setup-password?token= | No | Autenticación | 05/08 |
 | POST | /api/setup-password | No | Autenticación | 05/08 |
 | GET | /api/admin/users | Admin | Administración | 05 |
