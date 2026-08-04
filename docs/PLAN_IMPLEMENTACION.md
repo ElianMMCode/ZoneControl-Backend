@@ -329,10 +329,11 @@ Crear `import.sql` o `DataInitializer` que inserte:
 - TDD: test creación exitosa (retorna id + token), email duplicado, empleado sin email, empleado ya vinculado
 
 **HU-06: Editar Usuario**
-- `PUT /api/admin/users/{id}` — body `{ email }`: **el admin solo puede editar el correo**
-- Nombre/apellido/cargo reflejan al `Employee` vinculado (se gestionan en Gestión de Personal); el rol se asigna en la creación (HU-05) y el estado se cambia vía `PATCH /{id}/status` (HU-07)
+- `PUT /api/admin/users/{id}` — body `{ email, status }`: el admin edita el correo y el estado
+- Nombre/apellido/cargo reflejan al `Employee` vinculado (se gestionan en Gestión de Personal); el rol se asigna en la creación (HU-05)
+- El cambio de estado reutiliza la cascada del toggle (HU-07): guard de auto-desactivación y suspensión/restauración de empleado y permisos
 - Validar nuevo email no duplicado (HTTP 409, excluyendo al mismo usuario) y HTTP 404 si el usuario no existe
-- Frontend: modal de edición con los datos del usuario en solo lectura (nombre, rol, estado, código) + campo email editable
+- Frontend: modal de edición con los datos del usuario en solo lectura (nombre, rol, código) + campos email y estado editables
 - TDD: test actualización exitosa, email duplicado, usuario inexistente
 
 **HU-07: Activar/Desactivar Usuario**

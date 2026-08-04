@@ -71,6 +71,10 @@ Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene
 | 5 | Reutilizar la pantalla de configuración de contraseña del flujo de creación (HU-05) para completar el restablecimiento; validar que la nueva contraseña cumpla los mismos requisitos de seguridad antes de guardarla con BCrypt |
 | 6 | Manejar respuestas de error: 404 para usuario inexistente, 400 para empleado sin correo, 410 para token expirado, 404 para token inválido |
 
+## Demo (sin SMTP)
+
+Mientras no exista SMTP configurado, `MagicLinkNotifier` solo registra el enlace en el log y **no envía correo**. `POST /api/admin/users/{id}/reset-password` devuelve el campo `setupUrl` en la respuesta; al confirmar el restablecimiento, el frontend abre esa URL en una **nueva ventana** con la vista `/configurar-contrasena?token=...` para que el usuario configure su nueva contraseña.
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

@@ -123,6 +123,10 @@ Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene
 | 10 | Retornar HTTP 201 con ID del usuario creado y mostrar notificación de éxito en el frontend indicando que se envió magic link |
 | 11 | Manejar respuestas de error: 409 para email duplicado o empleado ya vinculado, 400 para empleado inexistente o sin email, 410 para token expirado, 404 para token inválido |
 
+## Demo (sin SMTP)
+
+Mientras no exista SMTP configurado, `MagicLinkNotifier` solo registra el enlace en el log del backend y **no envía correo**. Para poder probar el flujo, `POST /api/admin/users` devuelve en la respuesta el campo `setupUrl` con el enlace completo; el frontend muestra un botón **"Abrir configuración"** que abre esa URL en una nueva ventana (vista `/configurar-contrasena?token=...`).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
