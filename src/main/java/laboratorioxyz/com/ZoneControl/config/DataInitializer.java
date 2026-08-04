@@ -183,8 +183,22 @@ public class DataInitializer implements CommandLineRunner {
      * Gestor123!. Es idempotente.
      */
     private void seedGestorUser() {
-        if (userRepository.findByEmail("gestor@zonecontrol.com").isPresent()) {
-            log.info("Gestor user already exists — skipping");
+        // Auto-reparación: si el usuario demo existe pero quedó sin contraseña
+        // (p. ej. un reset de prueba sin completar el magic link), se restaura
+        // la credencial por defecto y se limpia el setupToken pendiente.
+        var existing = userRepository.findByEmail("gestor@zonecontrol.com");
+        if (existing.isPresent()) {
+            User gestor = existing.get();
+            if (gestor.getPassword() == null) {
+                gestor.setPassword(passwordEncoder.encode("Gestor123!"));
+                gestor.setSetupToken(null);
+                gestor.setSetupTokenExpiry(null);
+                gestor.setRequirePasswordChange(false);
+                userRepository.save(gestor);
+                log.info("Gestor user password restored to default (was null)");
+            } else {
+                log.info("Gestor user already exists — skipping");
+            }
             return;
         }
         Department calidad = departmentRepository.findByName("Control de Calidad")
