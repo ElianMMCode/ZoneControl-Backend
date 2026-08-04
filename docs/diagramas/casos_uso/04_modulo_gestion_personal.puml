@@ -14,6 +14,7 @@ package "Módulo de Gestión de Personal" {
     usecase "CU-05a: Validar estructura e información" as UC_Gest3
     usecase "CU-06: Gestionar permisos (Otorgar/Editar/Suspender/Reactivar/Revocar)" as UC_Gest4
     usecase "CU-06a: Gestionar áreas de producción" as UC_Gest7
+    usecase "CU-06b: Turnos y horarios por día" as UC_Gest9
     usecase "CU-07: Buscar personal por filtros" as UC_Gest5
     usecase "CU-07a: Editar empleado y cambiar estado" as UC_Gest6
     usecase "CU-07b: Fotografía del empleado" as UC_Gest8
@@ -29,6 +30,7 @@ Gestor --> UC_Gest5
 Gestor --> UC_Gest6
 Gestor --> UC_Gest7
 Gestor --> UC_Gest8
+Gestor --> UC_Gest9
 
 note bottom of UC_Gest4
   POST /api/permisos (Otorgar)
@@ -47,6 +49,11 @@ end note
 note bottom of UC_Gest8
   POST/GET/DELETE /api/personal/{id}/photo
   Implementado backend y frontend
+end note
+
+note bottom of UC_Gest9
+  PermissionSchedule LUN..DOM
+  Implementado (3.2 §9)
 end note
 
 @enduml

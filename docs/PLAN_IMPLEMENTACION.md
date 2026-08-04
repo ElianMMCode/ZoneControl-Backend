@@ -838,9 +838,9 @@ Rutas nuevas (protegidas por rol en `src/main/frontend/src/routes/index.tsx`): `
 | Fase | Items | Salida esperada |
 |---|---|---|
 | **A — Gaps fáciles** | 1.7 → 1.3 → 1.6 → 1.1 → 1.2 | ✅ COMPLETADA: handlers 409/500, filtro por depto, invalidación JWT, export PDF y agregación por departamento. HUs 07/15/16/17 y flujos 13-15 actualizados. |
-| **B — Áreas y matriz** | 1.4 (HU-20) → 1.5 (HU-27) | CRUD áreas ✓ (backend + frontend admin). Pendiente: endpoint `GET /api/admin/role-matrix` + HU-20/HU-27. |
-| **C — Tiempo real** | 2.1 (HU-21) → 2.2 (HU-22) → 2.3 (SSE) → 2.4 (HU-23) | Sesiones, emergencia, SSE y alertas para ADMIN/SUPERVISOR; nuevos flujos 20-22. Sin rol SEGURIDAD ni `SecurityActionLog`. |
-| **D — Personal** | 3.1 (HU-25 ✓) → 3.2 (HU-26) | Foto ✓ (CU-07b). Pendiente: turnos/schedules (CU-06b). |
+| **B — Áreas y matriz** | 1.4 (HU-20) → 1.5 (HU-27) | ✅ COMPLETADA: CRUD áreas (backend + frontend admin) y endpoint `GET /api/admin/role-matrix` + HU-20/HU-27. |
+| **C — Tiempo real** | 2.1 (HU-21) → 2.2 (HU-22) → 2.3 (SSE) → 2.4 (HU-23) | ✅ COMPLETADA: sesiones, emergencia, SSE y alertas para ADMIN/SUPERVISOR; flujos 20-22 y HUs 21-23. Sin rol SEGURIDAD ni `SecurityActionLog`. |
+| **D — Personal** | 3.1 (HU-25 ✓) → 3.2 (HU-26) | ✅ COMPLETADA: foto ✓ (CU-07b) y turnos/schedules ✓ (CU-06b, HU-26). |
 
 Frontend integrado por fase, consumiendo los hooks y store ya existentes. Documentos maestros (`docs/diagramas/README.md`, HU-00, esta §9) actualizados al cierre de cada fase.
 

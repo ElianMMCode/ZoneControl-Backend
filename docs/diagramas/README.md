@@ -37,6 +37,9 @@
 | 17 | `17_flujo_gestion_contenido_publico.puml` | CU-03b | Gestionar Contenido Público |
 | 18 | `18_flujo_editar_empleado.puml` | CU-07a | Editar Empleado |
 | 19 | `19_flujo_gestion_areas_produccion.puml` | CU-06a | Gestionar Áreas de Producción (implementado backend) |
+| 20 | `20_flujo_consulta_ocupacion.puml` | CU-11d | Consultar Ocupación en Tiempo Real |
+| 21 | `21_flujo_cierre_emergencia.puml` | CU-11f | Cerrar Zona por Emergencia |
+| 22 | `22_flujo_alertas_anomalias.puml` | CU-11g | Alertas de Anomalías de Acceso |
 
 ---
 
