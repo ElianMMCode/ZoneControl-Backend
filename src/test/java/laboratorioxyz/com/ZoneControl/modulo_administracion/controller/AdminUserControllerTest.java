@@ -180,16 +180,12 @@ class AdminUserControllerTest {
         mockMvc.perform(put("/api/admin/users/{id}", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "firstName", "Updated",
-                                "lastName", "Name",
-                                "email", "updated@test.com",
-                                "role", "ADMIN"
+                                "email", "updated@test.com"
                         ))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("Updated"))
-                .andExpect(jsonPath("$.lastName").value("Name"))
                 .andExpect(jsonPath("$.email").value("updated@test.com"))
-                .andExpect(jsonPath("$.role").value("ADMIN"));
+                .andExpect(jsonPath("$.firstName").value(testUser.getFirstName()))
+                .andExpect(jsonPath("$.role").value(testUser.getRole().name()));
     }
 
     @Test
@@ -207,7 +203,7 @@ class AdminUserControllerTest {
     void updateUser_nonExistentUser_returns404() throws Exception {
         mockMvc.perform(put("/api/admin/users/{id}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("firstName", "Any"))))
+                        .content(objectMapper.writeValueAsString(Map.of("email", "cualquiera@test.com"))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
     }

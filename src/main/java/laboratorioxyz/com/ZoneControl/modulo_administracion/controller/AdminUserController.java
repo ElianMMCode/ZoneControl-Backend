@@ -101,7 +101,8 @@ public class AdminUserController {
     }
 
     @Operation(summary = "Editar usuario",
-            description = "Modifica nombre, apellido, email, rol o empleado vinculado de un usuario existente.")
+            description = "Modifica únicamente el correo del usuario. El nombre, apellido y cargo reflejan al " +
+                    "empleado vinculado (se gestionan en Gestión de Personal) y el estado se maneja con PATCH /{id}/status.")
     @ApiResponse(responseCode = "200", description = "Usuario actualizado")
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     @ApiResponse(responseCode = "409", description = "Email duplicado")

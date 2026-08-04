@@ -147,32 +147,12 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Usuario no encontrado"));
 
-        if (request.email() != null && !request.email().equals(user.getEmail())) {
+        if (!request.email().equals(user.getEmail())) {
             if (userRepository.existsByEmail(request.email())) {
                 throw new ResponseStatusException(HttpStatus.CONFLICT,
                         "El email ya está registrado");
             }
             user.setEmail(request.email());
-        }
-        if (request.firstName() != null) {
-            user.setFirstName(request.firstName());
-        }
-        if (request.lastName() != null) {
-            user.setLastName(request.lastName());
-        }
-        if (request.role() != null) {
-            user.setRole(request.role());
-        }
-        if (request.employeeCode() != null) {
-            Employee employee = employeeRepository.findByEmployeeCode(request.employeeCode())
-                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                            "Empleado no encontrado: " + request.employeeCode()));
-            if (userRepository.findByEmployee_Id(employee.getId())
-                    .filter(existing -> !existing.getId().equals(user.getId())).isPresent()) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "El empleado ya tiene un usuario de sistema asociado");
-            }
-            user.setEmployee(employee);
         }
 
         userRepository.save(user);
@@ -310,6 +290,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .role(user.getRole())
                 .status(user.getStatus())
                 .requirePasswordChange(user.isRequirePasswordChange())
+                .pendienteActivacion(user.getSetupToken() != null)
                 .employeeCode(user.getEmployee().getEmployeeCode())
                 .position(user.getEmployee().getPosition())
                 .build();

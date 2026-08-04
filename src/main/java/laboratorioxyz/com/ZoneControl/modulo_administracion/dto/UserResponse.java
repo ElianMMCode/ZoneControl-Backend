@@ -20,6 +20,7 @@ public record UserResponse(
         Role role,
         UserStatus status,
         boolean requirePasswordChange,
+        boolean pendienteActivacion,
         String employeeCode,
         String position
 ) {}

@@ -1,13 +1,16 @@
 package laboratorioxyz.com.ZoneControl.modulo_administracion.dto;
 
 import jakarta.validation.constraints.Email;
+import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
-import laboratorioxyz.com.ZoneControl.model.enums.Role;
 
+/**
+ * DTO de entrada para PUT /admin/users/{id}.
+ *
+ * El ADMIN solo puede editar el correo del usuario. El nombre y apellido
+ * reflejan al Employee vinculado (se gestionan en Gestión Personal), el rol
+ * se asigna en la creación y el estado se maneja con PATCH /{id}/status.
+ */
 public record UpdateUserRequest(
-    @Size(min = 2, max = 35) String firstName,
-    @Size(min = 2, max = 35) String lastName,
-    @Email @Size(max = 100) String email,
-    Role role,
-    @Size(max = 12) String employeeCode
+        @NotBlank @Email @Size(max = 100) String email
 ) {}
