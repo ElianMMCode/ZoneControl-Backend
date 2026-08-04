@@ -83,7 +83,7 @@ public class AdminUserController {
     @ApiResponse(responseCode = "400", description = "Empleado no encontrado o sin correo registrado")
     @ApiResponse(responseCode = "409", description = "Email duplicado o empleado ya vinculado a otro usuario")
     @PostMapping
-    public ResponseEntity<Map<String, UUID>> create(@Valid @RequestBody CreateUserRequest request) {
+    public ResponseEntity<Map<String, Object>> create(@Valid @RequestBody CreateUserRequest request) {
         return ResponseEntity.status(HttpStatus.CREATED).body(adminUserService.create(request));
     }
 
@@ -101,8 +101,8 @@ public class AdminUserController {
     }
 
     @Operation(summary = "Editar usuario",
-            description = "Modifica únicamente el correo del usuario. El nombre, apellido y cargo reflejan al " +
-                    "empleado vinculado (se gestionan en Gestión de Personal) y el estado se maneja con PATCH /{id}/status.")
+            description = "Modifica el correo y el estado del usuario. El nombre, apellido y cargo reflejan al " +
+                    "empleado vinculado (se gestionan en Gestión de Personal) y el rol se asigna en la creación.")
     @ApiResponse(responseCode = "200", description = "Usuario actualizado")
     @ApiResponse(responseCode = "404", description = "Usuario no encontrado")
     @ApiResponse(responseCode = "409", description = "Email duplicado")
@@ -110,7 +110,8 @@ public class AdminUserController {
     public ResponseEntity<Map<String, Object>> update(
             @PathVariable UUID id,
             @Valid @RequestBody UpdateUserRequest request) {
-        return ResponseEntity.ok(adminUserService.update(id, request));
+        String currentUserEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        return ResponseEntity.ok(adminUserService.update(id, request, currentUserEmail));
     }
 
     @Operation(summary = "Restablecer contraseña",

@@ -57,7 +57,7 @@ public class AdminUserServiceImpl implements AdminUserService {
      */
     @Override
     @Transactional
-    public Map<String, UUID> create(CreateUserRequest request) {
+    public Map<String, Object> create(CreateUserRequest request) {
         Employee employee = employeeRepository.findByEmployeeCode(request.getEmployeeCode())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Empleado no encontrado: " + request.getEmployeeCode()));
@@ -94,29 +94,79 @@ public class AdminUserServiceImpl implements AdminUserService {
         magicLinkNotifier.sendSetupLink(user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(), rawToken);
         log.info("User {} created for employee {} (magic link enviado)", user.getId(), request.getEmployeeCode());
-        return Map.of("id", user.getId());
+        return Map.of(
+                "id", user.getId(),
+                "setupUrl", magicLinkNotifier.buildUrl(rawToken)
+        );
     }
 
     @Override
     @Transactional
     public Map<String, Object> updateStatus(UUID id, StatusUpdateRequest request, String currentUserEmail) {
-        User user = userRepository.findById(id)
+        User user = findUserOrThrow(id);
+        User currentUser = findCurrentAdmin(currentUserEmail);
+        UserStatus newStatus = UserStatus.valueOf(request.status().toUpperCase());
+        applyStatusChange(user, newStatus, currentUser);
+        log.info("User {} status changed to {} by admin {}", id, newStatus, currentUserEmail);
+
+        return Map.of(
+                "id", user.getId(),
+                "status", user.getStatus().name(),
+                "employeeStatus", user.getEmployee().getStatus().name()
+        );
+    }
+
+    @Override
+    @Transactional
+    public Map<String, Object> update(UUID id, UpdateUserRequest request, String currentUserEmail) {
+        User user = findUserOrThrow(id);
+        User currentUser = findCurrentAdmin(currentUserEmail);
+
+        if (!request.email().equals(user.getEmail())) {
+            if (userRepository.existsByEmail(request.email())) {
+                throw new ResponseStatusException(HttpStatus.CONFLICT,
+                        "El email ya está registrado");
+            }
+            user.setEmail(request.email());
+        }
+
+        applyStatusChange(user, request.status(), currentUser);
+        userRepository.save(user);
+        log.info("User {} updated", id);
+
+        return Map.of(
+                "id", user.getId(),
+                "firstName", user.getFirstName(),
+                "lastName", user.getLastName(),
+                "email", user.getEmail(),
+                "role", user.getRole().name(),
+                "status", user.getStatus().name()
+        );
+    }
+
+    private User findUserOrThrow(UUID id) {
+        return userRepository.findById(id)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Usuario no encontrado"));
+    }
 
-        User currentUser = userRepository.findByEmail(currentUserEmail)
+    private User findCurrentAdmin(String currentUserEmail) {
+        return userRepository.findByEmail(currentUserEmail)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
                         "No se pudo verificar el administrador actual"));
+    }
 
-        UserStatus newStatus = UserStatus.valueOf(request.status().toUpperCase());
-
+    /**
+     * Cambia el estado del usuario y aplica la cascada al empleado y a sus
+     * permisos de acceso (INACTIVO → empleado INACTIVO + permisos SUSPENDIDO;
+     * ACTIVO → restaura). Rechaza desactivar la propia cuenta.
+     */
+    private void applyStatusChange(User user, UserStatus newStatus, User currentUser) {
         if (newStatus == UserStatus.INACTIVO && currentUser.getId().equals(user.getId())) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No puede desactivar su propia cuenta");
         }
-
         user.setStatus(newStatus);
-        userRepository.save(user);
 
         Employee employee = user.getEmployee();
         employee.setStatus(newStatus == UserStatus.INACTIVO
@@ -130,41 +180,6 @@ public class AdminUserServiceImpl implements AdminUserService {
         if (!permissions.isEmpty()) {
             accessPermissionRepository.saveAll(permissions);
         }
-
-        log.info("User {} status changed to {} by admin {}", id, newStatus, currentUserEmail);
-
-        return Map.of(
-                "id", user.getId(),
-                "status", user.getStatus().name(),
-                "employeeStatus", employee.getStatus().name()
-        );
-    }
-
-    @Override
-    @Transactional
-    public Map<String, Object> update(UUID id, UpdateUserRequest request) {
-        User user = userRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
-                        "Usuario no encontrado"));
-
-        if (!request.email().equals(user.getEmail())) {
-            if (userRepository.existsByEmail(request.email())) {
-                throw new ResponseStatusException(HttpStatus.CONFLICT,
-                        "El email ya está registrado");
-            }
-            user.setEmail(request.email());
-        }
-
-        userRepository.save(user);
-        log.info("User {} updated", id);
-
-        return Map.of(
-                "id", user.getId(),
-                "firstName", user.getFirstName(),
-                "lastName", user.getLastName(),
-                "email", user.getEmail(),
-                "role", user.getRole().name()
-        );
     }
 
     /**
@@ -200,7 +215,10 @@ public class AdminUserServiceImpl implements AdminUserService {
         magicLinkNotifier.sendSetupLink(employee.getEmail(),
                 user.getFirstName() + " " + user.getLastName(), rawToken);
         log.info("Password reset for user {} (magic link enviado)", id);
-        return new ResetPasswordResponse("Enlace de configuración enviado al correo del usuario");
+        return new ResetPasswordResponse(
+                "Enlace de configuración enviado al correo del usuario",
+                magicLinkNotifier.buildUrl(rawToken)
+        );
     }
 
     @Override

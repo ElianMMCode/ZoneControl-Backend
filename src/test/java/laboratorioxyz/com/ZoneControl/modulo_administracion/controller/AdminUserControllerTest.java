@@ -180,10 +180,12 @@ class AdminUserControllerTest {
         mockMvc.perform(put("/api/admin/users/{id}", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
-                                "email", "updated@test.com"
+                                "email", "updated@test.com",
+                                "status", "ACTIVO"
                         ))))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.email").value("updated@test.com"))
+                .andExpect(jsonPath("$.status").value("ACTIVO"))
                 .andExpect(jsonPath("$.firstName").value(testUser.getFirstName()))
                 .andExpect(jsonPath("$.role").value(testUser.getRole().name()));
     }
@@ -194,7 +196,10 @@ class AdminUserControllerTest {
 
         mockMvc.perform(put("/api/admin/users/{id}", testUser.getId())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("email", admin.getEmail()))))
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "email", admin.getEmail(),
+                                "status", "ACTIVO"
+                        ))))
                 .andExpect(status().isConflict())
                 .andExpect(jsonPath("$.error").value("El email ya está registrado"));
     }
@@ -203,7 +208,10 @@ class AdminUserControllerTest {
     void updateUser_nonExistentUser_returns404() throws Exception {
         mockMvc.perform(put("/api/admin/users/{id}", UUID.randomUUID())
                         .contentType(MediaType.APPLICATION_JSON)
-                        .content(objectMapper.writeValueAsString(Map.of("email", "cualquiera@test.com"))))
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "email", "cualquiera@test.com",
+                                "status", "ACTIVO"
+                        ))))
                 .andExpect(status().isNotFound())
                 .andExpect(jsonPath("$.error").value("Usuario no encontrado"));
     }
@@ -213,7 +221,8 @@ class AdminUserControllerTest {
         mockMvc.perform(post("/api/admin/users/{id}/reset-password", testUser.getId()))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.message")
-                        .value("Enlace de configuración enviado al correo del usuario"));
+                        .value("Enlace de configuración enviado al correo del usuario"))
+                .andExpect(jsonPath("$.setupUrl").isString());
 
         User afterReset = userRepository.findById(testUser.getId()).orElseThrow();
         assertThat(afterReset.getPassword()).isNull();
@@ -280,7 +289,8 @@ class AdminUserControllerTest {
                                 "status", "ACTIVO"
                         ))))
                 .andExpect(status().isCreated())
-                .andExpect(jsonPath("$.id").isString());
+                .andExpect(jsonPath("$.id").isString())
+                .andExpect(jsonPath("$.setupUrl").isString());
 
                 assertThat(userRepository.findByEmployee_Id(fresh.getId()))
                         .hasValueSatisfying(u -> {

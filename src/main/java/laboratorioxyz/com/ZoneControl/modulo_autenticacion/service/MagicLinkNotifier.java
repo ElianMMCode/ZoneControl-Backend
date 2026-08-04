@@ -28,9 +28,18 @@ public class MagicLinkNotifier {
     private String appUrl;
 
     public void sendSetupLink(String email, String fullName, String rawToken) {
-        String url = appUrl + "/configurar-contrasena?token=" + rawToken;
+        String url = buildUrl(rawToken);
         log.info("[MAGIC LINK] Para: {} ({}). Enlace de configuración (expira en 24h): {}", email, fullName, url);
         // TODO: reemplazar por JavaMailSender cuando exista SMTP configurado.
         // No enviar la contraseña en texto plano; solo el enlace con el token.
+    }
+
+    /**
+     * Construye la URL completa del enlace de configuración. Se expone para que
+     * los servicios la devuelvan en la respuesta (demo sin SMTP): el admin puede
+     * abrir la vista de configuración en una nueva ventana.
+     */
+    public String buildUrl(String rawToken) {
+        return appUrl + "/configurar-contrasena?token=" + rawToken;
     }
 }

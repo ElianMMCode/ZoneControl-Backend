@@ -16,9 +16,9 @@ import java.util.Map;
 import java.util.UUID;
 
 public interface AdminUserService {
-    Map<String, UUID> create(CreateUserRequest request);
+    Map<String, Object> create(CreateUserRequest request);
     Map<String, Object> updateStatus(UUID id, StatusUpdateRequest request, String currentUserEmail);
-    Map<String, Object> update(UUID id, UpdateUserRequest request);
+    Map<String, Object> update(UUID id, UpdateUserRequest request, String currentUserEmail);
     ResetPasswordResponse resetPassword(UUID id);
     Page<UserResponse> list(String search, Role role, UserStatus status, Boolean pendientesConfiguracion, Pageable pageable);
     UserResponse getById(UUID id);
