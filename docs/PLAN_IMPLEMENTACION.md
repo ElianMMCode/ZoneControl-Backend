@@ -693,7 +693,7 @@ Decisiones de diseño confirmadas:
 - **Tests**: devuelve la matriz con los 4 roles; 403 si el rol no es ADMIN.
 - **Esfuerzo**: bajo (~1 día).
 
-> **Estado 1.5 — PENDIENTE**: no existe `GET /api/admin/role-matrix` ni vista frontend. El rol SEGURIDAD (fase C) aún no existe.
+> **Estado 1.5 — IMPLEMENTADO**: `GET /api/admin/role-matrix` en `RoleMatrixController` (servicio que refleja SecurityConfig, sin rol SEGURIDAD). Vista `/admin/matriz-roles` consume el endpoint. Tests en `RoleMatrixControllerTest`. HU-27 creada.
 
 #### 1.6 Invalidar JWT al desactivar usuario (HU-07 gap)
 - `JwtAuthenticationFilter`: tras validar firma/expiración, cargar el usuario por ID y comprobar `status == ACTIVO`. Si no, devolver 401.
@@ -868,7 +868,7 @@ Frontend integrado por fase, consumiendo los hooks y store ya existentes. Docume
 | 1.2 | Archivo periódico agregado por departamento | IMPLEMENTADO |
 | 1.3 | Filtro por departamento en historial y export | IMPLEMENTADO |
 | 1.4 | CRUD de áreas de producción (HU-20) | IMPLEMENTADO (backend) + frontend `/admin/areas` (admin) |
-| 1.5 | Matriz de roles solo consulta (HU-27) | Vista frontend IMPLEMENTADA en `/admin/matriz-roles` (solo lectura). **Pendiente**: endpoint `GET /api/admin/role-matrix` |
+| 1.5 | Matriz de roles solo consulta (HU-27) | IMPLEMENTADO: `GET /api/admin/role-matrix` + vista `/admin/matriz-roles` consumiendo el endpoint |
 | 1.6 | Invalidar JWT al desactivar usuario (HU-07 gap) | IMPLEMENTADO |
 | 1.7 | Handlers 409 y 500 en GlobalExceptionHandler | IMPLEMENTADO |
 | 2.1–2.4 | Tiempo real para ADMIN/SUPERVISOR (ocupación, emergencia, SSE, alertas) | PENDIENTE (rol SEGURIDAD y consola guardia ELIMINADOS por decisión) |
