@@ -7,21 +7,34 @@ import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportRequest;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.util.PdfExporter;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.io.ByteArrayOutputStream;
-import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Map;
 
+/**
+ * Archivo periódico para el socio internacional (HU-17). Emite una
+ * agregación por departamento SIN datos personales (columnas: Departamento,
+ * Período, Total, Autorizados, Denegados, No Registrados, Suspendidos),
+ * conforme al plan y a la normativa de protección de datos.
+ */
 @Service
 @RequiredArgsConstructor
 @Slf4j
 public class PeriodicReportServiceImpl implements PeriodicReportService {
+
+    private static final String[] HEADERS = {
+            "Departamento", "Período", "Total", "Autorizados", "Denegados", "No Registrados", "Suspendidos"
+    };
 
     private final AccessHistoryRepository accessHistoryRepository;
     private final PdfExporter pdfExporter;
@@ -30,72 +43,99 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
     public byte[] generate(PeriodicReportRequest request) {
         List<AccessHistory> records = accessHistoryRepository.findByPeriod(request.getMes(), request.getAnio());
 
+        if (request.getDepartmentNames() != null && !request.getDepartmentNames().isEmpty()) {
+            records = records.stream()
+                    .filter(h -> h.getDepartment() != null
+                            && request.getDepartmentNames().contains(h.getDepartment()))
+                    .toList();
+        }
+
         if (records.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se encontraron registros de acceso para el período seleccionado");
         }
 
-        log.info("Periodic report generated: mes={}, anio={}, registros={}",
-                request.getMes(), request.getAnio(), records.size());
+        List<DepartmentAgg> rows = aggregate(records, request);
+
+        log.info("Periodic report generated: mes={}, anio={}, departamentos={}",
+                request.getMes(), request.getAnio(), rows.size());
 
         return switch (request.getFormato().toUpperCase()) {
-            case "CSV" -> generateCsv(records, request);
-            case "EXCEL" -> generateExcel(records, request);
-            case "PDF" -> generatePdf(records, request);
+            case "CSV" -> generateCsv(rows, request);
+            case "EXCEL" -> generateExcel(rows, request);
+            case "PDF" -> generatePdf(rows, request);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Formato no soportado: " + request.getFormato());
         };
     }
 
-    private byte[] generatePdf(List<AccessHistory> records, PeriodicReportRequest request) {
-        String[] headers = {"Fecha/Hora", "ID Empleado", "Nombre", "Cargo", "Departamento", "Resultado"};
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        List<String[]> rows = records.stream().map(h -> new String[]{
-                h.getTimestamp().format(dtf),
-                h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A",
-                h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A",
-                h.getEmployee() != null ? h.getEmployee().getPosition() : "",
-                h.getDepartment() != null ? h.getDepartment() : "",
-                h.getResult() != null ? h.getResult().name() : ""
-        }).toList();
-        String subtitle = "Período: " + request.getMes() + "/" + request.getAnio();
-        return pdfExporter.exportTable("Archivo Periódico", subtitle, headers, rows);
+    private List<DepartmentAgg> aggregate(List<AccessHistory> records, PeriodicReportRequest request) {
+        Map<String, int[]> acc = new LinkedHashMap<>();
+        for (AccessHistory h : records) {
+            String dept = h.getDepartment() != null ? h.getDepartment() : "Sin departamento";
+            int[] c = acc.computeIfAbsent(dept, k -> new int[5]);
+            c[0]++;
+            if (h.getResult() == AccessResult.AUTHORIZED) c[1]++;
+            else if (h.getResult() == AccessResult.DENIED) c[2]++;
+            else if (h.getResult() == AccessResult.UNREGISTERED) c[3]++;
+            else if (h.getResult() == AccessResult.SUSPENDED) c[4]++;
+        }
+        String periodo = String.format("%d-%02d", request.getAnio(), request.getMes());
+        List<DepartmentAgg> rows = new ArrayList<>();
+        for (Map.Entry<String, int[]> e : acc.entrySet()) {
+            int[] c = e.getValue();
+            rows.add(new DepartmentAgg(e.getKey(), periodo, c[0], c[1], c[2], c[3], c[4]));
+        }
+        return rows;
     }
 
-    private byte[] generateCsv(List<AccessHistory> records, PeriodicReportRequest request) {
+    private byte[] generateCsv(List<DepartmentAgg> rows, PeriodicReportRequest request) {
         StringBuilder sb = new StringBuilder();
-        sb.append("Fecha/Hora;ID Empleado;Nombre;Cargo;Departamento;Resultado\n");
-        DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
-        for (AccessHistory h : records) {
-            sb.append(h.getTimestamp().format(dtf)).append(";")
-              .append(h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A").append(";")
-              .append(h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A").append(";")
-              .append(h.getEmployee() != null ? h.getEmployee().getPosition() : "").append(";")
-              .append(h.getDepartment() != null ? h.getDepartment() : "").append(";")
-              .append(h.getResult()).append("\n");
+        sb.append(String.join(";", HEADERS)).append("\n");
+        int total = 0, auth = 0, den = 0, noReg = 0, susp = 0;
+        for (DepartmentAgg r : rows) {
+            sb.append(r.department()).append(";").append(r.periodo()).append(";")
+              .append(r.total()).append(";").append(r.autorizados()).append(";")
+              .append(r.denegados()).append(";").append(r.noRegistrados()).append(";")
+              .append(r.suspendidos()).append("\n");
+            total += r.total(); auth += r.autorizados(); den += r.denegados();
+            noReg += r.noRegistrados(); susp += r.suspendidos();
         }
+        sb.append("TOTAL;").append(String.format("%d-%02d", request.getAnio(), request.getMes())).append(";")
+          .append(total).append(";").append(auth).append(";").append(den).append(";")
+          .append(noReg).append(";").append(susp).append("\n");
         return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    private byte[] generateExcel(List<AccessHistory> records, PeriodicReportRequest request) {
+    private byte[] generateExcel(List<DepartmentAgg> rows, PeriodicReportRequest request) {
         try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
             Sheet sheet = wb.createSheet("Archivo Periodico");
-            String[] cols = {"Fecha/Hora", "ID Empleado", "Nombre", "Cargo", "Departamento", "Resultado"};
             Row header = sheet.createRow(0);
-            for (int i = 0; i < cols.length; i++) {
-                header.createCell(i).setCellValue(cols[i]);
+            for (int i = 0; i < HEADERS.length; i++) {
+                header.createCell(i).setCellValue(HEADERS[i]);
             }
-            DateTimeFormatter dtf = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss");
             int rowNum = 1;
-            for (AccessHistory h : records) {
+            int total = 0, auth = 0, den = 0, noReg = 0, susp = 0;
+            for (DepartmentAgg r : rows) {
                 Row row = sheet.createRow(rowNum++);
-                row.createCell(0).setCellValue(h.getTimestamp().format(dtf));
-                row.createCell(1).setCellValue(h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "N/A");
-                row.createCell(2).setCellValue(h.getEmployee() != null ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : "N/A");
-                row.createCell(3).setCellValue(h.getEmployee() != null ? h.getEmployee().getPosition() : "");
-                row.createCell(4).setCellValue(h.getDepartment() != null ? h.getDepartment() : "");
-                row.createCell(5).setCellValue(h.getResult().name());
+                row.createCell(0).setCellValue(r.department());
+                row.createCell(1).setCellValue(r.periodo());
+                row.createCell(2).setCellValue(r.total());
+                row.createCell(3).setCellValue(r.autorizados());
+                row.createCell(4).setCellValue(r.denegados());
+                row.createCell(5).setCellValue(r.noRegistrados());
+                row.createCell(6).setCellValue(r.suspendidos());
+                total += r.total(); auth += r.autorizados(); den += r.denegados();
+                noReg += r.noRegistrados(); susp += r.suspendidos();
             }
+            Row totalRow = sheet.createRow(rowNum);
+            totalRow.createCell(0).setCellValue("TOTAL");
+            totalRow.createCell(1).setCellValue(String.format("%d-%02d", request.getAnio(), request.getMes()));
+            totalRow.createCell(2).setCellValue(total);
+            totalRow.createCell(3).setCellValue(auth);
+            totalRow.createCell(4).setCellValue(den);
+            totalRow.createCell(5).setCellValue(noReg);
+            totalRow.createCell(6).setCellValue(susp);
             wb.write(out);
             return out.toByteArray();
         } catch (Exception e) {
@@ -103,4 +143,19 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
                     "Error al generar el archivo Excel");
         }
     }
+
+    private byte[] generatePdf(List<DepartmentAgg> rows, PeriodicReportRequest request) {
+        List<String[]> data = rows.stream().map(r -> new String[]{
+                r.department(), r.periodo(),
+                String.valueOf(r.total()), String.valueOf(r.autorizados()),
+                String.valueOf(r.denegados()), String.valueOf(r.noRegistrados()),
+                String.valueOf(r.suspendidos())
+        }).toList();
+        return pdfExporter.exportTable("Archivo Periódico",
+                "Período: " + String.format("%d-%02d", request.getAnio(), request.getMes()),
+                HEADERS, data);
+    }
+
+    private record DepartmentAgg(String department, String periodo, int total,
+                                 int autorizados, int denegados, int noRegistrados, int suspendidos) {}
 }

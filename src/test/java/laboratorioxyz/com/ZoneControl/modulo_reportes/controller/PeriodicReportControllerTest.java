@@ -24,6 +24,8 @@ import org.springframework.transaction.annotation.Transactional;
 import java.time.LocalDateTime;
 import java.util.Map;
 
+import static org.hamcrest.Matchers.containsString;
+import static org.hamcrest.Matchers.not;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
@@ -123,5 +125,73 @@ class PeriodicReportControllerTest {
                 .andExpect(status().isBadRequest())
                 .andExpect(jsonPath("$.error").value(
                         "No se encontraron registros de acceso para el período seleccionado"));
+    }
+
+    @Test
+    void periodicReport_aggregatesByDepartment_withoutPersonalData() throws Exception {
+        // "Esterilización" no tiene historial sembrado → conteos deterministas.
+        Department esterilizacion = departmentRepository.findByName("Esterilización").orElseThrow();
+        Employee emp2 = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-PER-02")
+                .documentType(DocumentType.CC)
+                .documentNumber("8888888889")
+                .firstName("Segundo")
+                .lastName("Periodico")
+                .position("Operario")
+                .department(esterilizacion)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp2).department(esterilizacion.getName()).productionAreaName("Sala Blanca A")
+                .timestamp(LocalDateTime.now()).result(AccessResult.AUTHORIZED).build());
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp2).department(esterilizacion.getName()).productionAreaName("Sala Blanca B")
+                .timestamp(LocalDateTime.now()).result(AccessResult.DENIED).build());
+
+        int mes = LocalDateTime.now().getMonthValue();
+        int anio = LocalDateTime.now().getYear();
+        String periodo = String.format("%d-%02d", anio, mes);
+
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", mes, "anio", anio, "formato", "CSV"
+                        ))))
+                .andExpect(status().isOk())
+                // Agregación por departamento, sin datos personales
+                .andExpect(content().string(containsString("Esterilización;" + periodo + ";2;1;1;0;0")))
+                .andExpect(content().string(not(containsString("EMP-PER-01"))))
+                .andExpect(content().string(not(containsString("Periodico Test"))));
+    }
+
+    @Test
+    void periodicReport_filtersByDepartmentNames() throws Exception {
+        Department produccion = departmentRepository.findByName("Producción Sólidos").orElseThrow();
+        Employee emp2 = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-PER-03")
+                .documentType(DocumentType.CC)
+                .documentNumber("8888888890")
+                .firstName("Tercero")
+                .lastName("Periodico")
+                .position("Operario")
+                .department(produccion)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp2).department(produccion.getName()).productionAreaName("Sala Blanca B")
+                .timestamp(LocalDateTime.now()).result(AccessResult.AUTHORIZED).build());
+
+        int mes = LocalDateTime.now().getMonthValue();
+        int anio = LocalDateTime.now().getYear();
+
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", mes, "anio", anio, "formato", "CSV",
+                                "departmentNames", java.util.List.of("Control de Calidad")
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString("Control de Calidad;")))
+                .andExpect(content().string(not(containsString("Producción Sólidos;"))));
     }
 }

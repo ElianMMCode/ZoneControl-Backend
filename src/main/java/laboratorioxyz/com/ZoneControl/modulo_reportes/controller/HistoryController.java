@@ -55,7 +55,7 @@ public class HistoryController {
             default -> "csv";
         };
         String contentType = switch (request.getFormato().toUpperCase()) {
-            case "CSV" -> "text/csv";
+            case "CSV" -> "text/csv;charset=UTF-8";
             case "EXCEL" -> "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
             case "PDF" -> "application/pdf";
             default -> "application/octet-stream";
