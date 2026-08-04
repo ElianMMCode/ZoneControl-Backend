@@ -42,6 +42,13 @@ public class SecurityConfig {
                 .requestMatchers("/api/public/**", "/api/auth/**", "/api/setup-password/**",
                         "/swagger-ui.html", "/swagger-ui/**", "/webjars/**",
                         "/v3/api-docs/**", "/v3/api-docs.yaml").permitAll()
+                // SPA (React): build en src/main/resources/static servido por Spring.
+                // Solo GET; los datos siguen protegidos bajo /api/**.
+                .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**",
+                        "/favicon.ico", "/favicon.svg", "/vite.svg",
+                        "/login", "/configurar-contrasena", "/ajustes",
+                        "/personal/**", "/permisos",
+                        "/supervisor/**", "/admin/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers("/api/personal/**", "/api/permisos/**")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL")
