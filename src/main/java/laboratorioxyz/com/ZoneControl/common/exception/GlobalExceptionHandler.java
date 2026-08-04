@@ -8,6 +8,7 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.multipart.MaxUploadSizeExceededException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Map;
@@ -39,6 +40,12 @@ public class GlobalExceptionHandler {
     public ResponseEntity<Map<String, String>> handleAccessDenied(AccessDeniedException ex) {
         return ResponseEntity.status(HttpStatus.FORBIDDEN)
                 .body(Map.of("error", "Acceso denegado: no tiene permisos para este recurso"));
+    }
+
+    @ExceptionHandler(MaxUploadSizeExceededException.class)
+    public ResponseEntity<Map<String, String>> handleMaxUploadSize(MaxUploadSizeExceededException ex) {
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(Map.of("error", "El archivo excede el tamaño máximo permitido de 10MB"));
     }
 
     @ExceptionHandler(DataIntegrityViolationException.class)

@@ -10,7 +10,7 @@ import java.util.UUID;
 /**
  * Repositorio para la entidad PublicContent (contenido clave-valor).
  * findBySection permite obtener todo el contenido de una sección
- * (INSTITUTIONAL, CONTACT, LOCATIONS) para construir las respuestas.
+ * (INSTITUTIONAL, CONTACT) para construir las respuestas.
  */
 public interface PublicContentRepository extends JpaRepository<PublicContent, UUID> {
     List<PublicContent> findBySection(ContentSection section);

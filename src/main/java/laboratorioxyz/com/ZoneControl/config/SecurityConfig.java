@@ -45,7 +45,7 @@ public class SecurityConfig {
                 // SPA (React): build en src/main/resources/static servido por Spring.
                 // Solo GET; los datos siguen protegidos bajo /api/**.
                 .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**",
-                        "/favicon.ico", "/favicon.svg", "/vite.svg",
+                        "/favicon.ico", "/favicon.svg", "/vite.svg", "/*.svg",
                         "/login", "/configurar-contrasena", "/ajustes",
                         "/personal/**", "/permisos",
                         "/supervisor/**", "/admin/**").permitAll()

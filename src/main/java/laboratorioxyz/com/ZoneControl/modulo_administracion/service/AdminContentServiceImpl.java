@@ -32,6 +32,8 @@ import java.util.UUID;
 @Slf4j
 public class AdminContentServiceImpl implements AdminContentService {
 
+    private static final long MAX_BROCHURE_BYTES = 10L * 1024 * 1024;
+
     private final PublicContentRepository publicContentRepository;
     private final ProductCatalogRepository productCatalogRepository;
     private final OfficeRepository officeRepository;
@@ -48,7 +50,7 @@ public class AdminContentServiceImpl implements AdminContentService {
             contentSection = ContentSection.valueOf(section.toUpperCase());
         } catch (IllegalArgumentException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Sección no válida: " + section + ". Permitidas: INSTITUTIONAL, CONTACT, LOCATIONS");
+                    "Sección no válida: " + section + ". Permitidas: INSTITUTIONAL, CONTACT");
         }
 
         publicContentRepository.deleteAll(publicContentRepository.findBySection(contentSection));
@@ -73,6 +75,10 @@ public class AdminContentServiceImpl implements AdminContentService {
         if (filename == null || !filename.toLowerCase().endsWith(".pdf")) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Formato no permitido. Solo se aceptan archivos PDF");
+        }
+        if (file.getSize() > MAX_BROCHURE_BYTES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El archivo excede el tamaño máximo permitido de 10MB");
         }
 
         File dir = new File(brochurePath);
@@ -198,7 +204,6 @@ public class AdminContentServiceImpl implements AdminContentService {
         evictCache(switch (section) {
             case INSTITUTIONAL -> "institutional";
             case CONTACT -> "contact";
-            case LOCATIONS -> "offices";
         });
     }
 }

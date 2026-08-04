@@ -10,8 +10,8 @@ import java.util.UUID;
 /**
  * Contenido clave-valor del módulo público, organizado por secciones.
  * Ej: INSTITUTIONAL → mission, vision, description
- *     CONTACT → phone, email, socialNetworks
- *     LOCATIONS → mainOffice, hours
+ *     CONTACT → phone, email, socialMedia
+ * Las sedes no viven aquí: se gestionan en la tabla offices (HU-19).
  */
 @Entity
 @Table(name = "public_contents")
