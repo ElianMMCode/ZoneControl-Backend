@@ -243,47 +243,62 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedOffices() {
-        if (officeRepository.count() > 0) {
-            log.info("Offices already exist — skipping");
-            return;
-        }
-        officeRepository.save(Office.builder()
+        seedOffice(Office.builder()
                 .name("Sede Principal Bogotá")
                 .address("Cra 45 # 26-85, Bogotá D.C.")
                 .openingHours("Lun-Vie 8:00-18:00")
                 .latitude(4.7110)
                 .longitude(-74.0721)
                 .build());
-        officeRepository.save(Office.builder()
+        seedOffice(Office.builder()
                 .name("Planta de Producción Medellín")
                 .address("Cl 10 # 20-30, Medellín, Antioquia")
                 .openingHours("Lun-Sáb 6:00-20:00")
                 .latitude(6.2476)
                 .longitude(-75.5658)
                 .build());
-        log.info("Seeded {} offices", 2);
+        seedOffice(Office.builder()
+                .name("Sede Regional Cali")
+                .address("Cl 18 # 122-30, Cali, Valle del Cauca")
+                .openingHours("Lun-Vie 8:00-17:00")
+                .latitude(3.4516)
+                .longitude(-76.5320)
+                .build());
+        log.info("Offices seed finished");
+    }
+
+    private void seedOffice(Office office) {
+        officeRepository.findByName(office.getName()).orElseGet(() -> officeRepository.save(office));
     }
 
     private void seedProductCatalog() {
-        if (productCatalogRepository.count() > 0) {
-            log.info("Product catalog already exists — skipping");
-            return;
-        }
-        productCatalogRepository.save(ProductCatalog.builder()
+        seedProduct(ProductCatalog.builder()
                 .name("Ácido Acetilsalicílico Genfar")
                 .description("Analgésico y antiinflamatorio no esteroideo")
                 .activeIngredient("Ácido Acetilsalicílico")
                 .presentation("Tabletas 500mg x 30")
                 .productionArea("Sala Blanca A")
                 .build());
-        productCatalogRepository.save(ProductCatalog.builder()
+        seedProduct(ProductCatalog.builder()
                 .name("Omeprazol MK")
                 .description("Inhibidor de la bomba de protones para tratamiento de acidez gástrica")
                 .activeIngredient("Omeprazol")
                 .presentation("Cápsulas 20mg x 14")
                 .productionArea("Sala Blanca B")
                 .build());
-        log.info("Seeded {} products", 2);
+        seedProduct(ProductCatalog.builder()
+                .name("Losartán LabX 50mg")
+                .description("Antihipertensivo para el control de la presión arterial")
+                .activeIngredient("Losartán Potásico")
+                .presentation("Tabletas 50mg x 30")
+                .productionArea("Zona de Empaque")
+                .build());
+        log.info("Product catalog seed finished");
+    }
+
+    private void seedProduct(ProductCatalog product) {
+        productCatalogRepository.findByName(product.getName())
+                .orElseGet(() -> productCatalogRepository.save(product));
     }
 
     /**

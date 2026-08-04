@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Folleto Informativo — Laboratorio XYZ</title>
+<style>
+  @page { size: A4; margin: 0; }
+  :root {
+    --primary: #00346f;
+    --primary-dark: #00224a;
+    --primary-light: #eef4ff;
+    --ink: #111c2c;
+    --muted: #424751;
+    --line: #c2c6d3;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body {
+    font-family: "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    color: var(--ink);
+    background: #ffffff;
+    font-size: 12px;
+    line-height: 1.45;
+  }
+  .page {
+    width: 210mm;
+    height: 297mm;
+    padding: 14mm 16mm 12mm;
+    display: flex;
+    flex-direction: column;
+    page-break-inside: avoid;
+  }
+
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding-bottom: 8px;
+    border-bottom: 3px solid var(--primary);
+  }
+  .brand { display: flex; align-items: center; gap: 10px; }
+  .logo {
+    width: 38px; height: 38px; border-radius: 8px;
+    background: var(--primary); color: #fff;
+    display: grid; place-items: center;
+    font-size: 20px; font-weight: 700;
+  }
+  .brand-name { font-size: 18px; font-weight: 800; color: var(--primary); }
+  .brand-sub { font-size: 10px; color: var(--muted); letter-spacing: 0.4px; }
+  .header-right { text-align: right; font-size: 10px; color: var(--muted); }
+
+  .hero {
+    margin-top: 14px;
+    background: var(--primary-light);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    padding: 14px 16px;
+  }
+  .hero h1 { font-size: 22px; color: var(--primary); margin-bottom: 6px; }
+  .hero p { max-width: 80%; }
+
+  h2 {
+    font-size: 13px; color: var(--primary);
+    margin: 12px 0 7px;
+    padding-bottom: 3px;
+    border-bottom: 1px solid var(--line);
+    text-transform: uppercase;
+    letter-spacing: 0.6px;
+  }
+  h3 { font-size: 12px; color: var(--primary-dark); margin-bottom: 3px; }
+  .muted { color: var(--muted); }
+
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .card {
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 9px 10px;
+    background: #fff;
+  }
+  .card h3 { color: var(--primary); }
+  .pill {
+    display: inline-block;
+    background: var(--primary-light);
+    color: var(--primary);
+    font-size: 9px;
+    font-weight: 700;
+    padding: 1px 7px;
+    border-radius: 999px;
+    margin-bottom: 5px;
+  }
+  .product-name { font-weight: 700; font-size: 12px; }
+  .dl { margin-top: 5px; font-size: 11px; }
+  .dl div { display: flex; justify-content: space-between; gap: 8px; }
+  .dl dt { color: var(--muted); }
+  .dl dd { font-weight: 600; text-align: right; }
+
+  ul.contact { list-style: none; display: flex; gap: 14px; }
+  ul.contact li { display: flex; align-items: center; gap: 7px; }
+  ul.contact .ico {
+    flex: 0 0 20px; height: 20px; border-radius: 50%;
+    background: var(--primary-light); color: var(--primary);
+    display: grid; place-items: center; font-size: 10px;
+  }
+
+  .footer {
+    margin-top: auto;
+    padding-top: 7px;
+    border-top: 1px solid var(--line);
+    font-size: 9px;
+    color: var(--muted);
+    display: flex;
+    justify-content: space-between;
+  }
+  @media print {
+    body { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page">
+  <div class="header">
+    <div class="brand">
+      <div class="logo">LX</div>
+      <div>
+        <div class="brand-name">Laboratorio XYZ</div>
+        <div class="brand-sub">Excelencia Farmacéutica</div>
+      </div>
+    </div>
+    <div class="header-right">
+      Portafolio Corporativo<br/>
+      Vigilado por INVIMA · NIT 900.123.456-7
+    </div>
+  </div>
+
+  <div class="hero">
+    <h1>Medicamentos de alto costo, fabricados con excelencia</h1>
+    <p>
+      Laboratorio XYZ es una compañía farmacéutica colombiana especializada en la
+      producción de medicamentos de alto costo para enfermedades crónicas y huérfanas,
+      bajo los más altos estándares de calidad GMP.
+    </p>
+  </div>
+
+  <h2>Quiénes Somos</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Misión</h3>
+      <p class="muted">Proveer medicamentos de alta calidad que mejoren la calidad de vida de los pacientes colombianos.</p>
+    </div>
+    <div class="card">
+      <h3>Visión</h3>
+      <p class="muted">Ser líderes en la producción farmacéutica en Latinoamérica para 2030.</p>
+    </div>
+    <div class="card">
+      <h3>Calidad Certificada</h3>
+      <p class="muted">Procesos bajo estándares internacionales GMP y Buenas Prácticas de Manufactura.</p>
+    </div>
+  </div>
+
+  <div class="footer">
+    <span>© 2026 Laboratorio XYZ. Todos los derechos reservados.</span>
+    <span>Documento informativo · Vigilado por INVIMA</span>
+  </div>
+</div>
+
+<div class="page">
+  <div class="header">
+    <div class="brand">
+      <div class="logo">LX</div>
+      <div>
+        <div class="brand-name">Laboratorio XYZ</div>
+        <div class="brand-sub">Excelencia Farmacéutica</div>
+      </div>
+    </div>
+    <div class="header-right">
+      Portafolio Corporativo<br/>
+      Vigilado por INVIMA · NIT 900.123.456-7
+    </div>
+  </div>
+
+  <h2>Catálogo de Productos</h2>
+  <div class="grid">
+    <div class="card">
+      <span class="pill">Analgésico</span>
+      <div class="product-name">Ácido Acetilsalicílico Genfar</div>
+      <p class="muted">Analgésico y antiinflamatorio no esteroideo.</p>
+      <div class="dl">
+        <div><dt>Principio activo</dt><dd>Ácido Acetilsalicílico</dd></div>
+        <div><dt>Presentación</dt><dd>Tabletas 500mg x 30</dd></div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="pill">Gastro</span>
+      <div class="product-name">Omeprazol MK</div>
+      <p class="muted">Inhibidor de la bomba de protones para acidez gástrica.</p>
+      <div class="dl">
+        <div><dt>Principio activo</dt><dd>Omeprazol</dd></div>
+        <div><dt>Presentación</dt><dd>Cápsulas 20mg x 14</dd></div>
+      </div>
+    </div>
+    <div class="card">
+      <span class="pill">Cardio</span>
+      <div class="product-name">Losartán LabX 50mg</div>
+      <p class="muted">Antihipertensivo para el control de la presión arterial.</p>
+      <div class="dl">
+        <div><dt>Principio activo</dt><dd>Losartán Potásico</dd></div>
+        <div><dt>Presentación</dt><dd>Tabletas 50mg x 30</dd></div>
+      </div>
+    </div>
+  </div>
+
+  <h2>Nuestras Sedes</h2>
+  <div class="grid">
+    <div class="card">
+      <h3>Sede Principal Bogotá</h3>
+      <p class="muted">Cra 45 # 26-85, Bogotá D.C.</p>
+      <p class="muted">Lun - Vie: 8:00 - 18:00</p>
+    </div>
+    <div class="card">
+      <h3>Planta de Producción Medellín</h3>
+      <p class="muted">Cl 10 # 20-30, Medellín, Antioquia</p>
+      <p class="muted">Lun - Sáb: 6:00 - 20:00</p>
+    </div>
+    <div class="card">
+      <h3>Sede Regional Cali</h3>
+      <p class="muted">Cl 18 # 122-30, Cali, Valle del Cauca</p>
+      <p class="muted">Lun - Vie: 8:00 - 17:00</p>
+    </div>
+  </div>
+
+  <h2>Contacto</h2>
+  <ul class="contact">
+    <li><span class="ico">&#9742;</span><span>+57 601 234 5678</span></li>
+    <li><span class="ico">&#9993;</span><span>contacto@laboratoriosxyz.com</span></li>
+    <li><span class="ico">@</span><span>@LaboratorioXYZ</span></li>
+  </ul>
+
+  <div class="footer">
+    <span>© 2026 Laboratorio XYZ. Todos los derechos reservados.</span>
+    <span>Documento informativo · Vigilado por INVIMA</span>
+  </div>
+</div>
+
+</body>
+</html>
