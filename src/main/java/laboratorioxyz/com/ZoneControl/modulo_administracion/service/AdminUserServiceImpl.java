@@ -150,10 +150,23 @@ public class AdminUserServiceImpl implements AdminUserService {
                         "Usuario no encontrado"));
     }
 
-    private User findCurrentAdmin(String currentUserEmail) {
-        return userRepository.findByEmail(currentUserEmail)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
-                        "No se pudo verificar el administrador actual"));
+    private User findCurrentAdmin(String principal) {
+        if (principal == null || principal.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No se pudo verificar el administrador actual");
+        }
+        // El principal del SecurityContext es el ID del usuario (UUID) cuando la
+        // autenticación viene del JWT. En tests con @WithMockUser el principal es
+        // el email; por eso se intenta UUID primero y se cae a email.
+        try {
+            return userRepository.findById(UUID.fromString(principal))
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "No se pudo verificar el administrador actual"));
+        } catch (IllegalArgumentException e) {
+            return userRepository.findByEmail(principal)
+                    .orElseThrow(() -> new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                            "No se pudo verificar el administrador actual"));
+        }
     }
 
     /**
