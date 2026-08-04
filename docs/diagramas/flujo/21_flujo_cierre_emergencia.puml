@@ -1,0 +1,62 @@
+@startuml
+title Flujo CU-11f: Cerrar Zona por Emergencia
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Supervisor / Auditor|
+start
+:Acceder a "Zonas en vivo";
+
+:Activar "Cerrar por emergencia"\nen una zona;
+
+|Frontend|
+:Enviar POST /api/access/zones/{name}/emergency\n{cerrada: true};
+
+|Backend|
+:Marcar emergencyClosed = true;
+
+:Crear alerta ZONA_EMERGENCIA\n(severidad media);
+
+:Publicar eventos SSE\nzone.updated + alert.created;
+
+|Frontend|
+:Zona muestra estado EMERGENCIA;
+
+|Supervisor / Auditor|
+:Intentar validar un acceso\nen la zona cerrada;
+
+|Backend|
+:Resultado → DENIED\n"ZONA CERRADA POR EMERGENCIA";
+
+:Registrar en AccessHistory;
+
+|Frontend|
+:Mostrar denegación en vivo;
+
+|Supervisor / Auditor|
+:Reabrir zona;\nPOST .../emergency {cerrada: false};
+
+|Backend|
+:emergencyClosed = false;
+
+:Crear alerta de reapertura;
+
+:Publicar zone.updated;
+
+|Frontend|
+:Zona vuelve a estado operativo;
+
+note right
+  HU-22 (2.2 §9): kill switch.
+  Roles: ADMIN/SUPERVISOR.
+end note
+
+stop
+
+@enduml

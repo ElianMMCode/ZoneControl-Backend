@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_control_acceso.controller;
 
+import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.EmergencyRequest;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ExitRequest;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.OccupancyResponse;
@@ -27,6 +28,7 @@ public class AccessController {
     private final AccessValidationService accessValidationService;
     private final AccessMonitoringService accessMonitoringService;
     private final RealtimeEventPublisher realtimeEventPublisher;
+    private final ProductionAreaRepository productionAreaRepository;
 
     @PostMapping("/validate")
     public ResponseEntity<ValidateAccessResponse> validate(@RequestBody ValidateAccessRequest request) {
@@ -64,9 +66,14 @@ public class AccessController {
     @GetMapping("/stream")
     public SseEmitter stream() {
         SseEmitter emitter = realtimeEventPublisher.subscribe();
+        List<Map<String, Object>> zones = productionAreaRepository.findAll().stream()
+                .map(z -> Map.<String, Object>of(
+                        "name", z.getName(), "emergencyClosed", z.isEmergencyClosed()))
+                .toList();
         Map<String, Object> snapshot = Map.of(
                 "type", "snapshot",
-                "zones", accessMonitoringService.occupancy().areas());
+                "zones", zones,
+                "occupancy", accessMonitoringService.occupancy().areas());
         realtimeEventPublisher.sendSnapshot(emitter, snapshot);
         return emitter;
     }

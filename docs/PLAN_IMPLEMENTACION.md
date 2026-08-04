@@ -619,8 +619,8 @@ Los mockups finales en `.stitch/screens/` (marca Laboratorio XYZ) asumen funcion
 |--------|----------------------|-------------------|
 | `22_...gesti-n-de-reas-de-producci-n` | CRUD de áreas de producción y terminales biométricos | CRUD de áreas **implementado** (`POST/PUT/DELETE /api/permisos/areas`, §9 item 1.4) y frontend en `/admin/areas`. Terminales biométricos: no existen → pendiente de decidir |
 | `16_...matriz-de-roles-y-permisos` | Matriz de roles/api/permisos (consulta) | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). Vista frontend **implementada** en `/admin/matriz-roles` (solo lectura, reconstruida de `SecurityConfig`). **Pendiente** endpoint `GET /api/admin/role-matrix` (HU-27, opcional según §9 fase B) |
-| `28_...dashboard-de-administraci-n` | Mapa de accesos en tiempo real, "Súper Usuario" | `/api/admin/stats` solo entrega contadores KPI. Pendiente decidir si se implementa el mapa |
-| `09_...panel-de-supervisi-n-corporativo` | Estado de zonas (A-12, B-04) y alertas críticas en vivo | `/api/historial/stats` solo entrega contadores KPI; las zonas A-12/B-04 no existen en el seed. Decorativo por ahora |
+| `28_...dashboard-de-administraci-n` | Mapa de accesos en tiempo real, "Súper Usuario" | Ocupación/zonas en vivo **implementadas** (§9.3 2.1–2.4) para ADMIN/SUPERVISOR (`/supervisor/zones`). El "Súper Usuario" y el mapa geográfico del mockup 28 siguen sin implementar |
+| `09_...panel-de-supervisi-n-corporativo` | Estado de zonas (A-12, B-04) y alertas críticas en vivo | Zonas y alertas en vivo **implementadas** (`/supervisor/zones`); las zonas del seed son Sala Blanca A/B, Laboratorio QC, Almacén Controlado, Zona de Empaque (no A-12/B-04). Decorativo en los nombres |
 | `42_...registro-de-personal` | Fotografía del empleado (opcional) | **Implementado** (HU-25, §9 item 3.1): `POST/GET/DELETE /api/personal/{id}/photo` + frontend en registro y detalle |
 | `46_...inicio-de-sesi-n-interno` | "¿Olvidó su contraseña?" | No hay flujo público de recovery; solo reset vía `POST /api/admin/users/{id}/reset-password` (magic link) |
 | `37_...reportes-de-auditor-a` | Exportar PDF | **Implementado** (gap 1.1 §9): PDF en `/api/historial/export` y archivo periódico (itextpdf 5, `PdfExporter`); frontend en `/supervisor/reportes` con botón PDF |
@@ -871,7 +871,7 @@ Frontend integrado por fase, consumiendo los hooks y store ya existentes. Docume
 | 1.5 | Matriz de roles solo consulta (HU-27) | IMPLEMENTADO: `GET /api/admin/role-matrix` + vista `/admin/matriz-roles` consumiendo el endpoint |
 | 1.6 | Invalidar JWT al desactivar usuario (HU-07 gap) | IMPLEMENTADO |
 | 1.7 | Handlers 409 y 500 en GlobalExceptionHandler | IMPLEMENTADO |
-| 2.1–2.4 | Tiempo real para ADMIN/SUPERVISOR (ocupación, emergencia, SSE, alertas) | PENDIENTE (rol SEGURIDAD y consola guardia ELIMINADOS por decisión) |
+| 2.1–2.4 | Tiempo real para ADMIN/SUPERVISOR (ocupación, emergencia, SSE, alertas) | IMPLEMENTADO (backend + frontend `/supervisor/zones`); sin rol SEGURIDAD |
 | 2.5 | Rol SEGURIDAD / consola del guardia / SecurityActionLog | ELIMINADO (decisión de proyecto) |
 | 3.1 | Fotografía del empleado (HU-25) | IMPLEMENTADO (backend + frontend) |
 | 3.2 | Turnos y horarios por día (HU-26) | PENDIENTE |

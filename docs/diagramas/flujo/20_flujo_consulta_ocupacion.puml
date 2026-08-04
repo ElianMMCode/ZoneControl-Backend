@@ -1,0 +1,53 @@
+@startuml
+title Flujo CU-11d: Consultar Ocupación en Tiempo Real
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Supervisor / Auditor|
+start
+:Acceder a "Zonas en vivo";
+
+|Frontend|
+:Pantalla: panel de zonas con\nocupación y alertas (SSE);
+
+|Backend|
+:Conectar GET /api/access/stream\n(token por query param);
+
+:Enviar snapshot\n(zonas + ocupación);
+
+|Frontend|
+:Renderizar ocupación por zona;
+
+|Supervisor / Auditor|
+:Registrar salida de un empleado;
+:Enviar POST /api/access/exit\n(employeeCode, productionAreaName);
+
+|Backend|
+if (¿Existe sesión activa?) then (Sí)
+  :Cerrar sesión (exitTime = now);
+  :Retornar 200;
+else (No)
+  :Retornar HTTP 400\n"Sin sesión activa";
+endif
+
+:Publicar evento SSE\noccupancy.updated;
+
+|Frontend|
+:Actualizar aforo en vivo;
+
+note right
+  HU-21 (2.1 §9): al validar un
+  acceso autorizado se abre una
+  sesión; doble entrada cierra la
+  anterior. Sin rol SEGURIDAD.
+end note
+
+stop
+
+@enduml
