@@ -5,7 +5,7 @@
 | **Código** | HU-00 |
 | **Nombre** | Zone Control - Sistema de Control de Acceso Físico |
 | **Complejidad** | Alta |
-| **HU Relacionada** | HU-01, HU-02, HU-03, HU-05, HU-06, HU-07, HU-08, HU-09, HU-10, HU-11, HU-12, HU-13, HU-14, HU-15, HU-16, HU-17, HU-18, HU-19 |
+| **HU Relacionada** | HU-01, HU-02, HU-03, HU-05, HU-06, HU-07, HU-08, HU-09, HU-10, HU-11, HU-12, HU-13, HU-14, HU-15, HU-16, HU-17, HU-18, HU-19 (+ HU-20..HU-27 nuevas de la §9 del PLAN_IMPLEMENTACION) |
 | **Módulo** | General |
 
 ## Descripción
@@ -64,3 +64,11 @@ Entonces: el sistema permite generar archivos periódicos de intercambio con la 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+
+## Estado de Implementación
+
+- **Backend**: todos los módulos implementados y con tests verdes (147 métodos `@Test`); `./mvnw test` en verde. Ver inventario de endpoints en `AGENTS.md`.
+- **Frontend (React en `src/main/frontend`)**: módulo público, autenticación (login + magic link), administración (usuarios, contenido público, áreas), **gestión del gestor completado** (personal, registro, carga masiva, detalle, permisos, ajustes) y dashboard del supervisor.
+- **Pendiente frontend**: validación de credencial (HU-18, mockup 44), reportes/historial (HU-15/16/17, mockup 37) y matriz de roles (HU-27, mockup 16).
+- **Pendientes backend (§9)**: PDF en export/archivo periódico (1.1), agregación por departamento del archivo periódico (1.2), filtro por departamento en historial/export (1.3), matriz de roles endpoint (1.5), invalidación de JWT (1.6), handlers 409/500 (1.7), tiempo real/rol SEGURIDAD (2.1–2.5), turnos (3.2). Detalle en §9.12.
+- **Nota**: los archivos `HU-00- NOMBRE_DEL_PROYETO(5).docx` y `zonecontrol.pdf` son la fuente binaria del caso de estudio (solo lectura); la fuente de verdad editable son los `.md` y `.puml` de `docs/`.

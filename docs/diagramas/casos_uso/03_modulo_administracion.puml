@@ -25,4 +25,11 @@ note right of UC_Admin1
   obligatoria: User → Employee.
 end note
 
+note bottom of UC_Admin3
+  Matriz de roles y permisos: SOLO
+  consulta. No existe endpoint
+  GET /api/admin/role-matrix aún
+  (pendiente, §9 item 1.5).
+end note
+
 @enduml

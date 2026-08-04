@@ -6,9 +6,9 @@
 |---------|-------------|---------|
 | `00_diagrama_general.puml` | Diagrama general con jerarquía de actores y todos los casos de uso | Todos |
 | `01_modulo_publico.puml` | Módulo público - información institucional (sin auth) | Público General |
-| `02_modulo_autenticacion.puml` | Módulo de autenticación (login JWT) | Usuario Autenticado |
-| `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador (hereda de Usuario Autenticado). CU-03a: CRUD usuarios · CU-03b: Contenido público · CU-03c: Matriz de roles y permisos |
-| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición) | Gestor de Personal (hereda de Usuario Autenticado) |
+| `02_modulo_autenticacion.puml` | Módulo de autenticación (login JWT + cambio de contraseña) | Usuario Autenticado |
+| `03_modulo_administracion.puml` | Módulo de administración del sistema | Administrador (hereda de Usuario Autenticado). CU-03a: CRUD usuarios · CU-03b: Contenido público · CU-03c: Matriz de roles y permisos (consulta, pendiente) |
+| `04_modulo_gestion_personal.puml` | Gestión de personal (registro, carga masiva, permisos, búsqueda, edición, áreas, fotografía) | Gestor de Personal (hereda de Usuario Autenticado) |
 | `05_modulo_control_acceso_fisico.puml` | Control de acceso físico | Supervisor/Auditor + Empleado |
 | `06_modulo_reportes_auditoria.puml` | Reportes y auditoría | Supervisor/Auditor (hereda de Usuario Autenticado) |
 
@@ -36,6 +36,7 @@
 | 16 | `16_flujo_control_acceso.puml` | CU-11 | Control de Acceso |
 | 17 | `17_flujo_gestion_contenido_publico.puml` | CU-03b | Gestionar Contenido Público |
 | 18 | `18_flujo_editar_empleado.puml` | CU-07a | Editar Empleado |
+| 19 | `19_flujo_gestion_areas_produccion.puml` | CU-06a | Gestionar Áreas de Producción (implementado backend) |
 
 ---
 
@@ -63,20 +64,23 @@ Usuario Autenticado ─── CU-02 (Login JWT)
 
 Cada vista de los mockups pertenece al actor principal definido en los casos de uso.
 El Administrador tiene acceso total por la matriz de permisos (SecurityConfig), pero
-cada vista debe aparecer en el dashboard de su actor.
+cada vista debe aparecer en el dashboard de su actor. Las rutas corresponden a las
+definidas en `src/main/frontend/src/routes/index.tsx` (React Router).
 
 | Dashboard | Actor (CU) | Vistas |
 |-----------|------------|--------|
-| **Público** | Público General (CU-01) | `landing.html` |
-| **Compartido** | Usuario Autenticado (CU-02) | `login.html`, `settings.html` |
-| **Admin** | Administrador (CU-03a/03b/03c) | `admin-dashboard.html`, `admin-users.html`, `admin-create-user.html`, `admin-public-content.html`, `admin-roles.html` |
-| **Gestor** | Gestor de Personal (CU-04/05/06/07) | `gestor-personal.html`, `gestor-personal-register.html`, `gestor-personal-bulk.html`, `gestor-personal-detail.html`, `gestor-permisos.html` |
-| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `supervisor-dashboard.html`, `access-validation.html`, `audit-reports.html` |
+| **Público** | Público General (CU-01) | `/` (`LandingView`) |
+| **Compartido** | Usuario Autenticado (CU-02) | `/login`, `/configurar-contrasena`, `/ajustes` (`SettingsView` — perfil + cambio de contraseña) |
+| **Admin** | Administrador (CU-03a/03b/03c) | `/admin/dashboard`, `/admin/usuarios`, `/admin/usuarios/nuevo`, `/admin/contenido-publico`, `/admin/areas` (CU-06a) |
+| **Gestor** | Gestor de Personal (CU-04/05/06/06a/07/07a/07b) | `/personal`, `/personal/nuevo`, `/personal/carga-masiva`, `/personal/:id`, `/permisos` |
+| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `/supervisor` |
 
-> **Nota**: `settings.html` es transversal porque el perfil y el cambio de contraseña
+> **Nota**: `settings.html`/`/ajustes` es transversal porque el perfil y el cambio de contraseña
 > (`POST /api/auth/change-password`) aplican a los tres roles autenticados (CU-02).
-> La vista de validación de acceso (`access-validation.html`) pertenece al Supervisor
-> y al Empleado según CU-11, **no** al Administrador.
+> La vista de validación de acceso (`access-validation.html`, mockup 44) y la de reportes
+> (`audit-reports.html`, mockup 37) pertenecen al Supervisor según CU-11/CU-08-10 — pendientes frontend.
+> La matriz de roles (mockup 16) pertenece al Administrador (CU-03c, solo consulta) — pendiente.
+> `CU-06a` (áreas) y `CU-07b` (fotografía) están implementados en backend y frontend.
 
 ---
 

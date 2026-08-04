@@ -10,10 +10,18 @@ actor "Usuario Autenticado" as Auth #BDBDBD
 
 package "Módulo de Autenticación" {
     usecase "CU-02: Iniciar sesión JWT" as UC_Login
+    usecase "CU-02a: Cambiar contraseña" as UC_ChangePwd
 }
 
 Auth --> UC_Login
+Auth --> UC_ChangePwd
 
 note top of UC_Login : Módulo transversal:\nrequerido por todos los\nmódulos internos
+
+note bottom of UC_ChangePwd
+  POST /api/auth/change-password
+  (authenticated) — implementado
+  backend y frontend (/ajustes)
+end note
 
 @enduml

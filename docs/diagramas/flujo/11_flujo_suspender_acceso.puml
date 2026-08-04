@@ -33,7 +33,7 @@ start
 
 :Definir fecha de reactivación;
 
-:Enviar PATCH /api/permisos/{id}/suspender;
+:Enviar PATCH /api/permisos/{id}/suspend;
 
 |Backend|
 :Actualizar estado a "suspendido";
@@ -44,6 +44,26 @@ start
 
 |Gestor de Personal|
 :Confirmar suspensión;
+
+split
+  :(Opcional) Reactivar permiso\nantes de la fecha programada;
+  :Enviar PATCH\n/api/permisos/{id}/reactivate;
+  |Backend|
+  :Estado → ACTIVO;\nlimpiar fechaReactivacion;
+  |Gestor de Personal|
+  :Confirmar reactivación;
+split again
+  :(Opcional) Editar fechas/horarios;
+  :Enviar PATCH /api/permisos/{id};
+end split
+
+note right
+  NO hay auto-reactivación
+  (@Scheduled). La reactivación
+  es manual (PATCH /reactivate)
+  o por cascade al reactivar el
+  empleado.
+end note
 
 stop
 

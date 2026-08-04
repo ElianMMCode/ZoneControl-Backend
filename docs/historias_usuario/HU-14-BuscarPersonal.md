@@ -79,6 +79,11 @@ Entonces: el sistema guarda los cambios, y si el nuevo estado es INACTIVO o SUSP
 | 11 | Implementar cascade: al cambiar status a INACTIVO o SUSPENDIDO → permisos → SUSPENDIDO y User vinculado → INACTIVO |
 | 12 | Agregar filtro status (ACTIVO/INACTIVO/SUSPENDIDO) en GET /api/personal |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `GET /api/personal` con filtros AND (`documentType`, `documentNumber`, `firstName`, `lastName`, `departmentName`, `status`) + paginación; 400 si no hay al menos un filtro. Tests verdes.
+- **Frontend**: ✓ — `EmployeeListView` (`/personal`, mockup 32) con filtros, KPIs de la página, tabla paginada y acceso al detalle. La edición (PATCH) y asignación de área se gestionan desde `EmployeeDetailView` (`/personal/:id`, mockup 41).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

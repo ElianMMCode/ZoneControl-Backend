@@ -73,6 +73,12 @@ Entonces: el número de identificación interno sigue el formato EMP-XXXXXX, es 
 | 7 | Retornar HTTP 201 con el ID interno generado y mostrar notificación de éxito en el frontend |
 | 8 | Manejar respuestas de error HTTP 409 para documento de identidad duplicado y HTTP 400 para tipo de documento inválido |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `POST /api/personal` (201, EMP-XXXXXX secuencial, unicidad tipo+número documento, validación de campos). Tests verdes.
+- **Frontend**: ✓ — `RegisterEmployeeView` (`/personal/nuevo`, mockup 42) con foto opcional (HU-25) y notificación con el código generado.
+- **Notas**: el formulario incluye campos adicionales del modelo ampliado (tipo de contrato, sede base, turno, fechas de contrato).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

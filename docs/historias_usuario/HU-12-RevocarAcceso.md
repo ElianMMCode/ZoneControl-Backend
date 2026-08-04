@@ -56,6 +56,11 @@ Entonces: el sistema retorna error 404 con el mensaje "Permiso no encontrado"
 | 6 | Actualizar la lista de permisos en el frontend tras la revocación exitosa |
 | 7 | Manejar respuesta de error 404 para permisos que ya no existen |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `DELETE /api/permisos/{id}` (200 / 404). Tests verdes.
+- **Frontend**: ✓ — acción de revocar con confirmación ("acción permanente") en `PermissionsView` (`/permisos`, mockup 45) y `EmployeeDetailView` (`/personal/:id`, mockup 41).
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

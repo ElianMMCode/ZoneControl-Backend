@@ -60,6 +60,11 @@ Entonces: el sistema retorna error con el mensaje "No se puede otorgar acceso a 
 | 8 | Registrar el permiso otorgado en el historial de la base de datos |
 | 9 | Implementar endpoint PATCH /api/permisos/{id} para editar un permiso existente (v1.1) |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `POST /api/permisos` (201 / 400 empleado inactivo / 404 / 409 duplicado empleado+área) y `PATCH /api/permisos/{id}` (edición de fechas y horarios de permisos ACTIVO). Tests verdes.
+- **Frontend**: ✓ — modal "Otorgar permiso" en `PermissionsView` (`/permisos`, mockup 45) y "Asignar nueva área" en `EmployeeDetailView` (`/personal/:id`, mockup 41). Incluye selector de empleado (search-as-type), selector de área y manejo del 409.
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

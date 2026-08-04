@@ -74,6 +74,11 @@ Entonces: el sistema rechaza la carga y muestra el mensaje "El archivo excede el
 | 8 | Construir reporte de errores detallado (fila, campo, motivo) para registros inválidos y retornarlo como archivo descargable |
 | 9 | Limitar tamaño máximo de archivo a 10MB y máximo 1000 registros por carga |
 
+## Estado de Implementación
+
+- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados y fila ejemplo) y `POST /api/personal/bulk` (validación por fila, batch insert, reporte de errores en `errorReportUrl` como CSV inline). Tests verdes.
+- **Frontend**: ✓ — `BulkUploadView` (`/personal/carga-masiva`, mockup 10) con descarga de plantilla, upload y **tabla de errores inline** (Fila/Campo/Detalle) además del reporte descargable.
+
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |

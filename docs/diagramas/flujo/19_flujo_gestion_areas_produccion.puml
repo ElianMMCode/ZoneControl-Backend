@@ -1,0 +1,69 @@
+@startuml
+title Flujo CU-06a: Gestionar Áreas de Producción
+skinparam activity {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+skinparam swimlane {
+  BorderColor DarkSlateGray
+  BorderThickness 2
+}
+
+|Gestor de Personal / Administrador|
+start
+:Acceder a "Áreas de Producción";
+
+|Frontend|
+:Pantalla: listado de áreas\n(GET /api/permisos/areas);
+
+|Gestor de Personal / Administrador|
+split
+  :Crear área;
+  |Frontend|
+  :Modal: nombre (≤30) y descripción;
+  :Enviar POST /api/permisos/areas;
+  |Backend|
+  if (¿Nombre único?) then (Sí)
+    :Crear y retornar 201;
+  else (No)
+    :Retornar HTTP 409;
+    |Frontend|
+    :Error "Ya existe un área\ncon ese nombre";
+  endif
+split again
+  :Editar área;
+  |Frontend|
+  :Modal con datos actuales;
+  :Enviar PUT /api/permisos/areas/{id};
+  |Backend|
+  if (¿Área existe?) then (Sí)
+    :Actualizar y retornar 200;
+  else (No)
+    :Retornar HTTP 404;
+  endif
+split again
+  :Eliminar área;
+  |Frontend|
+  :Confirmar eliminación;
+  :Enviar DELETE /api/permisos/areas/{id};
+  |Backend|
+  if (¿Tiene permisos activos asociados?) then (No)
+    :Eliminar y retornar 200;
+  else (Sí)
+    :Retornar HTTP 409\n"Área con permisos activos";
+    |Frontend|
+    :Error; no se permite eliminar;
+  endif
+end split
+
+note right
+  Implementado backend
+  (PermissionController). El
+  histórico AccessHistory conserva
+  el nombre del área aunque se
+  renombre. Frontend: /admin/areas
+end note
+
+stop
+
+@enduml

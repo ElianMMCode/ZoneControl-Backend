@@ -119,7 +119,9 @@ Módulos: `modulo_publico`, `modulo_autenticacion`, `modulo_administracion`, `mo
 
 ### 1.3 Proyecto Frontend — React
 
-Crear fuera del backend (directorio hermano `ZoneControl-Frontend`), con Vite + React + TypeScript:
+> **Nota de estado**: la instrucción original era crearlo como directorio hermano. Actualmente el frontend vive **dentro del repo** en `src/main/frontend/` (React 19 + TypeScript 6 + Vite 8 + Tailwind 4), con el build en `src/main/resources/static/`. Ver `AGENTS.md` para el estado detallado de rutas y vistas.
+
+Original (para contexto) — con Vite + React + TypeScript:
 
 ```bash
 npm create vite@latest ZoneControl-Frontend -- --template react-ts
@@ -507,6 +509,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | GET | /api/setup-password?token= | No | Autenticación | 05/08 |
 | POST | /api/setup-password | No | Autenticación | 05/08 |
 | GET | /api/admin/users | Admin | Administración | 05 |
+| GET | /api/admin/users/candidatos | Admin | Administración | 05 |
 | GET | /api/admin/users/{id} | Admin | Administración | 05 |
 | POST | /api/admin/users | Admin | Administración | 05 |
 | PUT | /api/admin/users/{id} | Admin | Administración | 06 |
@@ -522,14 +525,25 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | GET | /api/personal | Gestor/Admin | Gestión Personal | 14 |
 | GET | /api/personal/{id} | Gestor/Admin | Gestión Personal | 14 |
 | PATCH | /api/personal/{id} | Gestor/Admin | Gestión Personal | 14 |
+| GET | /api/personal/departamentos | Gestor/Admin | Gestión Personal | 09/14 |
+| GET | /api/personal/sedes | Gestor/Admin | Gestión Personal | 09/14 |
+| GET | /api/personal/{id}/permisos | Gestor/Admin | Gestión Personal | 11 |
+| GET | /api/personal/{id}/accesos | Gestor/Admin | Gestión Personal | 15 |
+| POST | /api/personal/{id}/photo | Gestor/Admin | Gestión Personal | 25 (3.1) |
+| GET | /api/personal/{id}/photo | Gestor/Admin | Gestión Personal | 25 (3.1) |
+| DELETE | /api/personal/{id}/photo | Gestor/Admin | Gestión Personal | 25 (3.1) |
 | GET | /api/personal/bulk/plantilla | Gestor/Admin | Gestión Personal | 10 |
 | POST | /api/personal/bulk | Gestor/Admin | Gestión Personal | 10 |
 | POST | /api/permisos | Gestor/Admin | Gestión Personal | 11 |
 | GET | /api/permisos | Gestor/Admin | Gestión Personal | 11 |
-| GET | /api/permisos/areas | Gestor/Admin | Gestión Personal | 11 |
+| GET | /api/permisos/areas | Gestor/Admin | Gestión Personal | 11/20 |
+| POST | /api/permisos/areas | Gestor/Admin | Gestión Personal | 20 (1.4) |
+| PUT | /api/permisos/areas/{id} | Gestor/Admin | Gestión Personal | 20 (1.4) |
+| DELETE | /api/permisos/areas/{id} | Gestor/Admin | Gestión Personal | 20 (1.4) |
 | PATCH | /api/permisos/{id} | Gestor/Admin | Gestión Personal | 11 |
 | DELETE | /api/permisos/{id} | Gestor/Admin | Gestión Personal | 12 |
 | PATCH | /api/permisos/{id}/suspend | Gestor/Admin | Gestión Personal | 13 |
+| PATCH | /api/permisos/{id}/reactivate | Gestor/Admin | Gestión Personal | 13 |
 | POST | /api/access/validate | Admin, Supervisor | Control Acceso | 18 |
 | GET | /api/historial | Supervisor/Admin | Reportes | 15 |
 | GET | /api/historial/stats | Supervisor/Admin | Reportes | — |
@@ -551,19 +565,25 @@ Fase 4: HU-11 → HU-12 → HU-13 (permisos de acceso)          ✓
 Fase 5: HU-18 (control acceso físico)                        ✓
 Fase 6: HU-05 → HU-06 → HU-07 → HU-08 (admin usuarios)      ✓
 Fase 7: HU-15 → HU-16 → HU-17 (reportes y auditoría)        ✓
-Fase 8: Frontend (rama `feat/frontend-ui`)                    en progreso
+Fase 8: Frontend React (rama `feat/frontend-gestor`)          en progreso
   ✓ HU-03 login + HU-05/08 magic link
   ✓ Dashboard del Admin (mockup 28): KPIs, candidatos a usuario, usuarios sin configuración, actividad reciente
   ✓ Gestión de usuarios (mockup 31) + Crear usuario (21/20)
-  ✓ Gestión de personal (mockup 32): lista + filtros
+  ✓ Gestión de personal (mockup 32): lista + filtros + paginación
+  ✓ Registro de personal (mockup 42) con foto opcional (HU-25)
+  ✓ Carga masiva (mockup 10) con plantilla, upload y tabla de errores inline
+  ✓ Detalle de empleado (mockup 41): edición, foto, asignar área, acciones de permiso e historial completo
+  ✓ Gestión de permisos (mockup 45): otorgar/editar/suspender/reactivar/revocar + KPIs derivables
   ✓ Dashboard del supervisor (mockup 09)
+  ✓ Ajustes/Perfil (mockup 00) con cambio de contraseña (HU-03 adicional)
   ✓ Sitio corporativo público (mockup 27) en `/`
   ✓ Gestión de contenido público (mockup 18) en `/admin/contenido-publico`
+  ✓ Gestión de áreas de producción (mockup 22) en `/admin/areas` (backend CRUD 1.4 implementado)
 ```
 
-Adiciones de coherencia posteriores también implementadas: `GET /api/admin/stats`, `GET /api/historial/stats`, `GET /api/permisos` + `GET /api/permisos/areas` + `PATCH /api/permisos/{id}`, `POST /api/auth/change-password`, y flujo de magic link para contraseñas (HU-05/08).
+Adiciones de coherencia posteriores también implementadas: `GET /api/admin/stats`, `GET /api/historial/stats`, `GET /api/permisos` + `GET /api/permisos/areas` + `PATCH /api/permisos/{id}` + `PATCH /api/permisos/{id}/reactivate` + CRUD `POST/PUT/DELETE /api/permisos/areas`, `POST /api/auth/change-password`, fotografía de empleado (`POST/GET/DELETE /api/personal/{id}/photo`), `GET /api/personal/departamentos`, `GET /api/personal/sedes`, `GET /api/personal/{id}/permisos`, `GET /api/personal/{id}/accesos`, `GET /api/admin/users/candidatos` y flujo de magic link para contraseñas (HU-05/08).
 
-**Pendiente global:** frontend React en progreso (rama `feat/frontend-ui` con base, design system, rutas, autenticación, dashboard del Admin con panel de activación, gestión de personal, dashboard del supervisor, landing público y gestión de contenido público). Vistas aún no construidas: detalle de empleado (41), registro de personal (42), carga masiva (10), gestión de permisos (45), reportes (37), historial, validación de credencial (44), perfil admin (00), gestión de áreas (22, mockup sin backend), matriz de roles (16, mockup sin edición). Gaps documentados en §4/§7/§8 y en AGENTS.md.
+**Pendiente global (frontend):** validación de credencial (mockup 44), reportes/historial (mockup 37) y matriz de roles (mockup 16) — corresponden a los módulos de supervisor y admin, fuera del alcance del módulo del gestor (completado). Gaps de backend documentados en §4/§7/§8 y en AGENTS.md.
 
 Cada HU = al menos 1 commit atómico. Cada HU completa sus tests TDD antes de pasar a la siguiente.
 
@@ -594,14 +614,14 @@ Los mockups finales en `.stitch/screens/` (marca Laboratorio XYZ) asumen funcion
 
 | Mockup | Funcionalidad asumida | Estado en backend |
 |--------|----------------------|-------------------|
-| `22_...gesti-n-de-reas-de-producci-n` | CRUD de áreas de producción y terminales biométricos | Solo `GET /api/permisos/areas` (catálogo de lectura, seed en `DataInitializer`). Pendiente CRUD |
-| `16_...matriz-de-roles-y-permisos` | Matriz de roles/api/permisos editable | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). Pendiente edición |
+| `22_...gesti-n-de-reas-de-producci-n` | CRUD de áreas de producción y terminales biométricos | CRUD de áreas **implementado** (`POST/PUT/DELETE /api/permisos/areas`, §9 item 1.4) y frontend en `/admin/areas`. Terminales biométricos: no existen → pendiente de decidir |
+| `16_...matriz-de-roles-y-permisos` | Matriz de roles/api/permisos (consulta) | Roles fijos en `SecurityConfig` (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR). **Pendiente** endpoint `GET /api/admin/role-matrix` y vista frontend (HU-27) |
 | `28_...dashboard-de-administraci-n` | Mapa de accesos en tiempo real, "Súper Usuario" | `/api/admin/stats` solo entrega contadores KPI. Pendiente decidir si se implementa el mapa |
 | `09_...panel-de-supervisi-n-corporativo` | Estado de zonas (A-12, B-04) y alertas críticas en vivo | `/api/historial/stats` solo entrega contadores KPI; las zonas A-12/B-04 no existen en el seed. Decorativo por ahora |
-| `42_...registro-de-personal` | Fotografía del empleado (opcional) | `RegisterEmployeeRequest` no tiene campo foto. Frontend-only pendiente |
+| `42_...registro-de-personal` | Fotografía del empleado (opcional) | **Implementado** (HU-25, §9 item 3.1): `POST/GET/DELETE /api/personal/{id}/photo` + frontend en registro y detalle |
 | `46_...inicio-de-sesi-n-interno` | "¿Olvidó su contraseña?" | No hay flujo público de recovery; solo reset vía `POST /api/admin/users/{id}/reset-password` (magic link) |
 | `37_...reportes-de-auditor-a` | Exportar PDF | Pendiente implementar (pom incluye itextpdf 5; hoy solo CSV/EXCEL). Excepción aprobada: se implementa después |
-> **Cobertura:** la funcionalidad de los mockups 22 (CRUD áreas), 16 (matriz de roles), 28/09 (mapa y alertas en vivo), 42 (foto del empleado) y 37 (export PDF) está incorporada a la hoja de ruta de la §9. El flujo público de "¿Olvidó su contraseña?" (mockup 46) y la edición real de la matriz de permisos quedan fuera de alcance de §9.
+> **Cobertura:** la funcionalidad de los mockups 22 (CRUD áreas — backend ✓, frontend `/admin/areas`), 42 (foto — implementada), y la de 28/09 (mapa y alertas en vivo), 16 (matriz roles) y 37 (export PDF) está incorporada a la hoja de ruta de la §9. El flujo público de "¿Olvidó su contraseña?" (mockup 46) y la edición real de la matriz de permisos quedan fuera de alcance de §9.
 
 ---
 
@@ -656,11 +676,15 @@ Decisiones de diseño confirmadas:
 - **Tests**: crear, duplicado 409, editar, borrar, borrar con permisos asociados 409.
 - **Esfuerzo**: bajo-medio (1-2 días).
 
+> **Estado 1.4 — IMPLEMENTADO (backend)**: `POST/PUT/DELETE /api/permisos/areas` operativos en `PermissionController`; frontend de CRUD en `/admin/areas` (`AdminAreasView`, solo ADMIN). El histórico denormalizado `AccessHistory.productionAreaName` se conserva. Pendiente: revisar coherencia con §9.7 (flujo 19) y HU-20.
+
 #### 1.5 Matriz de roles — solo consulta (mockup 16)
 - `GET /api/admin/role-matrix` (solo ADMIN): devuelve la matriz `módulo × rol → booleano` que ya está implícita en `SecurityConfig`, incluyendo el nuevo rol SEGURIDAD.
 - **Sin edición ni enforcement en BD**: los roles siguen fijos en `SecurityConfig`. La matriz se reconstruye a partir de las reglas actuales para que la UI la muestre alineada con el backend.
 - **Tests**: devuelve la matriz con los 4 roles; 403 si el rol no es ADMIN.
 - **Esfuerzo**: bajo (~1 día).
+
+> **Estado 1.5 — PENDIENTE**: no existe `GET /api/admin/role-matrix` ni vista frontend. El rol SEGURIDAD (fase C) aún no existe.
 
 #### 1.6 Invalidar JWT al desactivar usuario (HU-07 gap)
 - `JwtAuthenticationFilter`: tras validar firma/expiración, cargar el usuario por ID y comprobar `status == ACTIVO`. Si no, devolver 401.
@@ -736,6 +760,8 @@ Decisiones de diseño confirmadas:
 - **Tests**: subida válida, extensión inválida 400, tamaño excedido 400, empleado inexistente 404, GET devuelve el archivo.
 - **Esfuerzo**: bajo-medio (1-2 días).
 
+> **Estado 3.1 — IMPLEMENTADO (backend + frontend)**: `POST/GET/DELETE /api/personal/{id}/photo` en `EmployeeController`; frontend en `RegisterEmployeeView` (foto opcional) y `EmployeeDetailView` (ver/cambiar/eliminar). `Employee.photoUrl` sembrado en `EmployeeSearchResponse`.
+
 #### 3.2 Turnos y horarios por día (mockup 45)
 - Nueva entidad `PermissionSchedule` (id, `permission` FK, `dayOfWeek` enum LUN..DOM, `startTime`, `endTime`).
 - Migración: los permisos existentes generan un schedule LUN-DOM con su `startTime`/`endTime` actual (script de datos idempotente en `DataInitializer` o al arranque).
@@ -743,6 +769,8 @@ Decisiones de diseño confirmadas:
 - `CreatePermissionRequest` / `UpdatePermissionRequest`: añadir lista opcional de schedules; si no viene, se crea el schedule LUN-DOM con los horarios base.
 - **Tests**: validación con turno del día correcto, día sin turno → SUSPENDIDO, hora fuera de ventana → SUSPENDIDO, migración correcta de permisos existentes, criterios ya existentes de HU-18/11 siguen verdes.
 - **Esfuerzo**: medio-alto (2-3 días, toca la query de validación núcleo).
+
+> **Estado 3.2 — PENDIENTE**: no existe `PermissionSchedule` ni la entidad `AccessPermission.hasValidPermission` con ventana por día.
 
 ### 9.5 Nuevas Historias de Usuario
 
@@ -826,3 +854,18 @@ Frontend integrado por fase, consumiendo los hooks y store ya existentes. Docume
 - Las nuevas entidades (`AccessSession`, `AccessAlert`, `SecurityActionLog`, `PermissionSchedule`) se ubican en los módulos existentes (`modulo_control_acceso`, `modulo_gestion_personal`); no se crean paquetes nuevos salvo que la cohesión lo justifique.
 - Cada fase deja el backend compilando, con todos los tests verdes y la documentación sincronizada.
 - El plan se ejecuta **después** del cierre de la Fase 7 actual (reportes y auditoría) y se coordina con el avance del frontend React en `src/main/frontend/`.
+
+### 9.12 Estado de implementación de la §9 (fecha: 2026-08-04)
+
+| Item | Descripción | Estado |
+|---|---|---|
+| 1.1 | Export PDF (HU-16/17) | PENDIENTE |
+| 1.2 | Archivo periódico agregado por departamento | PENDIENTE |
+| 1.3 | Filtro por departamento en historial y export | PENDIENTE |
+| 1.4 | CRUD de áreas de producción (HU-20) | IMPLEMENTADO (backend) + frontend `/admin/areas` (admin) |
+| 1.5 | Matriz de roles solo consulta (HU-27) | PENDIENTE (endpoint + vista) |
+| 1.6 | Invalidar JWT al desactivar usuario (HU-07 gap) | PENDIENTE |
+| 1.7 | Handlers 409 y 500 en GlobalExceptionHandler | PENDIENTE |
+| 2.1–2.5 | Tiempo real (sesiones, emergencia, SSE, alertas, rol SEGURIDAD) | PENDIENTE |
+| 3.1 | Fotografía del empleado (HU-25) | IMPLEMENTADO (backend + frontend) |
+| 3.2 | Turnos y horarios por día (HU-26) | PENDIENTE |

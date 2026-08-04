@@ -16,7 +16,7 @@
 
 ## Requerimiento
 
-El sistema debe permitir al gestor de personal suspender temporalmente la autorización de ingreso de un empleado, estableciendo una fecha programada de reactivación. Mientras el permiso esté suspendido, el empleado no debe poder acceder. **Nota:** la reactivación NO es automática (el job `@Scheduled` se eliminó en commit fc377cf); el permiso queda suspendido hasta que el gestor lo reactive manualmente vía `PATCH /api/permisos/{id}`.
+El sistema debe permitir al gestor de personal suspender temporalmente la autorización de ingreso de un empleado, estableciendo una fecha programada de reactivación. Mientras el permiso esté suspendido, el empleado no debe poder acceder. **Nota:** la reactivación NO es automática (el job `@Scheduled` se eliminó en commit fc377cf); el permiso queda suspendido hasta que el gestor lo reactive manualmente vía `PATCH /api/permisos/{id}/reactivate`.
 
 ## Criterios de Aceptación
 
@@ -54,6 +54,11 @@ Entonces: el sistema muestra un diálogo de confirmación indicando la fecha has
 | 4 | Actualizar estado del permiso a "SUSPENDIDO" y guardar fecha de reactivación en PostgreSQL |
 | 5 | ~~Implementar job programado que reactive permisos automáticamente~~ — gap conocido (HU-13): no hay reactivación automática |
 | 6 | Mostrar diálogo de confirmación antes de ejecutar la suspensión con la fecha de reactivación |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `PATCH /api/permisos/{id}/suspend` (body `{reactivationDate}`) y `PATCH /api/permisos/{id}/reactivate` (reactivación manual). **Sin auto-reactivación** (job `@Scheduled` eliminado, commit fc377cf). Tests verdes.
+- **Frontend**: ✓ — modal de suspensión con fecha de reactivación y botón de reactivar en `PermissionsView` (`/permisos`, mockup 45).
 
 ## Control de Versiones
 

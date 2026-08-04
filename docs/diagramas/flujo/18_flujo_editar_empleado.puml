@@ -75,6 +75,35 @@ if (¿Empleado existe?) then (Sí)
   |Gestor de Personal|
   :Confirmar edición;
 
+  :(Opcional) Gestionar fotografía;
+  |Frontend|
+  split
+    :Subir/cambiar foto\nPOST /api/personal/{id}/photo;
+  split again
+    :Eliminar foto\nDELETE /api/personal/{id}/photo;
+  end split
+  |Backend|
+  :Validar formato/tamaño\ny guardar/eliminar archivo;
+  |Frontend|
+  :Actualizar photoUrl;
+
+  |Gestor de Personal|
+  :(Opcional) Asignar nueva área;
+  |Frontend|
+  :Modal "Asignar nueva área"\nPOST /api/permisos\n(empleado + área + fechas + horario);
+  |Backend|
+  :Validar empleado activo\ny unicidad empleado+área;
+  if (¿Sin conflictos?) then (Sí)
+    :Retornar HTTP 201;
+  else (No)
+    :Retornar HTTP 409;
+    |Frontend|
+    :Error "El empleado ya tiene\nun permiso para esta área";
+  endif
+
+  |Gestor de Personal|
+  :Confirmar;
+
 else (No)
   :Retornar HTTP 404\n"Empleado no encontrado";
 

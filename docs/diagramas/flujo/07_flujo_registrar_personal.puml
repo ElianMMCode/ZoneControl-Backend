@@ -46,6 +46,19 @@ if (¿Formulario válido?) then (Sí)
     :Retornar HTTP 201\ncon ID interno generado;
 
     |Frontend|
+    if (¿Incluye fotografía? (opcional)) then (Sí)
+      :Subir archivo POST\n/api/personal/{id}/photo\n(multipart, JPG/PNG/WebP ≤ 2MB);
+
+      |Backend|
+      :Validar extensión y tamaño;
+
+      :Guardar en uploads/photos/\n{employeeCode}.{ext};
+
+      :Retornar EmployeeSearchResponse\ncon photoUrl actualizada;
+    else (No)
+    endif
+
+    |Frontend|
     :Pantalla: Notificación de éxito\nmostrando ID interno asignado;
 
     |Gestor de Personal|
