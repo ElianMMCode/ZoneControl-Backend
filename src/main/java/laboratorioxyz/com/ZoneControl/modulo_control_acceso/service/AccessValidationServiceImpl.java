@@ -142,6 +142,7 @@ public class AccessValidationServiceImpl implements AccessValidationService {
     private void publishValidated(Employee employee, String areaName, AccessResult result, String message) {
         realtimeEventPublisher.publish("access.validated", Map.of(
                 "employeeCode", employee != null ? employee.getEmployeeCode() : "UNKNOWN",
+                "employeeName", employee != null ? employee.getFirstName() + " " + employee.getLastName() : null,
                 "area", areaName,
                 "result", result.name(),
                 "message", message,
