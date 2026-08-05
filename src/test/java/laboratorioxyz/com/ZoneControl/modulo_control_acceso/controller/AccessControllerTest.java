@@ -105,7 +105,11 @@ class AccessControllerTest {
                         .content(requestBody("EMP-TEST-01", areaName)))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.result").value("AUTHORIZED"))
-                .andExpect(jsonPath("$.message").value("INGRESO AUTORIZADO"));
+                .andExpect(jsonPath("$.message").value("INGRESO AUTORIZADO"))
+                .andExpect(jsonPath("$.employeeCode").value("EMP-TEST-01"))
+                .andExpect(jsonPath("$.employeeName").value("Test User"))
+                .andExpect(jsonPath("$.position").value("Técnico"))
+                .andExpect(jsonPath("$.department").value("Control de Calidad"));
     }
 
     @Test

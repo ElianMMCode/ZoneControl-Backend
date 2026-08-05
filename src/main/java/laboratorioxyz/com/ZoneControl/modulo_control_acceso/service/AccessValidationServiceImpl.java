@@ -52,7 +52,7 @@ public class AccessValidationServiceImpl implements AccessValidationService {
             logAccess(null, area.getName(), AccessResult.DENIED);
             publishValidated(null, area.getName(), AccessResult.DENIED,
                     "ZONA CERRADA POR EMERGENCIA");
-            return new ValidateAccessResponse(AccessResult.DENIED, "ZONA CERRADA POR EMERGENCIA");
+            return buildResponse(AccessResult.DENIED, "ZONA CERRADA POR EMERGENCIA", null);
         }
 
         Employee employee = employeeRepository.findByEmployeeCode(employeeCode).orElse(null);
@@ -60,14 +60,14 @@ public class AccessValidationServiceImpl implements AccessValidationService {
         if (employee == null) {
             logAccess(null, area.getName(), AccessResult.UNREGISTERED);
             publishValidated(null, area.getName(), AccessResult.UNREGISTERED, "NO REGISTRADO");
-            return new ValidateAccessResponse(AccessResult.UNREGISTERED, "NO REGISTRADO");
+            return buildResponse(AccessResult.UNREGISTERED, "NO REGISTRADO", null);
         }
 
         if (employee.getStatus() != EmployeeStatus.ACTIVO) {
             logAccess(employee, area.getName(), AccessResult.DENIED);
             maybeAlertRepeatedDenials(employee);
             publishValidated(employee, area.getName(), AccessResult.DENIED, "INGRESO DENEGADO");
-            return new ValidateAccessResponse(AccessResult.DENIED, "INGRESO DENEGADO");
+            return buildResponse(AccessResult.DENIED, "INGRESO DENEGADO", employee);
         }
 
         boolean hasValidPermission = accessPermissionRepository.hasValidPermission(
@@ -77,7 +77,7 @@ public class AccessValidationServiceImpl implements AccessValidationService {
         if (!hasValidPermission) {
             logAccess(employee, area.getName(), AccessResult.SUSPENDED);
             publishValidated(employee, area.getName(), AccessResult.SUSPENDED, "ACCESO SUSPENDIDO");
-            return new ValidateAccessResponse(AccessResult.SUSPENDED, "ACCESO SUSPENDIDO");
+            return buildResponse(AccessResult.SUSPENDED, "ACCESO SUSPENDIDO", employee);
         }
 
         // Acceso autorizado: cerrar sesión previa (si existe) y abrir una nueva (2.1).
@@ -92,7 +92,20 @@ public class AccessValidationServiceImpl implements AccessValidationService {
         maybeAlertNocturnalAccess(employee, area.getName());
         publishValidated(employee, area.getName(), AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
         publishOccupancy();
-        return new ValidateAccessResponse(AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
+        return buildResponse(AccessResult.AUTHORIZED, "INGRESO AUTORIZADO", employee);
+    }
+
+    private ValidateAccessResponse buildResponse(AccessResult result, String message, Employee employee) {
+        return ValidateAccessResponse.builder()
+                .result(result)
+                .message(message)
+                .employeeCode(employee != null ? employee.getEmployeeCode() : null)
+                .employeeName(employee != null
+                        ? employee.getFirstName() + " " + employee.getLastName() : null)
+                .position(employee != null ? employee.getPosition() : null)
+                .department(employee != null && employee.getDepartment() != null
+                        ? employee.getDepartment().getName() : null)
+                .build();
     }
 
     private void closeOpenSession(java.util.UUID employeeId, java.util.UUID areaId) {

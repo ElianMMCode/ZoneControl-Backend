@@ -11,4 +11,9 @@ import lombok.Data;
 public class ValidateAccessResponse {
     private AccessResult result;
     private String message;
+    /** Datos del empleado que intentó el ingreso (null si no se pudo resolver). */
+    private String employeeCode;
+    private String employeeName;
+    private String position;
+    private String department;
 }
