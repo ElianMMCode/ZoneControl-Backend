@@ -1,11 +1,15 @@
 package laboratorioxyz.com.ZoneControl.modulo_control_acceso.service;
 
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
+import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ExitResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.OccupancyResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessAlert;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessSession;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessAlertRepository;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessSessionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
@@ -30,6 +34,7 @@ public class AccessMonitoringServiceImpl implements AccessMonitoringService {
 
     private final AccessSessionRepository accessSessionRepository;
     private final AccessAlertRepository accessAlertRepository;
+    private final AccessHistoryRepository accessHistoryRepository;
     private final EmployeeRepository employeeRepository;
     private final ProductionAreaRepository productionAreaRepository;
     private final RealtimeEventPublisher realtimeEventPublisher;
@@ -55,7 +60,7 @@ public class AccessMonitoringServiceImpl implements AccessMonitoringService {
 
     @Override
     @Transactional
-    public void exit(String employeeCode, String productionAreaName) {
+    public ExitResponse exit(String employeeCode, String productionAreaName) {
         Employee employee = employeeRepository.findByEmployeeCode(employeeCode)
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
                         "Empleado no encontrado: " + employeeCode));
@@ -69,9 +74,36 @@ public class AccessMonitoringServiceImpl implements AccessMonitoringService {
                         "No hay una sesión activa para el empleado en esta área"));
         session.setExitTime(LocalDateTime.now());
         accessSessionRepository.save(session);
+
+        // La salida queda registrada en el historial como resultado EXIT.
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(employee)
+                .department(employee.getDepartment() != null ? employee.getDepartment().getName() : null)
+                .productionAreaName(area.getName())
+                .timestamp(LocalDateTime.now())
+                .result(AccessResult.EXIT)
+                .build());
+
         log.info("Access exit: employee={}, area={}", employeeCode, productionAreaName);
+        realtimeEventPublisher.publish("access.validated", Map.of(
+                "employeeCode", employee.getEmployeeCode(),
+                "area", area.getName(),
+                "result", AccessResult.EXIT.name(),
+                "message", "SALIDA REGISTRADA",
+                "timestamp", LocalDateTime.now().toString()));
         realtimeEventPublisher.publish("occupancy.updated",
                 Map.of("timestamp", LocalDateTime.now().toString()));
+
+        return ExitResponse.builder()
+                .result(AccessResult.EXIT)
+                .message("Salida registrada")
+                .employeeCode(employee.getEmployeeCode())
+                .employeeName(employee.getFirstName() + " " + employee.getLastName())
+                .position(employee.getPosition())
+                .department(employee.getDepartment() != null ? employee.getDepartment().getName() : null)
+                .productionAreaName(area.getName())
+                .timestamp(LocalDateTime.now())
+                .build();
     }
 
     @Override

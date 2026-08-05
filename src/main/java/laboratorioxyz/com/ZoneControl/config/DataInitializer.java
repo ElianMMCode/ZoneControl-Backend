@@ -639,21 +639,16 @@ public class DataInitializer implements CommandLineRunner {
      * Siembra alertas de seguridad de ejemplo (sin leer) para que el panel
      * "Alertas de seguridad" del dashboard del admin tenga contenido. Son
      * datos transaccionales: solo se siembran si la tabla está vacía.
+     * Previamente se limpian las alertas ACCESO_NOCTURNO obsoletas (tipo
+     * eliminado de la lógica de negocio) para no romper la deserialización.
      */
     private void seedAccessAlerts() {
+        accessAlertRepository.deleteNocturnalAlerts();
         if (accessAlertRepository.count() > 0) {
             log.info("Access alerts already exist — skipping");
             return;
         }
         LocalDateTime now = LocalDateTime.now();
-        accessAlertRepository.save(AccessAlert.builder()
-                .tipo(AccessAlert.AlertType.ACCESO_NOCTURNO)
-                .severidad(AccessAlert.AlertSeverity.LOW)
-                .employeeCode("EMP-000040")
-                .productionAreaName("Sala Blanca A")
-                .message("Acceso autorizado fuera del horario diurno (00:00-05:00)")
-                .timestamp(now.minusHours(2))
-                .build());
         accessAlertRepository.save(AccessAlert.builder()
                 .tipo(AccessAlert.AlertType.DENEGACIONES_REPETIDAS)
                 .severidad(AccessAlert.AlertSeverity.MEDIUM)
@@ -669,15 +664,7 @@ public class DataInitializer implements CommandLineRunner {
                 .message("Zona Sala Blanca B CERRADA POR EMERGENCIA")
                 .timestamp(now.minusHours(26))
                 .build());
-        accessAlertRepository.save(AccessAlert.builder()
-                .tipo(AccessAlert.AlertType.ACCESO_NOCTURNO)
-                .severidad(AccessAlert.AlertSeverity.LOW)
-                .employeeCode("EMP-000100")
-                .productionAreaName("Laboratorio QC")
-                .message("Acceso autorizado fuera del horario diurno (00:00-05:00)")
-                .timestamp(now.minusDays(1).withHour(2).withMinute(40))
-                .build());
-        log.info("Seeded 4 access alerts");
+        log.info("Seeded 2 access alerts");
     }
 
     private Employee saveEmployee(String code, String doc, String firstName, String lastName,

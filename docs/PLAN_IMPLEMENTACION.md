@@ -751,14 +751,13 @@ Decisiones de diseño confirmadas:
 - **Esfuerzo**: medio (2-3 días).
 
 #### 2.4 Alertas de anomalías
-- Nueva entidad `AccessAlert` (id, `tipo` enum: `ACCESO_NOCTURNO`, `DENEGACIONES_REPETIDAS`, `ZONA_EMERGENCIA`, `ACCESO_FUERA_HORARIO`; `severidad`; `employeeCode`; `productionAreaName`; `message`; `timestamp`).
+- Nueva entidad `AccessAlert` (id, `tipo` enum: `DENEGACIONES_REPETIDAS`, `ZONA_EMERGENCIA`, `ACCESO_FUERA_HORARIO`; `severidad`; `employeeCode`; `productionAreaName`; `message`; `timestamp`).
 - Detección **on-write** dentro del servicio de validación:
   - ≥3 denegaciones del mismo empleado en 15 min → alerta.
-  - Acceso autorizado entre 00:00-05:00 → alerta baja.
   - Cierre/reapertura de zona → alerta media.
 - Persistencia + emisión SSE (`alert.created`).
 - `GET /api/access/alerts?desde=&leido=` (ADMIN/SUPERVISOR) para el panel. `PATCH /api/access/alerts/{id}/leido` marca una alerta como leída (implementado; consumido por `SecurityAlertsPanel` del dashboard del admin).
-- **Tests**: disparo por 3 denegaciones, disparo nocturno, no-disparo en condiciones normales, listar alertas.
+- **Tests**: disparo por 3 denegaciones, no-disparo en condiciones normales, listar alertas. (La alerta `ACCESO_NOCTURNO` se eliminó 2026-08-05; `DataInitializer` limpia idempotentemente las filas obsoletas.)
 - **Esfuerzo**: medio (2-3 días).
 
 > **Estado Línea 2 — ELIMINADO el rol SEGURIDAD (decisión 2026-08-04)**: no se implementan `SecurityActionLog`, consola `/guardia` ni la HU-24. Los items 2.1–2.4 quedan PENDIENTES para ADMIN/SUPERVISOR.

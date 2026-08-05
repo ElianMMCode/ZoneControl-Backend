@@ -23,8 +23,8 @@ public interface AccessHistoryRepository extends JpaRepository<AccessHistory, UU
             + "ORDER BY h.timestamp DESC")
     List<AccessHistory> findByPeriod(@Param("mes") int mes, @Param("anio") int anio);
 
-    @Query("SELECT COUNT(h) FROM AccessHistory h WHERE CAST(h.timestamp AS date) = CURRENT_DATE")
-    long countTodayTotal();
+    @Query("SELECT COUNT(h) FROM AccessHistory h WHERE CAST(h.timestamp AS date) = CURRENT_DATE AND h.result <> :result")
+    long countTodayByResultIsNot(@Param("result") AccessResult result);
 
     @Query("SELECT COUNT(h) FROM AccessHistory h WHERE CAST(h.timestamp AS date) = CURRENT_DATE AND h.result = :result")
     long countTodayByResult(@Param("result") AccessResult result);

@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_control_acceso.service;
 
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ExitResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.OccupancyResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessAlert;
 
@@ -14,7 +15,7 @@ import java.util.UUID;
 public interface AccessMonitoringService {
     OccupancyResponse occupancy();
 
-    void exit(String employeeCode, String productionAreaName);
+    ExitResponse exit(String employeeCode, String productionAreaName);
 
     boolean setEmergency(String zoneName, boolean cerrada);
 

@@ -219,6 +219,43 @@ class PeriodicReportControllerTest {
     }
 
     @Test
+    void periodicReport_excludesExitRows() throws Exception {
+        // "Esterilización" no tiene historial sembrado → conteos deterministas.
+        Department esterilizacion = departmentRepository.findByName("Esterilización").orElseThrow();
+        Employee emp = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-PER-04")
+                .documentType(DocumentType.CC)
+                .documentNumber("8888888891")
+                .firstName("Salida")
+                .lastName("Periodico")
+                .position("Operario")
+                .department(esterilizacion)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp).department(esterilizacion.getName()).productionAreaName("Sala Blanca A")
+                .timestamp(LocalDateTime.now()).result(AccessResult.AUTHORIZED).build());
+        // La salida no suma a la agregación del archivo periódico.
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp).department(esterilizacion.getName()).productionAreaName("Sala Blanca A")
+                .timestamp(LocalDateTime.now()).result(AccessResult.EXIT).build());
+
+        int mes = LocalDateTime.now().getMonthValue();
+        int anio = LocalDateTime.now().getYear();
+        String periodo = String.format("%d-%02d", anio, mes);
+
+        mockMvc.perform(post("/api/reportes/archivo-periodico")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", mes, "anio", anio, "formato", "CSV",
+                                "departmentNames", java.util.List.of(esterilizacion.getName())
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(content().string(containsString(
+                        esterilizacion.getName() + ";" + periodo + ";1;1;0;0;0")));
+    }
+
+    @Test
     void preview_filtersByDepartmentNames() throws Exception {
         int mes = LocalDateTime.now().getMonthValue();
         int anio = LocalDateTime.now().getYear();

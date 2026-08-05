@@ -15,8 +15,6 @@ start
 
 if (¿≥3 denegaciones en 15 min?) then (Sí)
   :Crear alerta DENEGACIONES_REPETIDAS;
-elseif (¿Acceso autorizado 00:00-05:00?) then (Sí)
-  :Crear alerta ACCESO_NOCTURNO (baja);
 elseif (¿Zona cerrada/reabierta?) then (Sí)
   :Crear alerta ZONA_EMERGENCIA (media);
 else (No)

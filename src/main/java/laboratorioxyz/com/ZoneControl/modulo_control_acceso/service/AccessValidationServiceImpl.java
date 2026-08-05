@@ -89,7 +89,6 @@ public class AccessValidationServiceImpl implements AccessValidationService {
                 .build());
 
         logAccess(employee, area.getName(), AccessResult.AUTHORIZED);
-        maybeAlertNocturnalAccess(employee, area.getName());
         publishValidated(employee, area.getName(), AccessResult.AUTHORIZED, "INGRESO AUTORIZADO");
         publishOccupancy();
         return buildResponse(AccessResult.AUTHORIZED, "INGRESO AUTORIZADO", employee);
@@ -125,15 +124,6 @@ public class AccessValidationServiceImpl implements AccessValidationService {
             createAlert(AccessAlert.AlertType.DENEGACIONES_REPETIDAS,
                     AccessAlert.AlertSeverity.MEDIUM, employee.getEmployeeCode(), null,
                     "≥3 intentos denegados del empleado " + employee.getEmployeeCode() + " en 15 min");
-        }
-    }
-
-    private void maybeAlertNocturnalAccess(Employee employee, String areaName) {
-        LocalTime now = LocalTime.now();
-        if (now.isAfter(LocalTime.MIDNIGHT) && now.isBefore(LocalTime.of(5, 0))) {
-            createAlert(AccessAlert.AlertType.ACCESO_NOCTURNO,
-                    AccessAlert.AlertSeverity.LOW, employee.getEmployeeCode(), areaName,
-                    "Acceso autorizado fuera del horario diurno (00:00-05:00)");
         }
     }
 

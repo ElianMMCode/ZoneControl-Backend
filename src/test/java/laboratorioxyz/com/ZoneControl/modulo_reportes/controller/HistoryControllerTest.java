@@ -346,4 +346,38 @@ class HistoryControllerTest {
                 .andExpect(jsonPath("$.totalPermisosSuspendidos").value(baseSuspendidos + 1))
                 .andExpect(jsonPath("$.empleadosConAcceso").value(baseEmpleadosConAcceso + 1));
     }
+
+    @Test
+    void getStats_excludesExitFromTotal() throws Exception {
+        long baseTotal = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() != AccessResult.EXIT)
+                .count();
+        long baseAutorizados = accessHistoryRepository.findAll().stream()
+                .filter(h -> h.getTimestamp() != null
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() == AccessResult.AUTHORIZED)
+                .count();
+
+        Employee emp = employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-STS-02")
+                .documentType(DocumentType.CC)
+                .documentNumber("900000011")
+                .firstName("Exit")
+                .lastName("Test")
+                .position("Técnico")
+                .department(dept)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+        accessHistoryRepository.save(AccessHistory.builder()
+                .employee(emp).department(dept.getName()).productionAreaName("Sala Blanca A")
+                .timestamp(LocalDateTime.now()).result(AccessResult.EXIT).build());
+
+        // La salida queda en el historial pero NO suma al KPI "Accesos hoy".
+        mockMvc.perform(get("/api/historial/stats"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalAccesosHoy").value(baseTotal))
+                .andExpect(jsonPath("$.accesosAutorizadosHoy").value(baseAutorizados));
+    }
 }

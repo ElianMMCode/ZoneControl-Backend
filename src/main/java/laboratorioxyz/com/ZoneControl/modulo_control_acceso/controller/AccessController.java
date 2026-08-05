@@ -3,6 +3,7 @@ package laboratorioxyz.com.ZoneControl.modulo_control_acceso.controller;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.EmergencyRequest;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ExitRequest;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ExitResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.OccupancyResponse;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ValidateAccessRequest;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.dto.ValidateAccessResponse;
@@ -39,9 +40,9 @@ public class AccessController {
     }
 
     @PostMapping("/exit")
-    public ResponseEntity<Map<String, String>> exit(@RequestBody ExitRequest request) {
-        accessMonitoringService.exit(request.employeeCode(), request.productionAreaName());
-        return ResponseEntity.ok(Map.of("message", "Salida registrada"));
+    public ResponseEntity<ExitResponse> exit(@RequestBody ExitRequest request) {
+        return ResponseEntity.ok(accessMonitoringService.exit(
+                request.employeeCode(), request.productionAreaName()));
     }
 
     @GetMapping("/occupancy")

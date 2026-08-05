@@ -16,7 +16,7 @@
 
 ## Requerimiento
 
-El sistema detecta y persiste alertas on-write durante la validación de acceso: ≥3 denegaciones del mismo empleado en 15 min, acceso autorizado entre 00:00-05:00, y cierre/reapertura de zona por emergencia. Las alertas se emiten por SSE y se pueden consultar. Roles: ADMIN y SUPERVISOR_AUDITOR.
+El sistema detecta y persiste alertas on-write durante la validación de acceso: ≥3 denegaciones del mismo empleado en 15 min y cierre/reapertura de zona por emergencia. Las alertas se emiten por SSE y se pueden consultar. Roles: ADMIN y SUPERVISOR_AUDITOR.
 
 ## Criterios de Aceptación
 
@@ -30,21 +30,13 @@ Entonces: el sistema crea una alerta DENEGACIONES_REPETIDAS
 
 Condición 02
 
-Dado: que un acceso es autorizado entre 00:00 y 05:00
-
-Cuando: se registra el acceso
-
-Entonces: el sistema crea una alerta ACCESO_NOCTURNO de severidad baja
-
-Condición 03
-
 Dado: que una zona se cierra o reabre por emergencia
 
 Cuando: se ejecuta el toggle
 
 Entonces: el sistema crea una alerta ZONA_EMERGENCIA
 
-Condición 04
+Condición 03
 
 Dado: que el supervisor consulta las alertas
 
@@ -64,6 +56,7 @@ Entonces: el sistema devuelve las alertas ordenadas por fecha
 
 - **Backend**: ✓ — detección, persistencia y consulta de alertas (2.4 §9). Tests en `AccessMonitoringControllerTest`.
 - **Frontend**: ✓ — panel de alertas en `/supervisor/zones`.
+- **Decisión 2026-08-05**: se eliminó la alerta `ACCESO_NOCTURNO` (no es lógica de negocio). El `DataInitializer` limpia de forma idempotente las filas obsoletas de ese tipo.
 
 ## Control de Versiones
 

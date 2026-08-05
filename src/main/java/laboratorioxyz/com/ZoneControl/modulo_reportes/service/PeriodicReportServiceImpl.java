@@ -78,6 +78,12 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
                     .toList();
         }
 
+        // El archivo periódico del socio refleja solo ingresos/intentos; las
+        // salidas (EXIT) quedan como registro de auditoría fuera de la agregación.
+        records = records.stream()
+                .filter(h -> h.getResult() != AccessResult.EXIT)
+                .toList();
+
         if (records.isEmpty()) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "No se encontraron registros de acceso para el período seleccionado");

@@ -198,7 +198,7 @@ public class HistoryServiceImpl implements HistoryService {
     @Transactional(readOnly = true)
     public SupervisorStatsResponse getStats() {
         return new SupervisorStatsResponse(
-                accessHistoryRepository.countTodayTotal(),
+                accessHistoryRepository.countTodayByResultIsNot(AccessResult.EXIT),
                 accessHistoryRepository.countTodayByResult(AccessResult.AUTHORIZED),
                 accessHistoryRepository.countTodayByResult(AccessResult.DENIED),
                 accessHistoryRepository.countTodayByResult(AccessResult.UNREGISTERED),

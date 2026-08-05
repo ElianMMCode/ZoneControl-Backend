@@ -8,8 +8,8 @@ import java.util.UUID;
 
 /**
  * Alerta de anomalía de acceso (§9.3 item 2.4). Se detecta on-write durante
- * la validación: ≥3 denegaciones en 15 min, acceso nocturno, cierre/reapertura
- * de zona por emergencia.
+ * la validación: ≥3 denegaciones en 15 min, cierre/reapertura de zona por
+ * emergencia.
  */
 @Entity
 @Table(name = "access_alerts")
@@ -19,7 +19,7 @@ import java.util.UUID;
 @Builder
 public class AccessAlert {
 
-    public enum AlertType { ACCESO_NOCTURNO, DENEGACIONES_REPETIDAS, ZONA_EMERGENCIA, ACCESO_FUERA_HORARIO }
+    public enum AlertType { DENEGACIONES_REPETIDAS, ZONA_EMERGENCIA, ACCESO_FUERA_HORARIO }
 
     public enum AlertSeverity { LOW, MEDIUM, HIGH }
 
