@@ -38,7 +38,7 @@ class EmployeeControllerTest {
     void registerEmployee_validData_returns201() throws Exception {
         var request = RegisterEmployeeRequest.builder()
                 .documentType(DocumentType.CC)
-                .documentNumber("1234567890")
+                .documentNumber(String.valueOf(System.nanoTime()))
                 .firstName("Carlos")
                 .lastName("Mendoza")
                 .position("Técnico")
@@ -56,7 +56,7 @@ class EmployeeControllerTest {
 
     @Test
     void registerEmployee_duplicateDocument_returns409() throws Exception {
-        var dupDoc = "9876543210";
+        var dupDoc = String.valueOf(System.nanoTime());
         var request = RegisterEmployeeRequest.builder()
                 .documentType(DocumentType.CC)
                 .documentNumber(dupDoc)
