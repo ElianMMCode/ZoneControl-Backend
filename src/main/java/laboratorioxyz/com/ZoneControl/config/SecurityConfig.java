@@ -51,6 +51,8 @@ public class SecurityConfig {
                         "/personal/**", "/permisos",
                         "/supervisor/**", "/admin/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
+                .requestMatchers(HttpMethod.GET, "/api/permisos/areas")
+                    .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
                 .requestMatchers("/api/personal/**", "/api/permisos/**")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL")
                 .requestMatchers("/api/access/**")

@@ -194,4 +194,54 @@ class PeriodicReportControllerTest {
                 .andExpect(content().string(containsString("Control de Calidad;")))
                 .andExpect(content().string(not(containsString("Producción Sólidos;"))));
     }
+
+    @Test
+    void preview_returnsAggregatedRows() throws Exception {
+        int mes = LocalDateTime.now().getMonthValue();
+        int anio = LocalDateTime.now().getYear();
+
+        mockMvc.perform(post("/api/reportes/archivo-periodico/preview")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", mes, "anio", anio, "formato", "CSV"
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.mes").value(mes))
+                .andExpect(jsonPath("$.anio").value(anio))
+                .andExpect(jsonPath("$.rows").isArray())
+                .andExpect(jsonPath("$.rows[0].department").isString())
+                .andExpect(jsonPath("$.rows[0].total").isNumber())
+                .andExpect(jsonPath("$.rows[0].autorizados").isNumber())
+                .andExpect(jsonPath("$.rows[0].denegados").isNumber())
+                .andExpect(jsonPath("$.rows[0].noRegistrados").isNumber())
+                .andExpect(jsonPath("$.rows[0].suspendidos").isNumber())
+                .andExpect(jsonPath("$.generatedAt").isString());
+    }
+
+    @Test
+    void preview_filtersByDepartmentNames() throws Exception {
+        int mes = LocalDateTime.now().getMonthValue();
+        int anio = LocalDateTime.now().getYear();
+
+        mockMvc.perform(post("/api/reportes/archivo-periodico/preview")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", mes, "anio", anio, "formato", "EXCEL",
+                                "departmentNames", java.util.List.of("Control de Calidad")
+                        ))))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.rows[?(@.department=='Control de Calidad')]").exists());
+    }
+
+    @Test
+    void preview_noData_returns400() throws Exception {
+        mockMvc.perform(post("/api/reportes/archivo-periodico/preview")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "mes", 1, "anio", 2020, "formato", "CSV"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value(
+                        "No se encontraron registros de acceso para el período seleccionado"));
+    }
 }

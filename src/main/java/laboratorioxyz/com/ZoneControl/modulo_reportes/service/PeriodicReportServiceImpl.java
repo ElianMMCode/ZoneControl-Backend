@@ -41,6 +41,34 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
 
     @Override
     public byte[] generate(PeriodicReportRequest request) {
+        List<DepartmentAgg> rows = buildRows(request);
+
+        log.info("Periodic report generated: mes={}, anio={}, departamentos={}",
+                request.getMes(), request.getAnio(), rows.size());
+
+        return switch (request.getFormato().toUpperCase()) {
+            case "CSV" -> generateCsv(rows, request);
+            case "EXCEL" -> generateExcel(rows, request);
+            case "PDF" -> generatePdf(rows, request);
+            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Formato no soportado: " + request.getFormato());
+        };
+    }
+
+    @Override
+    public laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportPreviewResponse preview(PeriodicReportRequest request) {
+        List<DepartmentAgg> rows = buildRows(request);
+        log.info("Periodic report preview generated: mes={}, anio={}, departamentos={}",
+                request.getMes(), request.getAnio(), rows.size());
+        return new laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportPreviewResponse(
+                request.getMes(), request.getAnio(), request.getFormato(),
+                request.getDepartmentNames(), java.time.LocalDateTime.now(),
+                rows.stream().map(r -> new laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportPreviewResponse.Row(
+                        r.department(), r.periodo(), r.total(),
+                        r.autorizados(), r.denegados(), r.noRegistrados(), r.suspendidos())).toList());
+    }
+
+    private List<DepartmentAgg> buildRows(PeriodicReportRequest request) {
         List<AccessHistory> records = accessHistoryRepository.findByPeriod(request.getMes(), request.getAnio());
 
         if (request.getDepartmentNames() != null && !request.getDepartmentNames().isEmpty()) {
@@ -55,18 +83,7 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
                     "No se encontraron registros de acceso para el período seleccionado");
         }
 
-        List<DepartmentAgg> rows = aggregate(records, request);
-
-        log.info("Periodic report generated: mes={}, anio={}, departamentos={}",
-                request.getMes(), request.getAnio(), rows.size());
-
-        return switch (request.getFormato().toUpperCase()) {
-            case "CSV" -> generateCsv(rows, request);
-            case "EXCEL" -> generateExcel(rows, request);
-            case "PDF" -> generatePdf(rows, request);
-            default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
-                    "Formato no soportado: " + request.getFormato());
-        };
+        return aggregate(records, request);
     }
 
     private List<DepartmentAgg> aggregate(List<AccessHistory> records, PeriodicReportRequest request) {

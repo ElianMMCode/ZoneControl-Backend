@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_reportes.controller;
 
+import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportPreviewResponse;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.dto.PeriodicReportRequest;
 import laboratorioxyz.com.ZoneControl.modulo_reportes.service.PeriodicReportService;
 import lombok.RequiredArgsConstructor;
@@ -17,6 +18,11 @@ import org.springframework.web.bind.annotation.RestController;
 public class PeriodicReportController {
 
     private final PeriodicReportService periodicReportService;
+
+    @PostMapping("/archivo-periodico/preview")
+    public ResponseEntity<PeriodicReportPreviewResponse> preview(@RequestBody PeriodicReportRequest request) {
+        return ResponseEntity.ok(periodicReportService.preview(request));
+    }
 
     @PostMapping("/archivo-periodico")
     public ResponseEntity<byte[]> generate(@RequestBody PeriodicReportRequest request) {
