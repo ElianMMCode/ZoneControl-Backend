@@ -10,7 +10,8 @@ import java.time.LocalDate;
 
 public interface HistoryService {
     Page<AccessHistoryResponse> search(LocalDate fechaInicio, LocalDate fechaFin,
-                                        String employeeCode, String department, String resultado,
+                                        String employeeCode, String department,
+                                        String productionAreaName, String resultado,
                                         Pageable pageable);
     byte[] export(ExportRequest request);
     SupervisorStatsResponse getStats();

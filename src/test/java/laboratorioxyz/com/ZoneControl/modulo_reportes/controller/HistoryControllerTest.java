@@ -143,6 +143,18 @@ class HistoryControllerTest {
     }
 
     @Test
+    void getHistory_filterByArea_returnsOnlyMatching() throws Exception {
+        // setUp crea registros en Sala Blanca A y Sala Blanca B (Control de Calidad).
+        mockMvc.perform(get("/api/historial")
+                        .param("fechaInicio", "2026-07-01")
+                        .param("fechaFin", "2026-07-31")
+                        .param("productionAreaName", "Sala Blanca A"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.totalElements").value(1))
+                .andExpect(jsonPath("$.content[0].productionAreaName").value("Sala Blanca A"));
+    }
+
+    @Test
     void getHistory_filterByDepartment_returnsOnlyMatching() throws Exception {
         Department produccion = departmentRepository.findByName("Producción Sólidos").orElseThrow();
         Employee emp = employeeRepository.save(Employee.builder()

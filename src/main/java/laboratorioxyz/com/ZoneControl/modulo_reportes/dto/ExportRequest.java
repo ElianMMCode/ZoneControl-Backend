@@ -18,5 +18,6 @@ public class ExportRequest {
     private LocalDate fechaFin;
     private String employeeCode;
     private String departamentoName;
+    private String productionAreaName;
     private String resultado;
 }

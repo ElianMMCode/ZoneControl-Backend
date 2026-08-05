@@ -39,10 +39,11 @@ public class HistoryController {
             @RequestParam @DateTimeFormat(iso = DateTimeFormat.ISO.DATE) LocalDate fechaFin,
             @RequestParam(required = false) String employeeCode,
             @RequestParam(required = false) String department,
+            @RequestParam(required = false) String productionAreaName,
             @RequestParam(required = false) String resultado,
             @PageableDefault(size = 20, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AccessHistoryResponse> result = historyService.search(
-                fechaInicio, fechaFin, employeeCode, department, resultado, pageable);
+                fechaInicio, fechaFin, employeeCode, department, productionAreaName, resultado, pageable);
         return ResponseEntity.ok(result);
     }
 

@@ -51,10 +51,10 @@ public class SecurityConfig {
                         "/personal/**", "/permisos",
                         "/supervisor/**", "/admin/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.GET, "/api/permisos/areas")
+                .requestMatchers(HttpMethod.GET, "/api/permisos/areas",
+                        "/api/permisos/areas/*/empleados", "/api/permisos/areas/*/autorizaciones")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
-                .requestMatchers(HttpMethod.GET, "/api/permisos/areas/*/empleados",
-                        "/api/permisos/areas/*/autorizaciones")
+                .requestMatchers(HttpMethod.GET, "/api/personal/departamentos", "/api/personal/sedes")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
                 .requestMatchers("/api/personal/**", "/api/permisos/**")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL")
