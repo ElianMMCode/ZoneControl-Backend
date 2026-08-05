@@ -103,7 +103,9 @@ class AccessMonitoringControllerTest {
         grantPermission(emp);
         validate("EMP-MON-01");
 
-        List<AccessSession> active = accessSessionRepository.findByExitTimeIsNull();
+        List<AccessSession> active = accessSessionRepository.findByExitTimeIsNull().stream()
+                .filter(s -> s.getEmployee().getEmployeeCode().equals("EMP-MON-01"))
+                .toList();
         assertEquals(1, active.size());
         assertEquals("EMP-MON-01", active.get(0).getEmployee().getEmployeeCode());
 
@@ -113,7 +115,10 @@ class AccessMonitoringControllerTest {
                                 "employeeCode", "EMP-MON-01", "productionAreaName", areaName))))
                 .andExpect(status().isOk());
 
-        assertTrue(accessSessionRepository.findByExitTimeIsNull().isEmpty());
+        List<AccessSession> stillActive = accessSessionRepository.findByExitTimeIsNull().stream()
+                .filter(s -> s.getEmployee().getEmployeeCode().equals("EMP-MON-01"))
+                .toList();
+        assertTrue(stillActive.isEmpty());
     }
 
     @Test
@@ -177,6 +182,7 @@ class AccessMonitoringControllerTest {
         validate("EMP-MON-02");
 
         List<AccessSession> all = accessSessionRepository.findAll().stream()
+                .filter(s -> s.getEmployee().getEmployeeCode().equals("EMP-MON-02"))
                 .sorted((a, b) -> a.getEntryTime().compareTo(b.getEntryTime()))
                 .toList();
         assertEquals(2, all.size());
@@ -190,11 +196,12 @@ class AccessMonitoringControllerTest {
         grantPermission(emp);
         validate("EMP-MON-03");
 
+        // El seed puede cargar aforos en las salas; validamos que el empleado
+        // del test aparezca dentro de la ocupación de su área.
         mockMvc.perform(get("/api/access/occupancy"))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.areas[0].area").value(areaName))
-                .andExpect(jsonPath("$.areas[0].aforo").value(1))
-                .andExpect(jsonPath("$.areas[0].people[0].employeeCode").value("EMP-MON-03"));
+                .andExpect(jsonPath("$.areas[?(@.area=='" + areaName + "')].people[?(@.employeeCode=='EMP-MON-03')]")
+                        .exists());
     }
 
     @Test

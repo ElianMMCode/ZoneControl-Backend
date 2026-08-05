@@ -19,8 +19,10 @@ import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessAlert;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessSession;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessAlertRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessSessionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.PermissionSchedule;
@@ -72,6 +74,7 @@ public class DataInitializer implements CommandLineRunner {
     private final ProductCatalogRepository productCatalogRepository;
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
+    private final AccessSessionRepository accessSessionRepository;
     private final AccessAlertRepository accessAlertRepository;
     private final PermissionScheduleRepository permissionScheduleRepository;
     private final BCryptPasswordEncoder passwordEncoder;
@@ -94,6 +97,7 @@ public class DataInitializer implements CommandLineRunner {
         seedCandidateEmployees();
         seedGestorSampleData();
         seedAreaAuthorizations();
+        seedAccessSessions();
         seedAccessHistory();
         seedAccessAlerts();
         migratePermissionSchedules();
@@ -599,6 +603,46 @@ public class DataInitializer implements CommandLineRunner {
                 .startDate(today).expirationDate(today.plusYears(1))
                 .startTime(LocalTime.of(6, 0))
                 .endTime(LocalTime.of(22, 0))
+                .build());
+    }
+
+    /**
+     * Sesiones activas (aforos) para el panel de zonas: crea empleados "dentro"
+     * de algunas salas, todos con permiso ACTIVO vigente, para que la ocupación
+     * muestre aforos cargados en varias áreas. Idempotente: solo si no existen
+     * sesiones activas (no compite con el flujo entrada/salida real).
+     */
+    private void seedAccessSessions() {
+        if (!accessSessionRepository.findByExitTimeIsNull().isEmpty()) {
+            log.info("Access sessions already exist — skipping");
+            return;
+        }
+        LocalDateTime now = LocalDateTime.now();
+        seedSession("EMP-000001", "Sala Blanca A", now.minusHours(2).minusMinutes(10));
+        seedSession("EMP-000106", "Sala Blanca A", now.minusHours(1).minusMinutes(35));
+        seedSession("EMP-000041", "Sala Blanca B", now.minusHours(3));
+        seedSession("EMP-000101", "Sala Blanca B", now.minusHours(1).minusMinutes(5));
+        seedSession("EMP-000100", "Laboratorio QC", now.minusHours(2).minusMinutes(40));
+        seedSession("EMP-000105", "Laboratorio QC", now.minusMinutes(30));
+        seedSession("EMP-000102", "Zona de Empaque", now.minusHours(1).minusMinutes(50));
+        log.info("Seeded 7 active access sessions across 4 areas");
+    }
+
+    private void seedSession(String employeeCode, String areaName, LocalDateTime entryTime) {
+        Employee employee = employeeRepository.findByEmployeeCode(employeeCode).orElse(null);
+        ProductionArea area = productionAreaRepository.findByName(areaName).orElse(null);
+        if (employee == null || area == null) {
+            return;
+        }
+        if (accessSessionRepository
+                .findByEmployee_IdAndProductionArea_IdAndExitTimeIsNull(employee.getId(), area.getId())
+                .isPresent()) {
+            return;
+        }
+        accessSessionRepository.save(AccessSession.builder()
+                .employee(employee)
+                .productionArea(area)
+                .entryTime(entryTime)
                 .build());
     }
 
