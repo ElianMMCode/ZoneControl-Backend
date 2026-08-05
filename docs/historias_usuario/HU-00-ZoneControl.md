@@ -69,6 +69,6 @@ Entonces: el sistema permite generar archivos periódicos de intercambio con la 
 
 - **Backend**: todos los módulos implementados y con tests verdes (200 métodos `@Test`); `./mvnw test` en verde. Ver inventario de endpoints en `AGENTS.md`.
 - **Frontend (React en `src/main/frontend`)**: módulo público, autenticación (login + magic link), administración (usuarios, contenido público, áreas, matriz de roles), gestión del gestor (personal, registro, carga masiva, detalle, permisos, ajustes), dashboard del supervisor y validación de credencial (HU-18).
-- **Pendiente frontend**: ninguno — todas las vistas de los mockups finales están construidas. Los gaps restantes son de backend (ver abajo).
-- **Pendientes backend (§9)**: PDF en export/archivo periódico (1.1), agregación por departamento del archivo periódico (1.2), filtro por departamento en historial/export (1.3), endpoint de matriz de roles (1.5), invalidación de JWT (1.6), handlers 409/500 (1.7), tiempo real/rol SEGURIDAD (2.1–2.5), turnos (3.2). Detalle en §9.12.
+- **Pendiente frontend**: ninguno — todas las vistas de los mockups finales están construidas.
+- **Backend §9**: todos los items de la §9 del `PLAN_IMPLEMENTACION` están implementados (1.1 PDF, 1.2 agregación por departamento, 1.3 filtro por departamento, 1.4 CRUD de áreas, 1.5 matriz de roles, 1.6 invalidación JWT, 1.7 handlers 409/500, 2.1–2.4 tiempo real/alertas, 3.1 foto, 3.2 turnos). Ver estado detallado en §9.12 y en AGENTS.md.
 - **Nota**: los archivos `HU-00- NOMBRE_DEL_PROYETO(5).docx` y `zonecontrol.pdf` son la fuente binaria del caso de estudio (solo lectura); la fuente de verdad editable son los `.md` y `.puml` de `docs/`.
