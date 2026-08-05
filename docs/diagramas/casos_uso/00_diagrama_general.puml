@@ -9,39 +9,18 @@ skinparam packageStyle rectangle
 left to right direction
 
 ' =============================================
-' ACTORES
+' FLUJO DE INICIO DE SESIÓN
+' Todo parte del "Usuario del sistema": los roles
+' internos inician sesión y, según su rol, acceden
+' a los módulos que les corresponden.
 ' =============================================
 
-actor "Público General" as Publico #LightBlue
 actor "Usuario del sistema" as Autenticado #BDBDBD
+actor "Público General" as Publico #LightBlue
 actor "Administrador" as Admin #LightGreen
 actor "Gestor de Personal" as Gestor #LightYellow
 actor "Supervisor / Auditor" as Supervisor #LightPink
 actor "Socio Internacional" as Socio #Wheat
-
-' =============================================
-' HERENCIA (los roles internos acceden con sesión)
-' =============================================
-
-Admin --|> Autenticado
-Gestor --|> Autenticado
-Supervisor --|> Autenticado
-
-note right of Autenticado
-  Administrador, Gestor de Personal y
-  Supervisor / Auditor inician sesión
-  con su usuario y contraseña (CU-02).
-end note
-
-note bottom of Socio
-  El Socio Internacional no accede al
-  sistema: recibe el archivo periódico
-  que el Supervisor le descarga y comparte.
-end note
-
-' =============================================
-' MÓDULOS
-' =============================================
 
 package "Acceso al sistema" as ModuloAutenticacion #E3F2FD {
   usecase "CU-02: Iniciar sesión en el sistema" as UC_LOGIN
@@ -59,6 +38,26 @@ note right of UC_SETUP
   temporal con el que la persona define
   su propia contraseña.
 end note
+
+' -------------------------------------------------
+' HERENCIAS: Administrador, Gestor de Personal y
+' Supervisor / Auditor inician sesión como
+' "Usuario del sistema" (CU-02).
+' -------------------------------------------------
+
+Admin --|> Autenticado
+Gestor --|> Autenticado
+Supervisor --|> Autenticado
+
+note right of Autenticado
+  Administrador, Gestor de Personal y
+  Supervisor / Auditor inician sesión
+  con su usuario y contraseña (CU-02).
+end note
+
+' =============================================
+' MÓDULOS (cada rol accede a los suyos)
+' =============================================
 
 ModuloAutenticacion -[hidden]down- ModuloPublico
 
@@ -171,5 +170,11 @@ note right of UC10
 end note
 
 UC10 --> Socio
+
+note bottom of Socio
+  El Socio Internacional no accede al
+  sistema: recibe el archivo periódico
+  que el Supervisor le descarga y comparte.
+end note
 
 @enduml
