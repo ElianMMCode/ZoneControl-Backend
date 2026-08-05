@@ -17,6 +17,7 @@ public class SpaForwardController {
             "/login",
             "/configurar-contrasena",
             "/ajustes",
+            "/403",
             "/personal/**",
             "/permisos",
             "/supervisor/**",

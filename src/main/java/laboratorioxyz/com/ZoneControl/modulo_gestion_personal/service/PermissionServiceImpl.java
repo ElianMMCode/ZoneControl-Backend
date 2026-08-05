@@ -354,6 +354,11 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     private PermissionResponse toResponse(AccessPermission permission) {
+        List<PermissionScheduleRequest> schedules =
+                permissionScheduleRepository.findByPermission_Id(permission.getId()).stream()
+                        .map(s -> new PermissionScheduleRequest(
+                                s.getDayOfWeek().name(), s.getStartTime(), s.getEndTime()))
+                        .toList();
         return PermissionResponse.builder()
                 .id(permission.getId())
                 .employeeCode(permission.getEmployee().getEmployeeCode())
@@ -366,6 +371,7 @@ public class PermissionServiceImpl implements PermissionService {
                 .reactivationDate(permission.getReactivationDate())
                 .startTime(permission.getStartTime())
                 .endTime(permission.getEndTime())
+                .schedules(schedules)
                 .build();
     }
 }

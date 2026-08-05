@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 @Data
@@ -23,4 +24,5 @@ public class PermissionResponse {
     private LocalDate reactivationDate;
     private LocalTime startTime;
     private LocalTime endTime;
+    private List<PermissionScheduleRequest> schedules;
 }

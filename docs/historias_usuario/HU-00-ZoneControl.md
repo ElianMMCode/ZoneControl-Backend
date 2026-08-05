@@ -67,7 +67,7 @@ Entonces: el sistema permite generar archivos periódicos de intercambio con la 
 
 ## Estado de Implementación
 
-- **Backend**: todos los módulos implementados y con tests verdes (147 métodos `@Test`); `./mvnw test` en verde. Ver inventario de endpoints en `AGENTS.md`.
+- **Backend**: todos los módulos implementados y con tests verdes (200 métodos `@Test`); `./mvnw test` en verde. Ver inventario de endpoints en `AGENTS.md`.
 - **Frontend (React en `src/main/frontend`)**: módulo público, autenticación (login + magic link), administración (usuarios, contenido público, áreas, matriz de roles), gestión del gestor (personal, registro, carga masiva, detalle, permisos, ajustes), dashboard del supervisor y validación de credencial (HU-18).
 - **Pendiente frontend**: ninguno — todas las vistas de los mockups finales están construidas. Los gaps restantes son de backend (ver abajo).
 - **Pendientes backend (§9)**: PDF en export/archivo periódico (1.1), agregación por departamento del archivo periódico (1.2), filtro por departamento en historial/export (1.3), endpoint de matriz de roles (1.5), invalidación de JWT (1.6), handlers 409/500 (1.7), tiempo real/rol SEGURIDAD (2.1–2.5), turnos (3.2). Detalle en §9.12.

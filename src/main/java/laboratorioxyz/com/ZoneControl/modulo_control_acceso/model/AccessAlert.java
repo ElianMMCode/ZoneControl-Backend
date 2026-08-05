@@ -19,7 +19,7 @@ import java.util.UUID;
 @Builder
 public class AccessAlert {
 
-    public enum AlertType { DENEGACIONES_REPETIDAS, ZONA_EMERGENCIA, ACCESO_FUERA_HORARIO }
+    public enum AlertType { DENEGACIONES_REPETIDAS, ZONA_EMERGENCIA }
 
     public enum AlertSeverity { LOW, MEDIUM, HIGH }
 

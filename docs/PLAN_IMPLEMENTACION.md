@@ -562,7 +562,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 
 ## 6. Orden de Implementación (estado actual)
 
-Todas las fases backend están **implementadas y con tests verdes** (120). El orden histórico de construcción fue:
+Todas las fases backend están **implementadas y con tests verdes** (200). El orden histórico de construcción fue:
 
 ```
 Fase 0: Schema BD + DataInitializer                          ✓
