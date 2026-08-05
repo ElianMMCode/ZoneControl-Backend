@@ -12,49 +12,62 @@ left to right direction
 ' ACTORES
 ' =============================================
 
-actor "Usuario Autenticado" as Auth #BDBDBD
 actor "Público General" as Publico #LightBlue
+actor "Usuario del sistema" as Autenticado #BDBDBD
 actor "Administrador" as Admin #LightGreen
 actor "Gestor de Personal" as Gestor #LightYellow
-actor "Personal / Empleado" as Empleado #LightCoral
 actor "Supervisor / Auditor" as Supervisor #LightPink
 actor "Socio Internacional" as Socio #Wheat
 
 ' =============================================
-' HERENCIA (actores autenticados heredan de Auth)
+' HERENCIA (los roles internos acceden con sesión)
 ' =============================================
 
-Admin --|> Auth
-Gestor --|> Auth
-Supervisor --|> Auth
+Admin --|> Autenticado
+Gestor --|> Autenticado
+Supervisor --|> Autenticado
 
-note right of Auth
-  Autenticación JWT.
-  Admin, Gestor y Supervisor
-  heredan la capacidad de
-  iniciar sesión (CU-02).
+note right of Autenticado
+  Administrador, Gestor de Personal y
+  Supervisor / Auditor inician sesión
+  con su usuario y contraseña (CU-02).
+end note
+
+note bottom of Socio
+  El Socio Internacional no accede al
+  sistema: recibe el archivo periódico
+  que el Supervisor le descarga y comparte.
 end note
 
 ' =============================================
-' MÓDULOS (apilados verticalmente, ordenados
-' según el actor que los usa para evitar cruces)
+' MÓDULOS
 ' =============================================
 
-package "Módulo de Autenticación" as ModuloAutenticacion #E3F2FD {
-  usecase "CU-02: Iniciar sesión JWT" as UC_LOGIN
+package "Acceso al sistema" as ModuloAutenticacion #E3F2FD {
+  usecase "CU-02: Iniciar sesión en el sistema" as UC_LOGIN
+  usecase "CU-02a: Cambiar la contraseña" as UC_CAMBIO
+  usecase "CU-02b: Establecer la contraseña por enlace de activación" as UC_SETUP
 }
 
-Auth --> UC_LOGIN
+Autenticado --> UC_LOGIN
+Autenticado --> UC_CAMBIO
+Autenticado --> UC_SETUP
+
+note right of UC_SETUP
+  Al crear un usuario o restablecer su
+  contraseña, el sistema genera un enlace
+  temporal con el que la persona define
+  su propia contraseña.
+end note
 
 ModuloAutenticacion -[hidden]down- ModuloPublico
 
 package "Módulo Público" as ModuloPublico #E8F5E9 {
-  usecase "CU-01: Consultar información institucional" as UC01
+  usecase "CU-01: Consultar información de la empresa" as UC01
   usecase "CU-01a: Consultar datos de contacto" as UC01a
-  usecase "CU-01b: Consultar ubicación de sedes" as UC01b
-  usecase "CU-01c: Descargar folleto informativo" as UC01c
-  usecase "CU-01d: Consultar catálogo de servicios/productos" as UC01d
-  UC01 ..> UC01c : <<extend>>
+  usecase "CU-01b: Consultar ubicación de las sedes" as UC01b
+  usecase "CU-01c: Descargar el folleto informativo" as UC01c
+  usecase "CU-01d: Consultar el catálogo de productos" as UC01d
 }
 
 Publico --> UC01
@@ -66,68 +79,96 @@ Publico --> UC01d
 ModuloPublico -[hidden]down- ModuloAdmin
 
 package "Módulo de Administración" as ModuloAdmin #FFF3E0 {
-  usecase "CU-03a: CRUD de usuarios del sistema" as UC03a
-  usecase "CU-03b: Gestionar contenido del módulo público" as UC03b
-  usecase "CU-03c: Gestionar matriz de roles y permisos" as UC03c
+  usecase "CU-03a: Administrar usuarios (crear, editar, activar o desactivar)" as UC03a
+  usecase "CU-03b: Gestionar el contenido público" as UC03b
+  usecase "CU-03c: Consultar la matriz de roles" as UC03c
 }
 
 Admin --> UC03a
 Admin --> UC03b
 Admin --> UC03c
 
-note right of UC03a
-  Prerrequisito: CU-04 debe
-  ejecutarse antes. El User
-  requiere un Employee existente
-  (relación @OneToOne).
+note right of UC03c
+  Muestra qué puede hacer cada rol en el
+  sistema. Es solo de consulta: no se
+  modifican los permisos desde aquí.
 end note
 
 ModuloAdmin -[hidden]down- ModuloGestion
 
 package "Módulo de Gestión de Personal" as ModuloGestion #F3E5F5 {
-  usecase "CU-04: Registrar personal y asignar departamento" as UC04
-  usecase "CU-05: Carga masiva (Archivo plano)" as UC05
-  usecase "CU-05a: Validar estructura e información" as UC05a
-  usecase "CU-06: Gestionar permisos (Otorgar/Revocar/Suspender)" as UC06
-  usecase "CU-07: Buscar personal por filtros" as UC07
-  usecase "CU-07a: Editar empleado y cambiar estado" as UC07a
-  UC05 ..> UC05a : <<include>>
-  UC07a ..> UC07 : <<include>>
+  usecase "CU-04: Registrar personal" as UC04
+  usecase "CU-05: Cargar personal de forma masiva" as UC05
+  usecase "CU-06: Gestionar permisos de acceso (otorgar, editar, suspender, reactivar, revocar)" as UC06
+  usecase "CU-06a: Gestionar las áreas de producción" as UC06a
+  usecase "CU-06b: Definir turnos y horarios por día" as UC06b
+  usecase "CU-07: Buscar personal" as UC07
+  usecase "CU-07a: Editar datos del empleado y cambiar su estado" as UC07a
+  usecase "CU-07b: Consultar el detalle del empleado" as UC07b
 }
 
 Gestor --> UC04
 Gestor --> UC05
 Gestor --> UC06
+Gestor --> UC06a
+Gestor --> UC06b
 Gestor --> UC07
 Gestor --> UC07a
+Gestor --> UC07b
+
+note right of UC06b
+  Cada permiso puede tener horarios
+  distintos por día de la semana.
+end note
 
 ModuloGestion -[hidden]down- ModuloAcceso
 
 package "Módulo de Control de Acceso Físico" as ModuloAcceso #FFEBEE {
-  usecase "CU-11: Solicitar y validar acceso a área restringida" as UC11
-  usecase "CU-11a: Validar lectura de credencial" as UC11a
-  usecase "CU-11b: Validar estado (autorizado/denegado/no registrado/suspendido)" as UC11b
-  usecase "CU-11c: Registrar historial del intento" as UC11c
-  UC11 ..> UC11a : <<include>>
-  UC11 ..> UC11b : <<include>>
-  UC11 ..> UC11c : <<include>>
+  usecase "CU-11: Registrar la entrada a un área restringida" as UC11
+  usecase "CU-11a: Registrar la salida de un área" as UC11a
+  usecase "CU-11b: Consultar la ocupación en tiempo real de cada zona" as UC11b
+  usecase "CU-11c: Cerrar o reabrir una zona por emergencia" as UC11c
+  usecase "CU-11d: Consultar alertas de anomalías de acceso" as UC11d
+  usecase "CU-11e: Consultar el personal asignado y las autorizaciones de una sala" as UC11e
 }
 
-Empleado --> UC11
 Supervisor --> UC11
+Supervisor --> UC11a
+Supervisor --> UC11b
+Supervisor --> UC11c
+Supervisor --> UC11d
+Supervisor --> UC11e
+
+note right of UC11
+  El sistema verifica si la persona
+  tiene permiso y está dentro del
+  horario permitido, y registra cada
+  intento en el historial.
+end note
 
 ModuloAcceso -[hidden]down- ModuloReportes
 
 package "Módulo de Reportes y Auditoría" as ModuloReportes #E0F7FA {
-  usecase "CU-08: Consultar historial de accesos por fechas" as UC08
-  usecase "CU-09: Generar documento descargable del historial" as UC09
-  usecase "CU-10: Generar archivo periódico por departamentos" as UC10
-  UC09 ..> UC08 : <<include>>
+  usecase "CU-08: Consultar el historial de accesos" as UC08
+  usecase "CU-09: Descargar el historial en un documento" as UC09
+  usecase "CU-10: Generar el archivo periódico para el socio internacional" as UC10
 }
 
 Supervisor --> UC08
 Supervisor --> UC09
 Supervisor --> UC10
+
+note right of UC08
+  El historial se puede filtrar por
+  fechas, empleado, departamento,
+  área y resultado.
+end note
+
+note right of UC10
+  Resumen sin datos personales con
+  dos partes: detalle por departamento
+  y área, y distribución por día.
+end note
 
 UC10 --> Socio
 
