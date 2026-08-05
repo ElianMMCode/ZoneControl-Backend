@@ -354,9 +354,9 @@ public class PermissionServiceImpl implements PermissionService {
     }
 
     private PermissionResponse toResponse(AccessPermission permission) {
-        List<PermissionScheduleRequest> schedules =
+        List<PermissionResponse.PermissionScheduleItem> schedules =
                 permissionScheduleRepository.findByPermission_Id(permission.getId()).stream()
-                        .map(s -> new PermissionScheduleRequest(
+                        .map(s -> new PermissionResponse.PermissionScheduleItem(
                                 s.getDayOfWeek().name(), s.getStartTime(), s.getEndTime()))
                         .toList();
         return PermissionResponse.builder()

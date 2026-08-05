@@ -24,5 +24,10 @@ public class PermissionResponse {
     private LocalDate reactivationDate;
     private LocalTime startTime;
     private LocalTime endTime;
-    private List<PermissionScheduleRequest> schedules;
+    private List<PermissionScheduleItem> schedules;
+
+    /**
+     * Turno por día de la semana de un permiso (HU-26).
+     */
+    public record PermissionScheduleItem(String dayOfWeek, LocalTime startTime, LocalTime endTime) {}
 }

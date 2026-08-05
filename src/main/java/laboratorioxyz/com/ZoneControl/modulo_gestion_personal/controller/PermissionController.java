@@ -18,6 +18,7 @@ import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -60,11 +61,17 @@ public class PermissionController {
     @Operation(summary = "Suspender permiso",
             description = "Suspende temporalmente un permiso hasta una fecha de reactivación.")
     @ApiResponse(responseCode = "200", description = "Permiso suspendido")
+    @ApiResponse(responseCode = "400", description = "La fecha de reactivación es obligatoria")
     @ApiResponse(responseCode = "404", description = "Permiso no encontrado")
     public ResponseEntity<PermissionResponse> suspend(
             @PathVariable UUID id,
             @RequestBody Map<String, String> body) {
-        LocalDate reactivationDate = LocalDate.parse(body.get("reactivationDate"));
+        String reactivationDateStr = body.get("reactivationDate");
+        if (reactivationDateStr == null || reactivationDateStr.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La fecha de reactivación es obligatoria");
+        }
+        LocalDate reactivationDate = LocalDate.parse(reactivationDateStr);
         PermissionResponse response = permissionService.suspend(id, reactivationDate);
         return ResponseEntity.ok(response);
     }

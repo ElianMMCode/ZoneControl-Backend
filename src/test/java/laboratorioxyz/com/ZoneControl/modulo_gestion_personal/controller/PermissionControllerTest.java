@@ -220,6 +220,35 @@ class PermissionControllerTest {
                 .andExpect(jsonPath("$.error").value("Permiso no encontrado"));
     }
 
+    @Test
+    void suspendPermission_missingReactivationDate_returns400() throws Exception {
+        mockMvc.perform(patch("/api/permisos/{id}/suspend", UUID.randomUUID())
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error").value("La fecha de reactivación es obligatoria"));
+    }
+
+    @Test
+    void grantPermission_includesSchedules() throws Exception {
+        var request = new Object() {
+            public String employeeCode = "EMP-PRM-01";
+            public String productionAreaName = "Sala Blanca A";
+            public String startDate = LocalDate.now().toString();
+            public String expirationDate = LocalDate.now().plusMonths(1).toString();
+            public String startTime = "08:00";
+            public String endTime = "17:00";
+        };
+
+        mockMvc.perform(post("/api/permisos")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isCreated())
+                .andExpect(jsonPath("$.schedules").isArray())
+                .andExpect(jsonPath("$.schedules.length()").value(7))
+                .andExpect(jsonPath("$.schedules[0].dayOfWeek").isString());
+    }
+
     private void grantPermission() throws Exception {
         var request = new Object() {
             public String employeeCode = "EMP-PRM-01";

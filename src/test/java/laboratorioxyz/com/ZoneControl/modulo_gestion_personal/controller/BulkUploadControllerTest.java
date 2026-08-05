@@ -62,9 +62,11 @@ class BulkUploadControllerTest {
 
     @Test
     void uploadBulk_validCsv_returns200() throws Exception {
+        String doc1 = String.valueOf(System.nanoTime());
+        String doc2 = String.valueOf(System.nanoTime() + 1);
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15\n"
-                + "CE;9876543210;María;Gómez;Técnico;Control de Calidad;ACTIVO;";
+                + "CC;" + doc1 + ";Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15\n"
+                + "CE;" + doc2 + ";María;Gómez;Técnico;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "empleados.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -103,10 +105,13 @@ class BulkUploadControllerTest {
 
     @Test
     void uploadBulk_mixedRows_returnsSummaryWithErrors() throws Exception {
+        String doc1 = String.valueOf(System.nanoTime());
+        String doc2 = String.valueOf(System.nanoTime() + 1);
+        String doc3 = String.valueOf(System.nanoTime() + 2);
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;1111111111;Ana;López;Analista;Control de Calidad;ACTIVO;2026-02-01\n"
-                + "XX;2222222222;Pedro;Ramírez;Técnico;Control de Calidad;ACTIVO;\n"
-                + "CC;3333333333;Luis;García;Analista;Control de Calidad;ACTIVO;";
+                + "CC;" + doc1 + ";Ana;López;Analista;Control de Calidad;ACTIVO;2026-02-01\n"
+                + "XX;" + doc2 + ";Pedro;Ramírez;Técnico;Control de Calidad;ACTIVO;\n"
+                + "CC;" + doc3 + ";Luis;García;Analista;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -121,11 +126,16 @@ class BulkUploadControllerTest {
 
     @Test
     void uploadBulk_duplicateDocument_returnsPartialSuccess() throws Exception {
-        String nextCode = employeeRepository.findMaxEmployeeCode();
+        String dupDoc = String.valueOf(System.nanoTime());
+        String okDoc = String.valueOf(System.nanoTime() + 1);
+        String maxCode = employeeRepository.findMaxEmployeeCode();
+        String nextCode = maxCode != null
+                ? "EMP-" + String.format("%06d", Integer.parseInt(maxCode.substring(4)) + 1)
+                : "EMP-000001";
         employeeRepository.save(Employee.builder()
-                .employeeCode(nextCode != null ? "EMP-000099" : "EMP-000001")
+                .employeeCode(nextCode)
                 .documentType(DocumentType.CC)
-                .documentNumber("9999999999")
+                .documentNumber(dupDoc)
                 .firstName("Existente")
                 .lastName("Ya")
                 .position("Test")
@@ -134,8 +144,8 @@ class BulkUploadControllerTest {
                 .build());
 
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;9999999999;Duplicado;Error;Test;Control de Calidad;ACTIVO;\n"
-                + "CC;8888888888;Nuevo;Ok;Analista;Control de Calidad;ACTIVO;";
+                + "CC;" + dupDoc + ";Duplicado;Error;Test;Control de Calidad;ACTIVO;\n"
+                + "CC;" + okDoc + ";Nuevo;Ok;Analista;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
