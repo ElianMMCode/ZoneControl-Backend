@@ -150,7 +150,6 @@ class PeriodicReportControllerTest {
 
         int mes = LocalDateTime.now().getMonthValue();
         int anio = LocalDateTime.now().getYear();
-        String periodo = String.format("%d-%02d", anio, mes);
 
         mockMvc.perform(post("/api/reportes/archivo-periodico")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -158,8 +157,9 @@ class PeriodicReportControllerTest {
                                 "mes", mes, "anio", anio, "formato", "CSV"
                         ))))
                 .andExpect(status().isOk())
-                // Agregación por departamento, sin datos personales
-                .andExpect(content().string(containsString("Esterilización;" + periodo + ";2;1;1;0;0")))
+                // Agregación por departamento × área, sin datos personales
+                .andExpect(content().string(containsString("Esterilización;Sala Blanca A;1;1;0;0;0;100")))
+                .andExpect(content().string(containsString("Esterilización;Sala Blanca B;1;0;1;0;0;0")))
                 .andExpect(content().string(not(containsString("EMP-PER-01"))))
                 .andExpect(content().string(not(containsString("Periodico Test"))));
     }
@@ -208,13 +208,18 @@ class PeriodicReportControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.mes").value(mes))
                 .andExpect(jsonPath("$.anio").value(anio))
-                .andExpect(jsonPath("$.rows").isArray())
-                .andExpect(jsonPath("$.rows[0].department").isString())
-                .andExpect(jsonPath("$.rows[0].total").isNumber())
-                .andExpect(jsonPath("$.rows[0].autorizados").isNumber())
-                .andExpect(jsonPath("$.rows[0].denegados").isNumber())
-                .andExpect(jsonPath("$.rows[0].noRegistrados").isNumber())
-                .andExpect(jsonPath("$.rows[0].suspendidos").isNumber())
+                .andExpect(jsonPath("$.areaRows").isArray())
+                .andExpect(jsonPath("$.areaRows[0].department").isString())
+                .andExpect(jsonPath("$.areaRows[0].area").isString())
+                .andExpect(jsonPath("$.areaRows[0].total").isNumber())
+                .andExpect(jsonPath("$.areaRows[0].autorizados").isNumber())
+                .andExpect(jsonPath("$.areaRows[0].denegados").isNumber())
+                .andExpect(jsonPath("$.areaRows[0].noRegistrados").isNumber())
+                .andExpect(jsonPath("$.areaRows[0].suspendidos").isNumber())
+                .andExpect(jsonPath("$.areaRows[0].pctAutorizados").isNumber())
+                .andExpect(jsonPath("$.dayRows").isArray())
+                .andExpect(jsonPath("$.dayRows[0].dia").isString())
+                .andExpect(jsonPath("$.dayRows[0].total").isNumber())
                 .andExpect(jsonPath("$.generatedAt").isString());
     }
 
@@ -242,7 +247,6 @@ class PeriodicReportControllerTest {
 
         int mes = LocalDateTime.now().getMonthValue();
         int anio = LocalDateTime.now().getYear();
-        String periodo = String.format("%d-%02d", anio, mes);
 
         mockMvc.perform(post("/api/reportes/archivo-periodico")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -252,7 +256,7 @@ class PeriodicReportControllerTest {
                         ))))
                 .andExpect(status().isOk())
                 .andExpect(content().string(containsString(
-                        esterilizacion.getName() + ";" + periodo + ";1;1;0;0;0")));
+                        esterilizacion.getName() + ";Sala Blanca A;1;1;0;0;0;100")));
     }
 
     @Test
@@ -267,7 +271,7 @@ class PeriodicReportControllerTest {
                                 "departmentNames", java.util.List.of("Control de Calidad")
                         ))))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.rows[?(@.department=='Control de Calidad')]").exists());
+                .andExpect(jsonPath("$.areaRows[?(@.department=='Control de Calidad')]").exists());
     }
 
     @Test

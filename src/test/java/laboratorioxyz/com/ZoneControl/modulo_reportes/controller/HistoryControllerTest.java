@@ -289,7 +289,8 @@ class HistoryControllerTest {
         // +1 permiso ACTIVO y +1 SUSPENDIDO.
         long baseTotal = accessHistoryRepository.findAll().stream()
                 .filter(h -> h.getTimestamp() != null
-                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now()))
+                        && h.getTimestamp().toLocalDate().isEqual(LocalDate.now())
+                        && h.getResult() != AccessResult.EXIT)
                 .count();
         long baseAutorizados = accessHistoryRepository.findAll().stream()
                 .filter(h -> h.getTimestamp() != null

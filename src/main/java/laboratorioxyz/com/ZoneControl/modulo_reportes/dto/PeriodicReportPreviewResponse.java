@@ -5,7 +5,8 @@ import java.util.List;
 
 /**
  * Vista previa del archivo periódico (HU-17, flujo "Enviar a Socio Internacional").
- * Contiene la misma agregación por departamento que el archivo, SIN datos personales.
+ * Contiene la misma agregación que el archivo, SIN datos personales: resumen por
+ * departamento × área y distribución por día.
  */
 public record PeriodicReportPreviewResponse(
         int mes,
@@ -13,8 +14,13 @@ public record PeriodicReportPreviewResponse(
         String formato,
         List<String> departmentNames,
         LocalDateTime generatedAt,
-        List<Row> rows) {
+        List<AreaRow> areaRows,
+        List<DayRow> dayRows) {
 
-    public record Row(String department, String periodo, int total,
-                      int autorizados, int denegados, int noRegistrados, int suspendidos) {}
+    public record AreaRow(String department, String area, int total,
+                          int autorizados, int denegados, int noRegistrados, int suspendidos,
+                          int pctAutorizados) {}
+
+    public record DayRow(String dia, int total,
+                         int autorizados, int denegados, int noRegistrados, int suspendidos) {}
 }
