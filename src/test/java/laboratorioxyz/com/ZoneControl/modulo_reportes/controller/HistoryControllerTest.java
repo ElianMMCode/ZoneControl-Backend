@@ -109,6 +109,22 @@ class HistoryControllerTest {
     }
 
     @Test
+    void getHistory_defaultSortsByTimestampDesc() throws Exception {
+        // setUp crea registros 2026-07-15 10:30 y 2026-07-16 14:00; sin
+        // parámetro sort el más reciente debe aparecer primero.
+        mockMvc.perform(get("/api/historial")
+                        .param("fechaInicio", "2026-07-01")
+                        .param("fechaFin", "2026-07-31")
+                        .param("page", "0")
+                        .param("size", "20"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].timestamp").value("2026-07-16T14:00:00"))
+                .andExpect(jsonPath("$.content[0].result").value("DENIED"))
+                .andExpect(jsonPath("$.content[1].timestamp").value("2026-07-15T10:30:00"))
+                .andExpect(jsonPath("$.content[1].result").value("AUTHORIZED"));
+    }
+
+    @Test
     void getHistory_invalidRange_returns400() throws Exception {
         mockMvc.perform(get("/api/historial")
                         .param("fechaInicio", "2026-08-01")

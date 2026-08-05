@@ -10,6 +10,7 @@ import laboratorioxyz.com.ZoneControl.modulo_reportes.service.HistoryService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpHeaders;
@@ -39,7 +40,7 @@ public class HistoryController {
             @RequestParam(required = false) String employeeCode,
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String resultado,
-            @PageableDefault(size = 20) Pageable pageable) {
+            @PageableDefault(size = 20, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AccessHistoryResponse> result = historyService.search(
                 fechaInicio, fechaFin, employeeCode, department, resultado, pageable);
         return ResponseEntity.ok(result);
