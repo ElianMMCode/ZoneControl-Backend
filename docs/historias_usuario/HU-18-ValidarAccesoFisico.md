@@ -68,12 +68,13 @@ Entonces: el sistema muestra "ACCESO SUSPENDIDO" en color rojo y registra el int
 ## Estado de Implementación
 
 - **Backend**: ✓ — `POST /api/access/validate` (AUTHORIZED / DENIED / UNREGISTERED / SUSPENDED) con registro en `AccessHistory`. Tests verdes.
-- **Frontend**: ✓ — `AccessValidationView` (`/supervisor/validar`, mockup 44) con selector de zona (áreas del seed), código de empleado y alerta de color por resultado (verde autorizado / rojo denegado-suspendido / amarillo no registrado).
-- **Notas**: la zona de acceso se selecciona del catálogo sembrado (el rol SUPERVISOR_AUDITOR no accede a `GET /api/permisos/areas`, por lo que la lista es estática en el frontend).
+- **Frontend**: ✓ — `AccessValidationView` (`/supervisor/validar`, mockup 44) con selector de zona **cargado dinámicamente desde `GET /api/permisos/areas`** (`useAreas`), código de empleado y alerta de color por resultado (verde autorizado / rojo denegado-suspendido / amarillo no registrado).
+- **Notas**: `SecurityConfig` permite a `SUPERVISOR_AUDITOR` hacer `GET /api/permisos/areas` (regla específica antes del `hasAnyRole(ADMIN, GESTOR_PERSONAL)` de `/api/permisos/**`), por lo que las zonas reflejan el catálogo real en vez de una lista estática. Test: `supervisor_canListProductionAreas`.
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
+| 1.2 | 2026-08-05 | | | Zonas dinámicas: supervisor accede a `GET /api/permisos/areas` y el frontend deja de usar la lista hardcodeada | |
 | 1.1 | 2026-07-29 | | | Renombre: simulación → validación, actor cambia a supervisor/auditor, endpoint ahora requiere JWT | |
 | 1.0 | 2026-07-26 | | | Versión inicial | |

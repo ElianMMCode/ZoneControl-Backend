@@ -75,13 +75,13 @@ Entonces: el sistema registra la acción en los logs de auditoría con la fecha,
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `POST /api/reportes/archivo-periodico` con **agregación por departamento SIN datos personales** (columnas: Departamento, Período, Total, Autorizados, Denegados, No Registrados, Suspendidos) y filtro opcional `departmentNames` (gap 1.2 §9 implementado). Formatos CSV/EXCEL/PDF. Tests en `PeriodicReportControllerTest`.
-- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF) y descarga automática.
-- **Notas**: cumple la normativa del socio internacional al excluir datos personales.
+- **Backend**: ✓ — `POST /api/reportes/archivo-periodico` con **agregación por departamento SIN datos personales** (columnas: Departamento, Período, Total, Autorizados, Denegados, No Registrados, Suspendidos) y filtro opcional `departmentNames` (gap 1.2 §9 implementado). Formatos CSV/EXCEL/PDF. `POST /api/reportes/archivo-periodico/preview` devuelve la misma agregación en JSON (sin datos personales) para la vista previa del envío. Tests en `PeriodicReportControllerTest`.
+- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF), **chips de selección multi-departamento** (envía `departmentNames`) y descarga automática.
+- **Notas**: el botón "Enviar a socio internacional" abre un **modal de vista previa** (agregación por departamento obtenida de `archivo-periodico/preview`, sin datos personales) con botón **Descargar archivo** para adjuntarlo al envío por el canal externo; el envío en sí queda fuera del sistema (no hay envío real por correo ni log de auditoría de envío). Cumple la normativa del socio internacional al excluir datos personales.
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.2 | 2026-08-05 | | | Frontend multi-departamento + modal de vista previa con Descargar para el envío al socio (Condición 05) y endpoint `preview` | |
 | 1.1 | 2026-08-04 | | | Reescritura: agregación por departamento sin datos personales + `departmentNames` (gap 1.2 §9) | |

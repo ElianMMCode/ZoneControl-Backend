@@ -556,6 +556,7 @@ Usar SLF4J + Logback. Registrar en cada operación crítica:
 | GET | /api/historial/stats | Supervisor/Admin | Reportes | — |
 | POST | /api/historial/export | Supervisor/Admin | Reportes | 16 |
 | POST | /api/reportes/archivo-periodico | Supervisor/Admin | Reportes | 17 |
+| POST | /api/reportes/archivo-periodico/preview | Supervisor/Admin | Reportes | 17 |
 
 ---
 
