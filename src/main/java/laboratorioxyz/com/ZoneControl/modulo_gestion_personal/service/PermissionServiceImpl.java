@@ -5,6 +5,8 @@ import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.AreaAuthorizationResponse;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.AreaEmployeeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.CreatePermissionRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionScheduleRequest;
@@ -150,6 +152,69 @@ public class PermissionServiceImpl implements PermissionService {
             return predicate;
         };
         return accessPermissionRepository.findAll(spec, pageable).map(this::toResponse);
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AreaEmployeeResponse> listAreaEmployees(String areaName) {
+        ProductionArea area = requireArea(areaName);
+        return accessPermissionRepository.findByProductionArea_Name(area.getName()).stream()
+                .map(p -> {
+                    Employee e = p.getEmployee();
+                    return AreaEmployeeResponse.builder()
+                            .employeeCode(e.getEmployeeCode())
+                            .employeeName(e.getFirstName() + " " + e.getLastName())
+                            .position(e.getPosition())
+                            .department(e.getDepartment() != null ? e.getDepartment().getName() : null)
+                            .employeeStatus(e.getStatus())
+                            .build();
+                })
+                .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<AreaAuthorizationResponse> listAreaAuthorizations(String areaName) {
+        ProductionArea area = requireArea(areaName);
+        return accessPermissionRepository.findByProductionArea_Name(area.getName()).stream()
+                .map(this::toAreaAuthorizationResponse)
+                .toList();
+    }
+
+    private ProductionArea requireArea(String areaName) {
+        if (areaName == null || areaName.isBlank()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El nombre del área es obligatorio");
+        }
+        return productionAreaRepository.findByName(areaName)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Área de producción no encontrada: " + areaName));
+    }
+
+    private AreaAuthorizationResponse toAreaAuthorizationResponse(AccessPermission p) {
+        Employee e = p.getEmployee();
+        List<AreaAuthorizationResponse.ScheduleDto> schedules =
+                permissionScheduleRepository.findByPermission_Id(p.getId()).stream()
+                        .map(s -> AreaAuthorizationResponse.ScheduleDto.builder()
+                                .dayOfWeek(s.getDayOfWeek().name())
+                                .startTime(s.getStartTime())
+                                .endTime(s.getEndTime())
+                                .build())
+                        .toList();
+        return AreaAuthorizationResponse.builder()
+                .id(p.getId())
+                .employeeCode(e.getEmployeeCode())
+                .employeeName(e.getFirstName() + " " + e.getLastName())
+                .position(e.getPosition())
+                .department(e.getDepartment() != null ? e.getDepartment().getName() : null)
+                .permissionStatus(p.getStatus())
+                .startDate(p.getStartDate())
+                .expirationDate(p.getExpirationDate())
+                .reactivationDate(p.getReactivationDate())
+                .startTime(p.getStartTime())
+                .endTime(p.getEndTime())
+                .schedules(schedules)
+                .build();
     }
 
     @Override

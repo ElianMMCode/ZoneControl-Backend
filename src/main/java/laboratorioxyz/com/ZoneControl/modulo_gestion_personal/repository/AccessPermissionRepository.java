@@ -25,6 +25,8 @@ public interface AccessPermissionRepository extends JpaRepository<AccessPermissi
 
     List<AccessPermission> findByEmployee_Id(UUID employeeId);
 
+    List<AccessPermission> findByProductionArea_Name(String productionAreaName);
+
     @Modifying
     @Query("UPDATE AccessPermission ap SET ap.status = :status WHERE ap.employee.id = :employeeId")
     int updateStatusByEmployeeId(@Param("employeeId") UUID employeeId, @Param("status") PermissionStatus status);

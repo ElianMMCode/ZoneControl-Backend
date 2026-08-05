@@ -5,6 +5,8 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.AreaAuthorizationResponse;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.AreaEmployeeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.CreatePermissionRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdatePermissionRequest;
@@ -93,6 +95,26 @@ public class PermissionController {
     @GetMapping("/areas")
     public ResponseEntity<List<ProductionArea>> listAreas() {
         return ResponseEntity.ok(permissionService.listAreas());
+    }
+
+    @Operation(summary = "Empleados asignados a un área",
+            description = "Lista simple de empleados con permiso sobre un área de producción " +
+                    "(vista por sala). Solo lectura.")
+    @ApiResponse(responseCode = "200", description = "Lista de empleados asignados")
+    @ApiResponse(responseCode = "404", description = "Área no encontrada")
+    @GetMapping("/areas/{name}/empleados")
+    public ResponseEntity<List<AreaEmployeeResponse>> listAreaEmployees(@PathVariable String name) {
+        return ResponseEntity.ok(permissionService.listAreaEmployees(name));
+    }
+
+    @Operation(summary = "Autorizaciones por área",
+            description = "Permisos de acceso completos sobre un área de producción, con vigencia, " +
+                    "horario base y turnos por día (vista por sala). Solo lectura.")
+    @ApiResponse(responseCode = "200", description = "Lista de autorizaciones")
+    @ApiResponse(responseCode = "404", description = "Área no encontrada")
+    @GetMapping("/areas/{name}/autorizaciones")
+    public ResponseEntity<List<AreaAuthorizationResponse>> listAreaAuthorizations(@PathVariable String name) {
+        return ResponseEntity.ok(permissionService.listAreaAuthorizations(name));
     }
 
     @PostMapping("/areas")

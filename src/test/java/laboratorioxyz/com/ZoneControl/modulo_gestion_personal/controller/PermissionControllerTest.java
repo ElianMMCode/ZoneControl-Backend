@@ -298,6 +298,59 @@ class PermissionControllerTest {
     }
 
     @Test
+    void listAreaEmployees_returnsAssignedEmployees() throws Exception {
+        grantPermission();
+
+        mockMvc.perform(get("/api/permisos/areas/{name}/empleados", "Sala Blanca A"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')]").exists())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].employeeName").value(
+                        org.hamcrest.Matchers.hasItem("Test User")))
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].position").value(
+                        org.hamcrest.Matchers.hasItem("Técnico")))
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].department").value(
+                        org.hamcrest.Matchers.hasItem("Control de Calidad")))
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].employeeStatus").value(
+                        org.hamcrest.Matchers.hasItem("ACTIVO")));
+    }
+
+    @Test
+    void listAreaEmployees_unknownArea_returns404() throws Exception {
+        mockMvc.perform(get("/api/permisos/areas/{name}/empleados", "Area Inexistente"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void listAreaAuthorizations_returnsFullInfo() throws Exception {
+        grantPermission();
+
+        mockMvc.perform(get("/api/permisos/areas/{name}/autorizaciones", "Sala Blanca A"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].id").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].permissionStatus").value(
+                        org.hamcrest.Matchers.hasItem("ACTIVO")))
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].startDate").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].expirationDate").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].startTime").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].endTime").isNotEmpty())
+                .andExpect(jsonPath("$[?(@.employeeCode=='EMP-PRM-01')].schedules.length()").value(
+                        org.hamcrest.Matchers.hasItem(7)));
+    }
+
+    @Test
+    void listAreaAuthorizations_unknownArea_returns404() throws Exception {
+        mockMvc.perform(get("/api/permisos/areas/{name}/autorizaciones", "Area Inexistente"))
+                .andExpect(status().isNotFound());
+    }
+
+    @Test
+    @WithMockUser(roles = "SUPERVISOR_AUDITOR")
+    void listAreaAuthorizations_supervisorCanRead_returns200() throws Exception {
+        mockMvc.perform(get("/api/permisos/areas/{name}/autorizaciones", "Sala Blanca A"))
+                .andExpect(status().isOk());
+    }
+
+    @Test
     void grantPermission_sameEmployeeAreaDifferentTimes_returns409() throws Exception {
         var request1 = new Object() {
             public String employeeCode = "EMP-PRM-01";

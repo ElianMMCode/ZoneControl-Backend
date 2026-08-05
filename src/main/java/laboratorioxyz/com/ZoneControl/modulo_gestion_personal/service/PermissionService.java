@@ -2,6 +2,8 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service;
 
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.AreaAuthorizationResponse;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.AreaEmployeeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.CreatePermissionRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdatePermissionRequest;
@@ -19,6 +21,8 @@ public interface PermissionService {
     PermissionResponse suspend(UUID id, LocalDate reactivationDate);
     PermissionResponse reactivate(UUID id);
     Page<PermissionResponse> list(String search, PermissionStatus status, Pageable pageable);
+    List<AreaEmployeeResponse> listAreaEmployees(String areaName);
+    List<AreaAuthorizationResponse> listAreaAuthorizations(String areaName);
     List<ProductionArea> listAreas();
     ProductionArea createArea(String name, String description);
     ProductionArea updateArea(UUID id, String name, String description);

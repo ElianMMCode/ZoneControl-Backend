@@ -53,6 +53,9 @@ public class SecurityConfig {
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.GET, "/api/permisos/areas")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
+                .requestMatchers(HttpMethod.GET, "/api/permisos/areas/*/empleados",
+                        "/api/permisos/areas/*/autorizaciones")
+                    .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
                 .requestMatchers("/api/personal/**", "/api/permisos/**")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL")
                 .requestMatchers("/api/access/**")

@@ -93,6 +93,7 @@ public class DataInitializer implements CommandLineRunner {
         seedAccessPermissions();
         seedCandidateEmployees();
         seedGestorSampleData();
+        seedAreaAuthorizations();
         seedAccessHistory();
         seedAccessAlerts();
         migratePermissionSchedules();
@@ -506,6 +507,13 @@ public class DataInitializer implements CommandLineRunner {
      * vigencia, foto). Es idempotente.
      */
     private void seedGestorSampleData() {
+        // Empleado del departamento Esterilización: idempotente, garantiza que
+        // el departamento tenga datos reales en los filtros y vistas.
+        Department esterilizacion = departmentRepository.findByName("Esterilización").orElseThrow();
+        saveEmployee("EMP-000106", "200000106", "Estefanía", "Londoño",
+                "Operadora de Esterilización", "estefania.londono@laboratorioxzy.com.co",
+                esterilizacion, EmployeeStatus.ACTIVO, null);
+
         if (employeeRepository.findByEmployeeCode("EMP-000100").isPresent()) {
             log.info("Gestor sample employees already exist — skipping");
             return;
@@ -554,6 +562,44 @@ public class DataInitializer implements CommandLineRunner {
                 LocalDate.now().minusYears(2), null);
 
         log.info("Seeded 6 rich sample employees for gestor dashboard (various statuses)");
+    }
+
+    /**
+     * Autorizaciones por área (vista por sala del panel de zonas): garantiza
+     * que las 5 áreas de producción tengan empleados asignados y permisos con
+     * turnos por día para mostrar. Idempotente por empleado (un empleado que ya
+     * tiene permiso se omite, incluidos los sembrados en seedAccessPermissions).
+     */
+    private void seedAreaAuthorizations() {
+        LocalDate today = LocalDate.now();
+        seedAreaPermission("EMP-000100", "Laboratorio QC", PermissionStatus.ACTIVO, today);
+        seedAreaPermission("EMP-000104", "Laboratorio QC", PermissionStatus.ACTIVO, today);
+        seedAreaPermission("EMP-000105", "Laboratorio QC", PermissionStatus.ACTIVO, today);
+        seedAreaPermission("EMP-000101", "Sala Blanca B", PermissionStatus.ACTIVO, today);
+        seedAreaPermission("EMP-000106", "Sala Blanca A", PermissionStatus.ACTIVO, today);
+        seedAreaPermission("EMP-000102", "Zona de Empaque", PermissionStatus.ACTIVO, today);
+        seedAreaPermission("EMP-000032", "Zona de Empaque", PermissionStatus.SUSPENDIDO, today);
+        seedAreaPermission("EMP-000103", "Almacén Controlado", PermissionStatus.SUSPENDIDO, today);
+        log.info("Seeded area authorizations for all production areas");
+    }
+
+    private void seedAreaPermission(String employeeCode, String areaName,
+                                    PermissionStatus status, LocalDate today) {
+        Employee employee = employeeRepository.findByEmployeeCode(employeeCode).orElse(null);
+        if (employee == null || !accessPermissionRepository.findByEmployee_Id(employee.getId()).isEmpty()) {
+            return;
+        }
+        ProductionArea area = productionAreaRepository.findByName(areaName).orElse(null);
+        if (area == null) {
+            return;
+        }
+        accessPermissionRepository.save(AccessPermission.builder()
+                .employee(employee).productionArea(area)
+                .status(status)
+                .startDate(today).expirationDate(today.plusYears(1))
+                .startTime(LocalTime.of(6, 0))
+                .endTime(LocalTime.of(22, 0))
+                .build());
     }
 
     private void saveRichEmployee(String code, String doc, String firstName, String lastName,
