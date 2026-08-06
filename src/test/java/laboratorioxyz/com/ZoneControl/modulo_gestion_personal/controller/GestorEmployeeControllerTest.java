@@ -16,8 +16,10 @@ import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmploy
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.UpdateEmployeeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Position;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PositionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -74,6 +76,9 @@ class GestorEmployeeControllerTest {
     @Autowired
     private AccessHistoryRepository accessHistoryRepository;
 
+    @Autowired
+    private PositionRepository positionRepository;
+
     @Test
     void listDepartments_returnsNames() throws Exception {
         mockMvc.perform(get("/api/personal/departamentos"))
@@ -93,12 +98,14 @@ class GestorEmployeeControllerTest {
     @Test
     void registerEmployee_withRichProfile_returns201() throws Exception {
         Department dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        Position cargo = positionRepository.save(Position.builder()
+                .name("Coordinador " + System.nanoTime()).build());
         var request = RegisterEmployeeRequest.builder()
                 .documentType(DocumentType.CC)
                 .documentNumber("300000001")
                 .firstName("Hugo")
                 .lastName("Lozano")
-                .position("Coordinador")
+                .cargoId(cargo.getId())
                 .departmentName(dept.getName())
                 .email("hugo.lozano@laboratorioxzy.com.co")
                 .contractType(ContractType.TIEMPO_COMPLETO)

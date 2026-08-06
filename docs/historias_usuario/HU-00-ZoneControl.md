@@ -49,7 +49,8 @@ El sistema debe reflejar la estructura de la compañía y separar claramente lo 
 | HU-28  | Registrar la salida de un área                           |
 | HU-29  | Gestionar mi perfil y cambiar mi contraseña              |
 | HU-30  | Consultar el personal y las autorizaciones de una sala   |
-| HU-31  | Consultar el detalle del empleado                        |
+| HU-31 | Consultar el detalle del empleado |
+| HU-32 | Gestionar el catálogo de cargos |
 
 ## Criterios de Aceptación
 

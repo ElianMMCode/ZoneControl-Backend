@@ -5,7 +5,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.ContractType;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
-import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.WorkShift;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 
 
@@ -48,8 +48,7 @@ public class RegisterEmployeeRequest {
     private String lastName;
 
     @NotNull
-    @Size(max = 30)
-    private String position;
+    private UUID cargoId;
 
     @NotNull
     @Size(max = 80)
@@ -63,13 +62,6 @@ public class RegisterEmployeeRequest {
     @Email
     @Size(max = 100)
     private String email;
-
-    /**
-     * Rol de sistema opcional. Si se asigna, el empleado aparecerá
-     * como candidato en el panel "Empleados pendientes de activación"
-     * del Admin. Nulo = empleado de solo acceso físico.
-     */
-    private Role systemRole;
 
     private ContractType contractType;
 

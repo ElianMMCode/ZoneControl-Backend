@@ -47,13 +47,14 @@ public class AdminUserServiceImpl implements AdminUserService {
     /**
      * Creación de usuario con magic link (HU-05).
      *
-     * El ADMIN solo envía employeeCode, role y status. El firstName, lastName
-     * y email se derivan del Employee vinculado (el email es el correo personal
-     * del empleado, no corporativo). No se define contraseña: se genera un
-     * setupToken de un solo uso, se guarda su hash SHA-256 con expiración de
-     * 24h y se envía un magic link al correo del empleado para que el propio
-     * usuario establezca su contraseña. De esta forma la contraseña nunca
-     * viaja por email ni es conocida por el administrador.
+     * El ADMIN solo envía employeeCode y status. El firstName, lastName, email
+     * y rol se derivan del Employee vinculado: el rol nace del cargo del
+     * empleado (systemRole), por lo que solo un empleado con cargo que define
+     * un rol de sistema puede tener usuario. No se define contraseña: se
+     * genera un setupToken de un solo uso, se guarda su hash SHA-256 con
+     * expiración de 24h y se envía un magic link al correo del empleado para
+     * que el propio usuario establezca su contraseña. De esta forma la
+     * contraseña nunca viaja por email ni es conocida por el administrador.
      */
     @Override
     @Transactional
@@ -61,6 +62,12 @@ public class AdminUserServiceImpl implements AdminUserService {
         Employee employee = employeeRepository.findByEmployeeCode(request.getEmployeeCode())
                 .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
                         "Empleado no encontrado: " + request.getEmployeeCode()));
+
+        if (employee.getSystemRole() == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El empleado no tiene un rol de sistema asignado. El rol se define "
+                    + "a través de su cargo en Gestión de Personal");
+        }
 
         if (userRepository.findByEmployee_Id(employee.getId()).isPresent()) {
             throw new ResponseStatusException(HttpStatus.CONFLICT,
@@ -85,7 +92,7 @@ public class AdminUserServiceImpl implements AdminUserService {
                 .password(null)
                 .setupToken(setupPasswordService.hashToken(rawToken))
                 .setupTokenExpiry(LocalDateTime.now().plusHours(24))
-                .role(request.getRole())
+                .role(employee.getSystemRole())
                 .status(request.getStatus())
                 .employee(employee)
                 .build();
@@ -93,7 +100,8 @@ public class AdminUserServiceImpl implements AdminUserService {
         user = userRepository.save(user);
         magicLinkNotifier.sendSetupLink(user.getEmail(),
                 user.getFirstName() + " " + user.getLastName(), rawToken);
-        log.info("User {} created for employee {} (magic link enviado)", user.getId(), request.getEmployeeCode());
+        log.info("User {} created for employee {} (magic link enviado, rol derivado del cargo)",
+                user.getId(), request.getEmployeeCode());
         return Map.of(
                 "id", user.getId(),
                 "setupUrl", magicLinkNotifier.buildUrl(rawToken)

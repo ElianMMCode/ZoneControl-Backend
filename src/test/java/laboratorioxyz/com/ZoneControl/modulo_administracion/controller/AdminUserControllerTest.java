@@ -87,6 +87,7 @@ class AdminUserControllerTest {
                 .department(dept)
                 .status(EmployeeStatus.ACTIVO)
                 .email("personal.admin@test.com")
+                .systemRole(Role.GESTOR_PERSONAL)
                 .build());
 
         testUser = userRepository.save(User.builder()
@@ -279,13 +280,13 @@ class AdminUserControllerTest {
                 .position("Analista")
                 .department(dept)
                 .status(EmployeeStatus.ACTIVO)
+                .systemRole(Role.SUPERVISOR_AUDITOR)
                 .build());
 
         mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "employeeCode", "EMP-ADM-02",
-                                "role", "SUPERVISOR_AUDITOR",
                                 "status", "ACTIVO"
                         ))))
                 .andExpect(status().isCreated())
@@ -306,6 +307,33 @@ class AdminUserControllerTest {
     }
 
     @Test
+    void createUser_employeeWithoutSystemRole_returns400() throws Exception {
+        Department dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-ADM-04")
+                .documentType(DocumentType.CC)
+                .documentNumber("900000004")
+                .firstName("Sin")
+                .lastName("Rol")
+                .email("sin.rol@test.com")
+                .position("Operario")
+                .department(dept)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+
+        mockMvc.perform(post("/api/admin/users")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(Map.of(
+                                "employeeCode", "EMP-ADM-04",
+                                "status", "ACTIVO"
+                        ))))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.error")
+                        .value("El empleado no tiene un rol de sistema asignado. El rol se define "
+                                + "a través de su cargo en Gestión de Personal"));
+    }
+
+    @Test
     void createUser_employeeWithoutEmail_returns400() throws Exception {
         Department dept = departmentRepository.findByName("Control de Calidad").orElseThrow();
         employeeRepository.save(Employee.builder()
@@ -317,13 +345,13 @@ class AdminUserControllerTest {
                 .position("Auxiliar")
                 .department(dept)
                 .status(EmployeeStatus.ACTIVO)
+                .systemRole(Role.ADMIN)
                 .build());
 
         mockMvc.perform(post("/api/admin/users")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "employeeCode", "EMP-ADM-03",
-                                "role", "ADMIN",
                                 "status", "ACTIVO"
                         ))))
                 .andExpect(status().isBadRequest())
@@ -340,7 +368,6 @@ class AdminUserControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(Map.of(
                                 "employeeCode", "EMP-ADM-01",
-                                "role", "ADMIN",
                                 "status", "ACTIVO"
                         ))))
                 .andExpect(status().isConflict())

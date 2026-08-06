@@ -19,6 +19,8 @@
 
 Desde los resultados de búsqueda de personal, el gestor debe poder abrir el detalle de un empleado. La ficha muestra los datos personales (código, documento, nombres, apellidos, cargo, departamento, estado, correo, sede y fecha de ingreso), la fotografía si la tiene, el listado de sus permisos de acceso (con su estado y vigencia) y su historial de accesos recientes. Desde la ficha también se puede editar al empleado, cambiar la fotografía, y otorgar, editar, suspender o reactivar permisos.
 
+Al editar al empleado, el cargo se selecciona del catálogo de cargos (HU-32) mediante una lista desplegable y, según el cargo elegido, el sistema muestra el rol de sistema que le corresponde al empleado (derivado del cargo, HU-05).
+
 ## Criterios de Aceptación
 
 Condición 01

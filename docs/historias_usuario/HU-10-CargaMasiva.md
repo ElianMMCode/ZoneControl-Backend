@@ -19,7 +19,7 @@
 
 El sistema debe permitir cargar muchos empleados de una sola vez mediante un archivo de texto plano (CSV o TXT). Para que el usuario lo llene correctamente, el sistema ofrece una plantilla descargable que muestra las columnas esperadas y un ejemplo de cómo completarlas. Las columnas son: tipo de documento, número de documento, nombres, apellidos, cargo, departamento, estado y fecha de ingreso.
 
-Antes de registrar a cualquier empleado, el sistema revisa el archivo completo y cada fila por separado. Si una fila tiene errores (por ejemplo, un tipo de documento no admitido, un número de documento que ya existe o un departamento que no existe), esa fila se rechaza, pero el proceso no se detiene: las filas correctas sí se registran.
+Antes de registrar a cualquier empleado, el sistema revisa el archivo completo y cada fila por separado. Si una fila tiene errores (por ejemplo, un tipo de documento no admitido, un número de documento que ya existe, un departamento que no existe o un cargo que no está en el catálogo de cargos), esa fila se rechaza, pero el proceso no se detiene: las filas correctas sí se registran.
 
 Al terminar, se presenta un resumen con la cantidad total de filas, cuántas se registraron y cuántas fallaron, además de una lista detallada de los errores para que se puedan corregir y volver a subir el archivo. A cada empleado registrado se le asigna su código interno de forma automática. El archivo tiene límites de tamaño y de cantidad de filas para evitar cargas excesivas.
 
@@ -93,8 +93,9 @@ Entonces: el sistema muestra un mensaje claro que explica el problema detectado 
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
 | 1.1 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+| 1.2 | 2026-08-06 | | | El cargo de cada fila debe existir en el catálogo de cargos (HU-32) | |
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados de 8 columnas —incluye `fecha_ingreso`— y fila de ejemplo) y `POST /api/personal/bulk` (validación por fila, inserción por lotes y reporte de errores en `errorReportUrl` como CSV inline). Límite de **10 MB explícito** en el servicio (mensaje de la HU) y de **1000 registros**. Tests verdes.
+- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados de 8 columnas —incluye `fecha_ingreso`— y fila de ejemplo) y `POST /api/personal/bulk` (validación por fila que incluye que el cargo exista en el catálogo, inserción por lotes y reporte de errores en `errorReportUrl` como CSV inline). Límite de **10 MB explícito** en el servicio (mensaje de la HU) y de **1000 registros**. Tests verdes.
 - **Frontend**: ✓ — `BulkUploadView` (`/personal/carga-masiva`, mockup 10) con descarga de plantilla, subida y **tabla de errores inline** (Fila/Campo/Detalle) además del reporte descargable.

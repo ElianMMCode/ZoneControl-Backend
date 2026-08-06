@@ -63,6 +63,15 @@ public class Employee {
     private String position;
 
     /**
+     * Cargo del catálogo (fuente de verdad). El rol de sistema del empleado se
+     * deriva del cargo ({@link Position#getSystemRole()}); el campo position
+     * es la proyección denormalizada del nombre del cargo.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cargo_id", nullable = true)
+    private Position cargo;
+
+    /**
      * Correo del empleado. Se usa para enviar el magic link cuando el ADMIN
      * crea un usuario del sistema (HU-05). Es nullable porque no todos los
      * empleados requieren acceso al sistema (solo acceso físico).

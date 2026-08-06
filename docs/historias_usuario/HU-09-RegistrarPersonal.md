@@ -19,6 +19,8 @@
 
 El gestor de personal registra a cada empleado de forma individual desde un formulario. El formulario pide el tipo de documento de identidad (Cédula de Ciudadanía, Cédula de Extranjería, Tarjeta de Identidad, Pasaporte o Registro Civil), el número de documento, los nombres, los apellidos, el cargo, el departamento y el estado del empleado.
 
+El cargo se selecciona del catálogo de cargos (HU-32) mediante una lista desplegable; no se escribe libremente. Del cargo elegido se deriva si el empleado podrá tener usuario del sistema y con qué rol (HU-05).
+
 El sistema revisa que todos los campos obligatorios estén completos y que el tipo de documento sea uno de los permitidos. Además, la combinación de tipo y número de documento debe ser única: si ya existe otro empleado con el mismo tipo y número de documento, el sistema lo avisa con un mensaje claro y no guarda el registro.
 
 Al guardar un registro válido, el sistema le asigna automáticamente a cada empleado un código interno con el formato EMP-000001, EMP-000002 y así sucesivamente. Ese código es único y el gestor no puede modificarlo. Después de crear el empleado, el gestor puede añadir de forma opcional una fotografía (imagen en formato JPG, PNG o WebP, de máximo 2 MB).
@@ -72,6 +74,14 @@ Dado: que el gestor de personal registró al empleado
 Cuando: desea añadir una fotografía
 
 Entonces: el sistema permite añadirla después de la creación, acepta imágenes en formato JPG, PNG o WebP de máximo 2 MB y muestra un error si el archivo no cumple esos requisitos
+
+Condición 07
+
+Dado: que el gestor de personal elige el cargo del empleado
+
+Cuando: completa el formulario
+
+Entonces: el cargo se selecciona del catálogo de cargos mediante una lista desplegable y de él se deriva si el empleado será candidato a usuario del sistema (HU-05)
 
 ## Tareas
 

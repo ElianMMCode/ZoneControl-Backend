@@ -5,7 +5,6 @@ import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.ContractType;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
-import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.WorkShift;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -13,6 +12,7 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
+import java.util.UUID;
 
 
 
@@ -26,8 +26,7 @@ public class UpdateEmployeeRequest {
 
     private String lastName;
 
-    @Size(max = 30)
-    private String position;
+    private UUID cargoId;
 
     @Email
     @Size(max = 100)
@@ -41,8 +40,6 @@ public class UpdateEmployeeRequest {
     private String departmentName;
 
     private EmployeeStatus status;
-
-    private Role systemRole;
 
     private ContractType contractType;
 

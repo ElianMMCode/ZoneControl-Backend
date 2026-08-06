@@ -3,6 +3,8 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Position;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PositionRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,8 +32,15 @@ class EmployeeControllerTest {
     @Autowired
     private ObjectMapper objectMapper;
 
+    @Autowired
+    private PositionRepository positionRepository;
+
+    private java.util.UUID cargoId;
+
     @BeforeEach
     void setUp() {
+        cargoId = positionRepository.save(Position.builder()
+                .name("Cargo Test " + System.nanoTime()).build()).getId();
     }
 
     @Test
@@ -41,7 +50,7 @@ class EmployeeControllerTest {
                 .documentNumber(String.valueOf(System.nanoTime()))
                 .firstName("Carlos")
                 .lastName("Mendoza")
-                .position("Técnico")
+                .cargoId(cargoId)
                 .departmentName("Control de Calidad")
                 .build();
 
@@ -62,7 +71,7 @@ class EmployeeControllerTest {
                 .documentNumber(dupDoc)
                 .firstName("Ana")
                 .lastName("López")
-                .position("Analista")
+                .cargoId(cargoId)
                 .departmentName("Control de Calidad")
                 .build();
 
@@ -86,7 +95,6 @@ class EmployeeControllerTest {
                 .documentNumber("")
                 .firstName("")
                 .lastName("")
-                .position("")
                 .departmentName(null)
                 .build();
 

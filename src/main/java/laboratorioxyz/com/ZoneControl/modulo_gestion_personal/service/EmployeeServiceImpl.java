@@ -13,9 +13,11 @@ import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHis
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.*;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Position;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PermissionScheduleRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PositionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -54,6 +56,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
     private final PermissionScheduleRepository permissionScheduleRepository;
+    private final PositionRepository positionRepository;
     private final UserService userService;
 
     @Override
@@ -73,6 +76,7 @@ public class EmployeeServiceImpl implements EmployeeService {
 
         Department department = resolveDepartment(request.getDepartmentName());
         Office baseOffice = resolveBaseOffice(request.getBaseOfficeName());
+        Position cargo = resolveCargo(request.getCargoId());
 
         String employeeCode = generateEmployeeCode();
 
@@ -82,10 +86,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .documentNumber(request.getDocumentNumber())
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
-                .position(request.getPosition())
+                .position(cargo.getName())
+                .cargo(cargo)
                 .email(request.getEmail())
                 .department(department)
-                .systemRole(request.getSystemRole())
+                .systemRole(cargo.getSystemRole())
                 .contractType(request.getContractType())
                 .baseOffice(baseOffice)
                 .workShift(request.getWorkShift())
@@ -173,8 +178,11 @@ public class EmployeeServiceImpl implements EmployeeService {
         if (request.getLastName() != null) {
             employee.setLastName(request.getLastName());
         }
-        if (request.getPosition() != null) {
-            employee.setPosition(request.getPosition());
+        if (request.getCargoId() != null) {
+            Position cargo = resolveCargo(request.getCargoId());
+            employee.setCargo(cargo);
+            employee.setPosition(cargo.getName());
+            employee.setSystemRole(cargo.getSystemRole());
         }
         if (request.getEmail() != null) {
             employee.setEmail(request.getEmail());
@@ -207,9 +215,6 @@ public class EmployeeServiceImpl implements EmployeeService {
                     && previousStatus != EmployeeStatus.ACTIVO) {
                 cascadeReactivate(employee.getId());
             }
-        }
-        if (request.getSystemRole() != null) {
-            employee.setSystemRole(request.getSystemRole());
         }
         if (request.getContractType() != null) {
             employee.setContractType(request.getContractType());
@@ -255,7 +260,7 @@ public class EmployeeServiceImpl implements EmployeeService {
     public byte[] generateTemplate() {
         String headers = "tipo_documento;documento_identidad;nombres;apellidos;cargo;"
                 + "departamento;estado;fecha_ingreso";
-        String example = "CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15";
+        String example = "CC;1234567890;Juan;Pérez;Analista de Producción;Control de Calidad;ACTIVO;2026-01-15";
         return (headers + "\n" + example).getBytes(StandardCharsets.UTF_8);
     }
 
@@ -316,6 +321,7 @@ public class EmployeeServiceImpl implements EmployeeService {
         List<Employee> validEmployees = new ArrayList<>();
         Set<String> docsInFile = new HashSet<>();
         Map<String, Department> departmentCache = new HashMap<>();
+        Map<String, Position> cargoCache = new HashMap<>();
 
         for (int i = 1; i < rows.size(); i++) {
             String[] row = rows.get(i);
@@ -380,6 +386,19 @@ public class EmployeeServiceImpl implements EmployeeService {
                         .reason("El cargo no puede estar vacío")
                         .build());
                 hasError = true;
+            }
+
+            Position cargoPos = null;
+            if (!cargo.isEmpty()) {
+                cargoPos = cargoCache.computeIfAbsent(cargo,
+                        name -> positionRepository.findByName(name).orElse(null));
+                if (cargoPos == null) {
+                    errorList.add(BulkUploadError.builder()
+                            .row(rowNumber).field("cargo")
+                            .reason("El cargo '" + cargo + "' no existe en el catálogo de cargos")
+                            .build());
+                    hasError = true;
+                }
             }
 
             Department department = null;
@@ -452,9 +471,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                     .documentNumber(numDoc)
                     .firstName(nombres)
                     .lastName(apellidos)
-                    .position(cargo)
+                    .position(cargoPos.getName())
+                    .cargo(cargoPos)
                     .department(department)
                     .status(status)
+                    .systemRole(cargoPos.getSystemRole())
                     .hireDate(hireDate)
                     .build());
         }
@@ -532,6 +553,16 @@ public class EmployeeServiceImpl implements EmployeeService {
                         "Departamento no encontrado: " + name));
     }
 
+    private Position resolveCargo(UUID cargoId) {
+        if (cargoId == null) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "El cargo es obligatorio");
+        }
+        return positionRepository.findById(cargoId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                        "Cargo no encontrado en el catálogo"));
+    }
+
     private Office resolveBaseOffice(String name) {
         if (name == null || name.isBlank()) {
             return null;
@@ -572,6 +603,7 @@ public class EmployeeServiceImpl implements EmployeeService {
                 .firstName(employee.getFirstName())
                 .lastName(employee.getLastName())
                 .position(employee.getPosition())
+                .cargoId(employee.getCargo() != null ? employee.getCargo().getId() : null)
                 .email(employee.getEmail())
                 .departmentName(employee.getDepartment().getName())
                 .status(employee.getStatus())

@@ -65,8 +65,8 @@ class BulkUploadControllerTest {
         String doc1 = String.valueOf(System.nanoTime());
         String doc2 = String.valueOf(System.nanoTime() + 1);
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;" + doc1 + ";Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15\n"
-                + "CE;" + doc2 + ";María;Gómez;Técnico;Control de Calidad;ACTIVO;";
+                + "CC;" + doc1 + ";Juan;Pérez;Analista de Producción;Control de Calidad;ACTIVO;2026-01-15\n"
+                + "CE;" + doc2 + ";María;Gómez;Operario de Producción;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "empleados.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -109,9 +109,9 @@ class BulkUploadControllerTest {
         String doc2 = String.valueOf(System.nanoTime() + 1);
         String doc3 = String.valueOf(System.nanoTime() + 2);
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;" + doc1 + ";Ana;López;Analista;Control de Calidad;ACTIVO;2026-02-01\n"
-                + "XX;" + doc2 + ";Pedro;Ramírez;Técnico;Control de Calidad;ACTIVO;\n"
-                + "CC;" + doc3 + ";Luis;García;Analista;Control de Calidad;ACTIVO;";
+                + "CC;" + doc1 + ";Ana;López;Analista de Producción;Control de Calidad;ACTIVO;2026-02-01\n"
+                + "XX;" + doc2 + ";Pedro;Ramírez;Operario de Producción;Control de Calidad;ACTIVO;\n"
+                + "CC;" + doc3 + ";Luis;García;Analista de Producción;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -144,8 +144,8 @@ class BulkUploadControllerTest {
                 .build());
 
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;" + dupDoc + ";Duplicado;Error;Test;Control de Calidad;ACTIVO;\n"
-                + "CC;" + okDoc + ";Nuevo;Ok;Analista;Control de Calidad;ACTIVO;";
+                + "CC;" + dupDoc + ";Duplicado;Error;Auxiliar de Empaque;Control de Calidad;ACTIVO;\n"
+                + "CC;" + okDoc + ";Nuevo;Ok;Analista de Producción;Control de Calidad;ACTIVO;";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));
@@ -160,7 +160,7 @@ class BulkUploadControllerTest {
     @Test
     void uploadBulk_invalidHireDate_returnsRowError() throws Exception {
         String csv = "tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso\n"
-                + "CC;7777777777;Sofía;Ríos;Analista;Control de Calidad;ACTIVO;no-es-fecha";
+                + "CC;7777777777;Sofía;Ríos;Analista de Producción;Control de Calidad;ACTIVO;no-es-fecha";
 
         MockMultipartFile file = new MockMultipartFile(
                 "file", "data.csv", "text/csv", csv.getBytes(StandardCharsets.UTF_8));

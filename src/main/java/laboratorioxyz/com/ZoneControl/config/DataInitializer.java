@@ -26,9 +26,11 @@ import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessSes
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.PermissionSchedule;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Position;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.EmployeeRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PermissionScheduleRepository;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PositionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
@@ -77,6 +79,7 @@ public class DataInitializer implements CommandLineRunner {
     private final AccessSessionRepository accessSessionRepository;
     private final AccessAlertRepository accessAlertRepository;
     private final PermissionScheduleRepository permissionScheduleRepository;
+    private final PositionRepository positionRepository;
     private final BCryptPasswordEncoder passwordEncoder;
 
     private Department adminDepartment;
@@ -86,6 +89,7 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Seeding initial data...");
         seedDepartments();
         seedProductionAreas();
+        seedCargos();
         seedAdminUser();
         seedPublicContent();
         seedOffices();
@@ -96,6 +100,7 @@ public class DataInitializer implements CommandLineRunner {
         seedAccessPermissions();
         seedCandidateEmployees();
         seedGestorSampleData();
+        migrateEmployeeCargos();
         seedAreaAuthorizations();
         seedAccessSessions();
         seedAccessHistory();
@@ -652,16 +657,19 @@ public class DataInitializer implements CommandLineRunner {
                                   Office baseOffice, WorkShift workShift,
                                   LocalDate hireDate, LocalDate contractEndDate) {
         if (employeeRepository.findByEmployeeCode(code).isPresent()) return;
+        Position cargo = resolveCargo(position, null);
         employeeRepository.save(Employee.builder()
                 .employeeCode(code)
                 .documentType(DocumentType.CC)
                 .documentNumber(doc)
                 .firstName(firstName)
                 .lastName(lastName)
-                .position(position)
+                .position(cargo.getName())
+                .cargo(cargo)
                 .email(email)
                 .department(department)
                 .status(status)
+                .systemRole(cargo.getSystemRole())
                 .contractType(contractType)
                 .baseOffice(baseOffice)
                 .workShift(workShift)
@@ -761,20 +769,84 @@ public class DataInitializer implements CommandLineRunner {
                                   String position, String email, Department department,
                                   EmployeeStatus status, Role systemRole) {
         return employeeRepository.findByEmployeeCode(code).orElseGet(() -> {
+            Position cargo = resolveCargo(position, systemRole);
             Employee employee = Employee.builder()
                     .employeeCode(code)
                     .documentType(DocumentType.CC)
                     .documentNumber(doc)
                     .firstName(firstName)
                     .lastName(lastName)
-                    .position(position)
+                    .position(cargo.getName())
+                    .cargo(cargo)
                     .email(email)
                     .department(department)
                     .status(status)
-                    .systemRole(systemRole)
+                    .systemRole(cargo.getSystemRole())
                     .build();
             return employeeRepository.save(employee);
         });
+    }
+
+    /**
+     * Catálogo de cargos (decisión 2026-08-06): el rol de un usuario se deriva
+     * del cargo del empleado. Siembra los cargos reales con su rol de sistema
+     * (o null si el cargo no otorga acceso al sistema).
+     */
+    private void seedCargos() {
+        seedCargo("Jefe de Operaciones", Role.ADMIN);
+        seedCargo("Directora Administrativa", Role.ADMIN);
+        seedCargo("Administradora", Role.ADMIN);
+        seedCargo("Jefe de Sistemas", Role.ADMIN);
+        seedCargo("Coordinadora de Personal", Role.GESTOR_PERSONAL);
+        seedCargo("Coordinadora de Administración", Role.GESTOR_PERSONAL);
+        seedCargo("Gestor de Personal", Role.GESTOR_PERSONAL);
+        seedCargo("Analista de Nómina", Role.GESTOR_PERSONAL);
+        seedCargo("Auditor Interno", Role.SUPERVISOR_AUDITOR);
+        seedCargo("Auditor Senior", Role.SUPERVISOR_AUDITOR);
+        seedCargo("Supervisor de Turno", Role.SUPERVISOR_AUDITOR);
+        seedCargo("Analista de Calidad Senior", null);
+        seedCargo("Analista de Producción", null);
+        seedCargo("Auxiliar de Empaque", null);
+        seedCargo("Operario de Producción", null);
+        seedCargo("Coordinador de Almacén", null);
+        seedCargo("Practicante de Calidad", null);
+        seedCargo("Inspector QC", null);
+        seedCargo("Operadora de Esterilización", null);
+        log.info("Seeded cargo catalog");
+    }
+
+    private void seedCargo(String name, Role systemRole) {
+        positionRepository.findByName(name).orElseGet(() -> positionRepository.save(
+                Position.builder().name(name).systemRole(systemRole).build()));
+    }
+
+    /**
+     * Migración idempotente: vincula a los empleados existentes (de corridas
+     * previas) con su cargo del catálogo por el nombre, sincronizando el rol
+     * de sistema derivado del cargo.
+     */
+    private void migrateEmployeeCargos() {
+        int linked = 0;
+        for (Employee e : employeeRepository.findAll()) {
+            if (e.getCargo() == null && e.getPosition() != null && !e.getPosition().isBlank()) {
+                Position cargo = positionRepository.findByName(e.getPosition())
+                        .orElseGet(() -> positionRepository.save(Position.builder()
+                                .name(e.getPosition()).systemRole(e.getSystemRole()).build()));
+                e.setCargo(cargo);
+                e.setSystemRole(cargo.getSystemRole());
+                employeeRepository.save(e);
+                linked++;
+            }
+        }
+        if (linked > 0) {
+            log.info("Cargos vinculados a empleados existentes: {}", linked);
+        }
+    }
+
+    private Position resolveCargo(String name, Role fallbackRole) {
+        return positionRepository.findByName(name)
+                .orElseGet(() -> positionRepository.save(
+                        Position.builder().name(name).systemRole(fallbackRole).build()));
     }
 
     /**
