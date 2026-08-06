@@ -121,7 +121,8 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Transactional(readOnly = true)
     public Page<EmployeeSearchResponse> search(String documentType, String documentNumber,
                                                 String firstName, String lastName,
-                                                String departmentName, EmployeeStatus status,
+                                                String departmentName, String cargoName,
+                                                EmployeeStatus status,
                                                 Pageable pageable) {
         Specification<Employee> spec = (root, query, cb) -> {
             Predicate predicate = cb.conjunction();
@@ -145,6 +146,11 @@ public class EmployeeServiceImpl implements EmployeeService {
                 predicate = cb.and(predicate,
                         cb.like(cb.lower(root.get("department").get("name")),
                                 "%" + departmentName.toLowerCase() + "%"));
+            }
+            if (cargoName != null && !cargoName.isBlank()) {
+                predicate = cb.and(predicate,
+                        cb.like(cb.lower(root.get("position")),
+                                "%" + cargoName.toLowerCase() + "%"));
             }
             if (status != null) {
                 predicate = cb.and(predicate,

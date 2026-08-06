@@ -62,10 +62,11 @@ public class EmployeeController {
             @RequestParam(required = false) String firstName,
             @RequestParam(required = false) String lastName,
             @RequestParam(required = false) String departmentName,
+            @RequestParam(required = false) String cargoName,
             @RequestParam(required = false) EmployeeStatus status,
             @PageableDefault(size = 10) Pageable pageable) {
         Page<EmployeeSearchResponse> result = employeeService.search(
-                documentType, documentNumber, firstName, lastName, departmentName, status, pageable);
+                documentType, documentNumber, firstName, lastName, departmentName, cargoName, status, pageable);
         return ResponseEntity.ok(result);
     }
 

@@ -84,6 +84,30 @@ class EmployeeSearchControllerTest {
     }
 
     @Test
+    void searchEmployees_withCargoFilter_returnsOnlyMatching() throws Exception {
+        employeeRepository.save(Employee.builder()
+                .employeeCode("EMP-TEST-02")
+                .documentType(DocumentType.CC)
+                .documentNumber("2222222222")
+                .firstName("Ana")
+                .lastName("Cargo")
+                .position(cargo.getName())
+                .cargo(cargo)
+                .department(department)
+                .status(EmployeeStatus.ACTIVO)
+                .build());
+
+        mockMvc.perform(get("/api/personal")
+                        .param("cargoName", cargo.getName())
+                        .param("page", "0")
+                        .param("size", "10"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.content[0].firstName").value("Ana"))
+                .andExpect(jsonPath("$.content[0].position").value(cargo.getName()))
+                .andExpect(jsonPath("$.totalElements").value(1));
+    }
+
+    @Test
     void searchEmployees_noFilters_returnsEmptyPage() throws Exception {
         // Antes exigía al menos un filtro (400). Ahora se permite paginar sin
         // filtros para que el selector de "Crear Usuario" pueda listar todos
