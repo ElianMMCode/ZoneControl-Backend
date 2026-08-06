@@ -1,4 +1,4 @@
-# HU-10 - CARGA MASIVA DE PERSONAL
+# HU-10 - Carga Masiva de Personal
 
 | Campo | Valor |
 |---|---|
@@ -7,80 +7,94 @@
 | **Complejidad** | Alta |
 | **HU Relacionada** | HU-03, HU-09 |
 | **Módulo** | Módulo de Gestión de Personal |
+| **Rol** | Gestor de personal |
 
 ## Descripción
 
 **Yo como** gestor de personal
-**Requiero** cargar múltiples registros de personal desde un archivo plano (CSV/TXT) con una plantilla descargable que contenga la estructura admitida, y que el sistema valide cada registro antes de insertarlo
-**Para** ahorrar tiempo al registrar grandes volúmenes de empleados asegurando que todos los datos sean correctos y consistentes desde el inicio
+**Requiero** registrar a varios empleados a la vez cargando un archivo de texto con los datos de todos ellos
+**Para** ahorrar tiempo y evitar errores al incorporar grupos grandes de personal, garantizando que la información quede completa y consistente desde el primer momento
 
 ## Requerimiento
 
-Carga masiva de personal a partir de un archivo plano, con validación previa de la extensión del archivo, los encabezados y la información fila por fila antes de su incorporación al sistema. El número de identificación interno de cada empleado debe ser generado automáticamente por el sistema. El archivo debe contener los campos: tipo de documento de identidad colombiano, número de documento de identidad, nombres, apellidos, cargo, departamento y estado. El sistema debe ofrecer un botón para descargar una plantilla CSV con los encabezados correctos y una fila de ejemplo para que el usuario la complete correctamente.
+El sistema debe permitir cargar muchos empleados de una sola vez mediante un archivo de texto plano (CSV o TXT). Para que el usuario lo llene correctamente, el sistema ofrece una plantilla descargable que muestra las columnas esperadas y un ejemplo de cómo completarlas. Las columnas son: tipo de documento, número de documento, nombres, apellidos, cargo, departamento, estado y fecha de ingreso.
+
+Antes de registrar a cualquier empleado, el sistema revisa el archivo completo y cada fila por separado. Si una fila tiene errores (por ejemplo, un tipo de documento no admitido, un número de documento que ya existe o un departamento que no existe), esa fila se rechaza, pero el proceso no se detiene: las filas correctas sí se registran.
+
+Al terminar, se presenta un resumen con la cantidad total de filas, cuántas se registraron y cuántas fallaron, además de una lista detallada de los errores para que se puedan corregir y volver a subir el archivo. A cada empleado registrado se le asigna su código interno de forma automática. El archivo tiene límites de tamaño y de cantidad de filas para evitar cargas excesivas.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el gestor de personal está autenticado y accede a la sección "Carga Masiva"
+Dado: que el gestor de personal está dentro del sistema y abre la sección "Carga Masiva"
 
 Cuando: presiona el botón "Descargar Plantilla"
 
-Entonces: el sistema genera y descarga un archivo CSV con el nombre "plantilla_carga_masiva_personal.csv" que contiene los encabezados exactos en la primera fila (tipo_documento;documento_identidad;nombres;apellidos;cargo;departamento;estado;fecha_ingreso) y una segunda fila con datos de ejemplo (CC;1234567890;Juan;Pérez;Analista;Control de Calidad;ACTIVO;2026-01-15) para guiar al usuario en el llenado correcto del archivo
+Entonces: el sistema descarga un archivo llamado "plantilla_carga_masiva_personal.csv" cuya primera fila contiene las columnas esperadas (tipo de documento, número de documento, nombres, apellidos, cargo, departamento, estado y fecha de ingreso) e incluye una segunda fila con datos de ejemplo para orientar el llenado correcto del archivo
 
 Condición 02
 
-Dado: que el gestor selecciona un archivo CSV o TXT con extensión, estructura y encabezados válidos
+Dado: que el gestor selecciona un archivo CSV o TXT
 
-Cuando: sube el archivo al servidor y el sistema lo procesa completamente
+Cuando: el archivo tiene la extensión permitida y sus columnas coinciden con las de la plantilla
 
-Entonces: el sistema valida la extensión del archivo (.csv o .txt), verifica que los encabezados coincidan exactamente con los esperados, valida cada fila (tipo de documento colombiano válido, documento de identidad no duplicado, campos obligatorios completos, departamento existente, estado válido), genera automáticamente el número de identificación interno para cada registro válido, inserta los registros correctos en PostgreSQL y muestra un resumen con el conteo total de registros procesados, éxitos y errores
+Entonces: el sistema revisa cada fila, registra todos los empleados que cumplen las reglas, les asigna su código interno automáticamente y muestra el resumen del proceso
 
 Condición 03
 
-Dado: que el gestor sube un archivo a la plataforma
+Dado: que el archivo contiene filas con datos inválidos
 
-Cuando: la extensión del archivo no es .csv ni .txt, la estructura de columnas no coincide con la esperada o los encabezados de la primera fila no son exactamente los requeridos
+Cuando: el sistema revisa cada fila una por una
 
-Entonces: el sistema retorna un error específico según el caso detectado: "Extensión de archivo no permitida. Solo se aceptan archivos .csv y .txt", "La estructura del archivo no coincide con el formato esperado" o "Los encabezados del archivo son incorrectos. Descargue la plantilla para ver el formato admitido"
+Entonces: rechaza únicamente las filas con problemas e indica el motivo: tipo de documento no admitido (solo se aceptan CC, CE, TI, PA o RC), número de documento repetido dentro del mismo archivo o ya existente en el sistema, campos obligatorios incompletos o departamento que no existe. Las filas correctas se registran igualmente
 
 Condición 04
 
-Dado: que el archivo contiene una mezcla de registros válidos e inválidos
+Dado: que termina el procesamiento del archivo
 
-Cuando: el sistema procesa la carga completa
+Cuando: hubo filas correctas e incorrectas
 
-Entonces: el sistema inserta únicamente los registros que pasan todas las validaciones, genera un reporte de errores detallado y descargable donde cada error indica el número de fila, el campo problemático y el motivo del rechazo, y muestra el resumen final: "Registros procesados: [total]. Éxitos: [X]. Errores: [Y]. Descargar detalle de errores"
+Entonces: el sistema muestra un resumen con el total de filas procesadas, la cantidad de registros creados y la cantidad de errores, junto con una tabla que detalla cada error indicando la fila, el campo y el motivo, de modo que el gestor pueda corregirlos y volver a subir el archivo
 
 Condición 05
 
 Dado: que el gestor intenta cargar un archivo
 
-Cuando: el archivo pesa más de 10MB o contiene más de 1000 registros
+Cuando: el archivo pesa más de 10 MB o contiene más de 1000 filas
 
-Entonces: el sistema rechaza la carga y muestra el mensaje "El archivo excede el límite permitido de 10MB o 1000 registros. Por favor, divida el archivo en partes más pequeñas"
+Entonces: el sistema rechaza la carga y muestra un mensaje indicando que se debe dividir el archivo en partes más pequeñas
+
+Condición 06
+
+Dado: que el gestor sube un archivo con formato incorrecto
+
+Cuando: la extensión no es CSV ni TXT, la cantidad de columnas no coincide o los encabezados de la primera fila no son los esperados
+
+Entonces: el sistema muestra un mensaje claro que explica el problema detectado y sugiere descargar la plantilla para ver el formato admitido
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Diseñar interfaz de carga masiva con selector de archivo, botón "Descargar Plantilla" y botón "Subir Archivo" |
-| 2 | Crear archivo plantilla CSV de referencia en el servidor con encabezados correctos y fila de ejemplo, servido mediante endpoint GET /api/personal/bulk/plantilla |
-| 3 | Implementar endpoint POST /api/personal/bulk (multipart/form-data) en Spring Boot |
-| 4 | Validar extensión del archivo recibido: solo .csv y .txt permitidos |
-| 5 | Validar encabezados del archivo contra los esperados (tipo_documento, documento_identidad, nombres, apellidos, cargo, departamento, estado) |
-| 6 | Validar cada fila individualmente: tipo de documento colombiano válido (CC, CE, TI, PA, RC), documento de identidad no duplicado en BD ni dentro del mismo archivo, campos obligatorios completos, departamento existente en BD, estado válido (ACTIVO/INACTIVO) |
-| 7 | Generar automáticamente el número de identificación interno (EMP-XXXXXX) para cada registro válido e insertar en PostgreSQL mediante batch insert |
-| 8 | Construir reporte de errores detallado (fila, campo, motivo) para registros inválidos y retornarlo como archivo descargable |
-| 9 | Limitar tamaño máximo de archivo a 10MB y máximo 1000 registros por carga |
-
-## Estado de Implementación
-
-- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados de 8 columnas —incluye `fecha_ingreso`— y fila ejemplo) y `POST /api/personal/bulk` (validación por fila, batch insert, reporte de errores en `errorReportUrl` como CSV inline). Límite de **10MB explícito** en el servicio (mensaje de la HU) y de **1000 registros**. Tests verdes.
-- **Frontend**: ✓ — `BulkUploadView` (`/personal/carga-masiva`, mockup 10) con descarga de plantilla, upload y **tabla de errores inline** (Fila/Campo/Detalle) además del reporte descargable.
+| 1 | Diseñar la pantalla de carga masiva con el selector de archivo, el botón "Descargar Plantilla" y el botón "Subir Archivo" |
+| 2 | Crear la plantilla descargable con los encabezados correctos y una fila de ejemplo |
+| 3 | Implementar el proceso de subida y procesamiento del archivo |
+| 4 | Validar la extensión del archivo (solo CSV y TXT) y rechazar otros formatos con un mensaje claro |
+| 5 | Validar que la estructura de columnas y los encabezados coincidan con la plantilla |
+| 6 | Validar cada fila: tipo de documento admitido (CC, CE, TI, PA, RC), documento no repetido dentro del archivo ni existente en el sistema, campos obligatorios completos y departamento existente |
+| 7 | Asignar automáticamente el código interno a cada empleado válido y guardar los registros |
+| 8 | Construir el resumen con total, registrados y errores, y la tabla de errores por fila con campo y motivo |
+| 9 | Aplicar el límite de tamaño (10 MB) y de cantidad (1000 registros) por archivo |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `GET /api/personal/bulk/plantilla` (CSV con encabezados de 8 columnas —incluye `fecha_ingreso`— y fila de ejemplo) y `POST /api/personal/bulk` (validación por fila, inserción por lotes y reporte de errores en `errorReportUrl` como CSV inline). Límite de **10 MB explícito** en el servicio (mensaje de la HU) y de **1000 registros**. Tests verdes.
+- **Frontend**: ✓ — `BulkUploadView` (`/personal/carga-masiva`, mockup 10) con descarga de plantilla, subida y **tabla de errores inline** (Fila/Campo/Detalle) además del reporte descargable.

@@ -5,68 +5,83 @@
 | **Código** | HU-22 |
 | **Nombre** | Cerrar Zona por Emergencia |
 | **Complejidad** | Media |
-| **HU Relacionada** | HU-03, HU-18 |
+| **HU Relacionada** | HU-03, HU-18, HU-23 |
 | **Módulo** | Módulo de Control de Acceso |
+| **Rol** | Administrador, Supervisor/Auditor |
 
 ## Descripción
 
-**Yo como** supervisor / administrador
-**Requiero** cerrar una zona restringida por emergencia
-**Para** impedir inmediatamente el ingreso de personal cuando hay un riesgo
+**Yo como** supervisor o administrador
+**Requiero** cerrar una zona restringida de inmediato ante una emergencia y poder reabrirla cuando el riesgo pase
+**Para** impedir al instante el ingreso de personal a una zona donde hay peligro
 
 ## Requerimiento
 
-El sistema debe permitir cerrar y reabrir una zona (kill switch). Mientras está cerrada, toda validación de acceso responde DENIED "ZONA CERRADA POR EMERGENCIA", se registra en el historial y se genera una alerta. Roles: ADMIN y SUPERVISOR_AUDITOR.
+El sistema debe ofrecer, para cada zona del panel "Zonas en vivo", un control de dos estados: "Cerrar por emergencia" y "Reabrir zona". Al cerrar una zona, el sistema la muestra en estado de emergencia, impide toda entrada y genera una alerta automática. Al reabrirla, la zona vuelve a operar con normalidad y se genera una alerta de reapertura.
+
+Mientras una zona está cerrada por emergencia, cualquier intento de validar la entrada de un empleado a esa zona es rechazado con el motivo "ZONA CERRADA POR EMERGENCIA", y ese intento queda registrado en el historial para su revisión posterior.
+
+Solo el administrador y el supervisor/auditor pueden cerrar o reabrir una zona; cualquier otro rol que lo intente debe ser rechazado sin efecto.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el supervisor cierra una zona
+Dado: que el supervisor o administrador ve el panel "Zonas en vivo"
 
-Cuando: envía POST /api/access/zones/{name}/emergency con {cerrada: true}
+Cuando: pulsa "Cerrar por emergencia" en una zona
 
-Entonces: el área queda marcada como cerrada por emergencia y se genera una alerta
+Entonces: el sistema marca la zona en estado de emergencia, la muestra con ese estado en el panel y crea una alerta de emergencia de zona
 
 Condición 02
 
 Dado: que una zona está cerrada por emergencia
 
-Cuando: se intenta validar un acceso a esa zona
+Cuando: se intenta validar la entrada de un empleado a esa zona
 
-Entonces: el sistema responde DENIED "ZONA CERRADA POR EMERGENCIA" y registra el intento en el historial
+Entonces: el sistema rechaza el acceso con el motivo "ZONA CERRADA POR EMERGENCIA" y registra el intento en el historial
 
 Condición 03
 
-Dado: que la zona se reabre
+Dado: que una zona está cerrada por emergencia
 
-Cuando: envía POST /api/access/zones/{name}/emergency con {cerrada: false}
+Cuando: el supervisor o administrador pulsa "Reabrir zona"
 
-Entonces: la validación vuelve al flujo normal
+Entonces: el sistema vuelve la zona al estado operativo, el panel la muestra operativa y crea una alerta de reapertura; desde ese momento las validaciones de entrada vuelven a su flujo normal
 
 Condición 04
 
-Dado: que un rol sin permisos intenta cerrar una zona
+Dado: que un rol sin permiso para gestionar emergencias intenta cerrar o reabrir una zona
 
-Cuando: llama al endpoint de emergencia
+Cuando: ejecuta la acción
 
-Entonces: el sistema responde HTTP 403
+Entonces: el sistema lo rechaza y la zona no cambia de estado
+
+Condición 05
+
+Dado: que una zona cerrada por emergencia recibe intentos de entrada de varios empleados
+
+Cuando: se revisa el historial de validaciones
+
+Entonces: cada intento aparece registrado con el motivo "ZONA CERRADA POR EMERGENCIA", permitiendo identificar qué personas intentaron entrar y a qué hora
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Campo emergencyClosed en ProductionArea (2.2 §9) |
-| 2 | POST /api/access/zones/{name}/emergency |
-| 3 | Bloquear validación en zona cerrada + alerta ZONA_EMERGENCIA |
-
-## Estado de Implementación
-
-- **Backend**: ✓ — kill switch, bloqueo de validación y alerta (2.2 §9). Tests en `AccessMonitoringControllerTest`.
-- **Frontend**: ✓ — toggle de emergencia por zona en `/supervisor/zones`.
+| 1 | Marcar una zona como cerrada por emergencia y poder reabrirla |
+| 2 | Bloquear toda validación de entrada a una zona cerrada, registrando el intento con el motivo correspondiente |
+| 3 | Generar alerta automática al cerrar y al reabrir una zona por emergencia |
+| 4 | Restringir la acción de cierre/reapertura a los roles autorizados |
+| 5 | Mostrar el estado de emergencia en la tarjeta de la zona del panel en vivo |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.0 | 2026-08-04 | | | Versión inicial (HU nueva §9.5) | |
+| 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — campo `emergencyClosed` en `ProductionArea`, `POST /api/access/zones/{name}/emergency`, bloqueo de validación (`DENIED` "ZONA CERRADA POR EMERGENCIA") y alerta (2.2 §9). Tests en `AccessMonitoringControllerTest`.
+- **Frontend**: ✓ — toggle "Cerrar por emergencia"/"Reabrir zona" por zona en `/supervisor/zones`.

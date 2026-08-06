@@ -1,4 +1,4 @@
-# HU-14 - BUSCAR PERSONAL POR FILTROS
+# HU-14 - Buscar Personal por Filtros
 
 | Campo | Valor |
 |---|---|
@@ -7,86 +7,86 @@
 | **Complejidad** | Alta |
 | **HU Relacionada** | HU-03, HU-09 |
 | **Módulo** | Módulo de Gestión de Personal |
+| **Rol** | Gestor de personal |
 
 ## Descripción
 
 **Yo como** gestor de personal
-**Requiero** buscar empleados usando filtros por número de identificación, nombre, apellido y departamento, aplicando todos los criterios de forma combinada
-**Para** encontrar rápidamente información específica del personal y acceder a sus opciones de gestión
+**Requiero** buscar empleados combinando varios filtros opcionales (tipo de documento, número de documento, nombre, apellido, departamento y estado)
+**Para** encontrar rápidamente a una persona o a un grupo del personal y acceder a sus opciones de gestión
 
 ## Requerimiento
 
-Mecanismos de búsqueda del personal por identificación, nombre o apellido, así como filtrado por departamento. Se debe exigir al menos un filtro de búsqueda. Los resultados deben mostrarse en una tabla paginada con opciones de ordenamiento por columna y acciones sobre cada empleado (ver detalle, editar, gestionar permisos).
+El sistema debe permitir al gestor de personal buscar empleados combinando filtros opcionales: tipo de documento, número de documento, nombre, apellido, departamento y estado. Todos los filtros son opcionales; si no se usa ninguno, el sistema muestra la lista completa de empleados.
+
+Cuando se usan varios filtros a la vez, se aplican todos juntos: un empleado aparece solo si cumple cada uno de los criterios indicados. Los resultados se muestran en una tabla paginada, es decir, se organizan en páginas cuando hay muchos resultados.
+
+Desde cada resultado de la búsqueda se puede abrir la ficha del empleado, editar sus datos o ir a la gestión de sus permisos de acceso.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el gestor ingresa al menos un criterio de búsqueda
+Dado: que el gestor entra a la sección de personal sin seleccionar ningún filtro
 
-Cuando: existen empleados que coinciden con los filtros aplicados
+Cuando: ejecuta la búsqueda
 
-Entonces: el sistema muestra una tabla paginada con los resultados, aplicando lógica AND entre todos los filtros
+Entonces: el sistema muestra todos los empleados en una tabla paginada
 
 Condición 02
 
-Dado: que el gestor busca sin seleccionar ningún filtro
+Dado: que el gestor usa varios filtros a la vez (por ejemplo, un departamento y un apellido)
 
-Cuando: presiona "Buscar" (o ingresa a la sección)
+Cuando: ejecuta la búsqueda
 
-Entonces: el sistema lista todos los empleados paginados (los filtros son opcionales y se combinan con AND; no se exige al menos un filtro)
+Entonces: el sistema muestra únicamente los empleados que cumplen todos los criterios indicados, no solo algunos
 
 Condición 03
 
-Dado: que el gestor ingresa criterios de búsqueda
+Dado: que el gestor aplica filtros de búsqueda
 
-Cuando: no hay empleados que coincidan con los filtros
+Cuando: ningún empleado coincide con ellos
 
 Entonces: el sistema muestra el mensaje "No se encontraron resultados"
 
 Condición 04
 
-Dado: que se muestran resultados de búsqueda
+Dado: que la búsqueda devuelve muchos empleados
 
-Cuando: el gestor selecciona un empleado de la lista
+Cuando: el gestor revisa los resultados
 
-Entonces: el sistema ofrece opciones para ver detalle, editar el registro o gestionar sus permisos de acceso
-
-## Criterios de Aceptación (continuación)
+Entonces: el sistema los organiza en páginas con controles para avanzar y retroceder, y muestra cuántos resultados hay en total
 
 Condición 05
 
-Dado: que el gestor selecciona "Editar" en un empleado de la lista
+Dado: que el gestor ve los resultados de la búsqueda
 
-Cuando: modifica sus datos personales o cambia su estado (ACTIVO/INACTIVO/SUSPENDIDO)
+Cuando: selecciona un empleado
 
-Entonces: el sistema guarda los cambios, y si el nuevo estado es INACTIVO o SUSPENDIDO, desactiva en cascada todos sus permisos de acceso (→ SUSPENDIDO) y su usuario de sistema asociado (→ INACTIVO). Si el estado vuelve a ACTIVO, el cascade es **bidireccional**: se restauran automáticamente los permisos (→ ACTIVO) y el usuario de sistema (→ ACTIVO).
+Entonces: el sistema ofrece opciones para ver su detalle, editar su información o gestionar sus permisos de acceso
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Diseñar formulario de búsqueda con filtros: número de identificación, nombre, apellido, departamento (dropdown), estado |
-| 2 | Implementar endpoint GET /api/personal con query parameters dinámicos en Spring Boot |
-| 3 | Construir consulta SQL dinámica en el backend aplicando lógica AND entre filtros |
-| 4 | Validar en frontend y backend que al menos un filtro esté presente antes de ejecutar la consulta |
-| 5 | Implementar paginación de resultados en frontend y backend |
-| 6 | Implementar ordenamiento de resultados por columna en la tabla |
-| 7 | Agregar acciones por fila: ver detalle (GET /api/personal/{id}), editar empleado (PATCH /api/personal/{id}), gestionar permisos |
-| 8 | Implementar GET /api/personal/{id} que retorna detalle completo del empleado con HTTP 200 o 404 |
-| 9 | Implementar PATCH /api/personal/{id} con patch parcial: firstName, lastName, position, documentType, documentNumber, departmentId, status |
-| 10 | Validar unicidad (tipoDocumento+numeroDocumento) al cambiar documento |
-| 11 | Implementar cascade: al cambiar status a INACTIVO o SUSPENDIDO → permisos → SUSPENDIDO y User vinculado → INACTIVO |
-| 12 | Agregar filtro status (ACTIVO/INACTIVO/SUSPENDIDO) en GET /api/personal |
-
-## Estado de Implementación
-
-- **Backend**: ✓ — `GET /api/personal` con filtros AND (`documentType`, `documentNumber`, `firstName`, `lastName`, `departmentName`, `status`) + paginación. Sin filtros lista todos los empleados (no se exige al menos un filtro). Tests verdes.
-- **Frontend**: ✓ — `EmployeeListView` (`/personal`, mockup 32) con filtros, KPIs de la página, tabla paginada y acceso al detalle. El filtro de departamento es un dropdown (`useDepartments`). La edición (PATCH, cascade bidireccional) y asignación de área se gestionan desde `EmployeeDetailView` (`/personal/:id`, mockup 41).
+| 1 | Diseñar el formulario de búsqueda con los filtros: tipo de documento, número de documento, nombre, apellido, departamento (menú desplegable) y estado |
+| 2 | Implementar la búsqueda combinada de empleados aplicando todos los filtros a la vez |
+| 3 | Permitir listar todos los empleados cuando no hay filtros |
+| 4 | Permitir pasar de página en los resultados |
+| 5 | Agregar acciones por fila: ver detalle, editar y gestionar permisos |
+| 6 | Implementar la consulta del detalle completo del empleado |
+| 7 | Implementar la edición del empleado validando que el número de documento no esté repetido |
+| 8 | Al cambiar el estado del empleado a inactivo o suspendido, suspender en cadena sus permisos y desactivar su usuario; al volver a activarlo, restaurar el estado anterior |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.0 | 2026-07-26 | | | Versión inicial |
-| 1.1 | 2026-07-28 | | | Agregar edición de empleados con cascade de estado | |
+| 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-07-28 | | | Agregar edición de empleados y la suspensión/activación en cadena del estado | |
+| 1.2 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `GET /api/personal` con filtros combinados (`documentType`, `documentNumber`, `firstName`, `lastName`, `departmentName`, `status`) + paginación. Sin filtros lista todos los empleados (todos los filtros son opcionales). Edición vía `PATCH /api/personal/{id}` con validación de unicidad de documento y cascada de estado (permisos → SUSPENDIDO, usuario → INACTIVO; reactivación bidireccional). Tests verdes.
+- **Frontend**: ✓ — `EmployeeListView` (`/personal`, mockup 32) con filtros, tabla paginada y acceso al detalle. El filtro de departamento es un menú desplegable (`useDepartments`). La edición y la asignación de áreas se gestionan desde `EmployeeDetailView` (`/personal/:id`, mockup 41).

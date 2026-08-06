@@ -1,56 +1,87 @@
-# HU-27 - CONSULTAR MATRIZ DE ROLES Y PERMISOS
+# HU-27 - CONSULTAR MATRIZ DE ROLES
 
 | Campo | Valor |
 |---|---|
 | **Código** | HU-27 |
-| **Nombre** | Consultar Matriz de Roles y Permisos |
+| **Nombre** | Consultar Matriz de Roles |
 | **Complejidad** | Baja |
 | **HU Relacionada** | HU-03 |
 | **Módulo** | Módulo de Administración |
+| **Rol** | Administrador |
 
 ## Descripción
 
 **Yo como** administrador del sistema
-**Requiero** consultar la matriz de permisos por módulo y rol
-**Para** conocer qué acciones puede realizar cada rol del sistema
+**Requiero** consultar una matriz que muestre qué acciones puede realizar cada rol en cada módulo del sistema
+**Para** conocer y explicar con claridad las capacidades de cada perfil de usuario
 
 ## Requerimiento
 
-El sistema debe permitir al administrador consultar una matriz módulo × rol → booleano. Es **solo lectura**: los roles son fijos en `SecurityConfig` y no hay edición ni enforcement en BD. La matriz se reconstruye a partir de las reglas de acceso reales.
+El sistema debe mostrar una tabla de consulta donde cada fila corresponde a un módulo del sistema y cada columna a uno de los tres roles existentes: Administrador, Gestor de Personal y Supervisor/Auditor. En la intersección de cada módulo y rol se indica con una marca si ese rol puede realizar las acciones del módulo o si no tiene acceso.
+
+Esta pantalla es únicamente de consulta: desde aquí no se modifican ni los roles ni sus permisos. Solo el administrador puede ver la matriz; cualquier otro perfil que intente consultarla debe ser rechazado sin mostrar información.
+
+La matriz refleja las reglas de acceso reales del sistema, de modo que lo mostrado coincide con lo que cada rol puede hacer. Si por algún motivo el sistema no puede entregar los datos en el momento de la consulta, la pantalla muestra una versión de respaldo previamente preparada, para que el administrador siempre tenga una referencia visible.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el administrador consulta la matriz
+Dado: que el administrador ingresa a la pantalla de consulta de roles
 
-Cuando: accede a la vista de roles y permisos
+Cuando: se abre la vista de la matriz
 
-Entonces: el sistema muestra la matriz con los 3 roles (ADMIN, GESTOR_PERSONAL, SUPERVISOR_AUDITOR) y los módulos del sistema
+Entonces: el sistema muestra la tabla con los tres roles (Administrador, Gestor de Personal y Supervisor/Auditor) como columnas y los módulos del sistema como filas, marcando qué rol accede a qué módulo
 
 Condición 02
 
-Dado: que un usuario sin rol ADMIN consulta la matriz
+Dado: que un usuario que no es administrador intenta consultar la matriz de roles
 
-Cuando: llama a GET /api/admin/role-matrix
+Cuando: intenta acceder a la pantalla
 
-Entonces: el sistema retorna HTTP 403
+Entonces: el sistema rechaza la solicitud sin mostrar la información de la matriz
+
+Condición 03
+
+Dado: que el administrador revisa la matriz
+
+Cuando: examina la marca de cualquier módulo y rol
+
+Entonces: la marca coincide con las reglas de acceso reales del sistema, es decir, lo que ese rol puede hacer en ese módulo
+
+Condición 04
+
+Dado: que el administrador abre la pantalla de la matriz
+
+Cuando: el sistema no puede entregar los datos de la matriz en ese momento
+
+Entonces: la pantalla muestra una versión de respaldo previamente preparada con la misma información, y queda claro que se trata de una vista de consulta
+
+Condición 05
+
+Dado: que el administrador consulta la matriz
+
+Cuando: revisa la pantalla en busca de controles para editar o eliminar roles o permisos
+
+Entonces: no encuentra ninguno, porque la matriz es únicamente de consulta y no permite modificar las capacidades de los roles
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Implementar GET /api/admin/role-matrix (solo ADMIN) |
-| 2 | Reconstruir la matriz desde las reglas de SecurityConfig |
-| 3 | Frontend: vista de matriz de solo lectura consumiendo el endpoint |
-
-## Estado de Implementación
-
-- **Backend**: ✓ — `GET /api/admin/role-matrix` (gap 1.5 §9). Test: `RoleMatrixControllerTest`.
-- **Frontend**: ✓ — `RoleMatrixView` en `/admin/matriz-roles` consume el endpoint (con fallback estático).
+| 1 | Obtener la matriz módulo × rol según las reglas de acceso reales del sistema |
+| 2 | Pantalla de consulta de la matriz con los tres roles y los módulos del sistema |
+| 3 | Restringir la consulta únicamente al administrador |
+| 4 | Mostrar una versión de respaldo si el servicio no responde |
+| 5 | Garantizar que la vista no ofrezca opciones de edición ni eliminación |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.0 | 2026-08-04 | | | Versión inicial (HU nueva §9.5) | |
+| 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `GET /api/admin/role-matrix` (solo ADMIN, 403 para otros roles), matriz reconstruida desde `SecurityConfig` vía `RoleMatrixServiceImpl` (gap 1.5 §9). Test: `RoleMatrixControllerTest`.
+- **Frontend**: ✓ — `RoleMatrixView` en `/admin/matriz-roles` (rol ADMIN) con fallback estático (mockup 16). Solo lectura; roles fijos en `SecurityConfig`.

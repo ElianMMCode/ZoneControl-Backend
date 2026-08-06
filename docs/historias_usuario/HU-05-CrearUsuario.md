@@ -7,128 +7,90 @@
 | **Complejidad** | Alta |
 | **HU Relacionada** | HU-03, HU-06, HU-07, HU-08 |
 | **Módulo** | Módulo de Administración |
+| **Rol** | Administrador |
 
 ## Descripción
 
 **Yo como** administrador del sistema
-**Requiero** crear nuevos usuarios internos con roles específicos, datos completos y una contraseña que cumpla con los requisitos de seguridad establecidos
-**Para** que otros usuarios puedan acceder al sistema según sus funciones asignadas con credenciales robustas
+**Requiero** crear cuentas de usuario para el personal que necesita entrar al sistema, eligiendo el rol que le corresponde
+**Para** que cada persona acceda al sistema con sus propias credenciales y solo a las funciones de su rol
 
 ## Requerimiento
 
-El sistema debe permitir al administrador crear usuarios internos del sistema, asignándoles un rol (Administrador, Gestor de Personal o Supervisor/Auditor) y un estado inicial (Activo/Inactivo). Cada usuario debe estar vinculado a un empleado existente (relación @OneToOne obligatoria), garantizando que todo usuario del sistema es también personal de la empresa. El email debe ser único en el sistema.
+Un usuario del sistema es la cuenta con la que una persona entra a trabajar con el sistema. Para crear una cuenta, el administrador selecciona a un empleado de la empresa que ya esté registrado en Gestión de Personal y que tenga un correo electrónico registrado, y le asigna uno de los tres roles disponibles: Administrador, Gestor de Personal o Supervisor / Auditor.
 
-**Seguridad**: La contraseña no se define en el formulario de creación por seguridad. En su lugar, el sistema genera internamente un token de un solo uso (setupToken), lo almacena hasheado en BD con expiración de 24h y envía un **magic link** al email del usuario para que éste establezca su propia contraseña. De esta forma:
-- El administrador nunca ve ni conoce la contraseña del usuario
-- La contraseña nunca viaja por email en texto plano
-- El usuario elige su propia contraseña (mayor retentión y seguridad)
-- Se alinea con NIST SP 800-63B (no enviar secrets por canales no seguros)
+El administrador no escribe ni conoce la contraseña en ningún momento. Al crear la cuenta, el sistema genera un enlace de activación temporal que expira a las 24 horas. Ese enlace se entrega al administrador en la pantalla y se abre en una ventana nueva con la página de configuración de contraseña. La persona abre esa página, define su propia contraseña y desde ese momento puede iniciar sesión.
+
+Si el enlace no se usa dentro de las 24 horas, deja de ser válido y el administrador debe generar uno nuevo. De esta manera, la contraseña solo la conoce la persona dueña de la cuenta.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el administrador está autenticado y completa el formulario seleccionando un empleado válido, ingresando un email único, un rol y un estado
+Dado: que el administrador está identificado y busca un empleado registrado que no tiene cuenta de usuario
 
-Cuando: envía el formulario de creación
+Cuando: selecciona al empleado, elige su rol y confirma la creación
 
-Entonces: el sistema deriva firstName, lastName y email del Employee vinculado (el email es el correo personal del empleado, no corporativo), genera un setupToken criptográfico aleatorio de 96 caracteres hex, lo hashea con SHA-256 (permite búsqueda directa por hash, no requiere KDF lento por tratarse de un token de alta entropía), lo almacena en la columna setupToken junto con setupTokenExpiry = now() + 24h, guarda el usuario en PostgreSQL con password = null, retorna HTTP 201 y actualiza la lista de usuarios en el frontend. El sistema también envía un email con el magic link al correo personal del empleado.
+Entonces: el sistema crea la cuenta, genera un enlace de activación temporal que expira en 24 horas y muestra el enlace en la pantalla para que se abra la página de configuración
 
 Condición 02
 
-Dado: que el administrador ingresa un email
+Dado: que la persona recibe el enlace de activación
 
-Cuando: el email ya está registrado en el sistema
+Cuando: lo abre dentro de las 24 horas y define su nueva contraseña
 
-Entonces: el sistema retorna HTTP 409 y muestra el mensaje "El email ingresado ya se encuentra registrado en el sistema"
+Entonces: el sistema guarda su contraseña y a partir de ese momento la persona puede iniciar sesión con su correo y esa contraseña
 
 Condición 03
 
-Dado: que el usuario recibe el email con el magic link
+Dado: que una persona intenta usar el enlace de activación
 
-Cuando: hace clic en el enlace dentro de las 24 horas
-
-Entonces: el sistema valida el setupToken contra el hash almacenado en BD, verifica que setupTokenExpiry no haya vencido, redirige al usuario a una pantalla de configuración de contraseña donde debe ingresar una nueva contraseña que cumpla los requisitos (mínimo 8 caracteres, al menos 1 mayúscula, 1 minúscula, 1 dígito, 1 carácter especial @$!%*?&). Al enviar, el sistema encripta la contraseña con BCrypt, la guarda en la columna password, limpia setupToken y setupTokenExpiry, marca requirePasswordChange = false y redirige al dashboard del rol correspondiente
-
-Condición 04
-
-Dado: que el usuario intenta usar el magic link
-
-Cuando: han pasado más de 24 horas desde la creación del usuario o el enlace ya fue usado
+Cuando: han pasado más de 24 horas desde que se generó o el enlace ya fue usado
 
 Entonces: el sistema muestra el mensaje "El enlace de configuración ha expirado. Contacte al administrador para generar un nuevo enlace"
 
+Condición 04
+
+Dado: que el administrador busca al empleado para crear la cuenta
+
+Cuando: el empleado no está registrado en el sistema
+
+Entonces: el sistema muestra un mensaje claro indicando que el empleado no existe y no permite crear la cuenta
+
 Condición 05
 
-Dado: que el administrador envía el formulario de creación
+Dado: que el administrador selecciona un empleado para crear la cuenta
 
-Cuando: hay campos obligatorios vacíos (empleado, rol, estado)
+Cuando: ese empleado ya tiene una cuenta de usuario en el sistema
 
-Entonces: el sistema muestra los mensajes de error específicos debajo de cada campo inválido e impide el envío hasta que todos los errores sean corregidos
+Entonces: el sistema muestra un mensaje indicando que el empleado ya tiene usuario y no permite crear otra cuenta
 
 Condición 06
 
-Dado: que el administrador selecciona un empleado para crear el usuario
+Dado: que el administrador selecciona un empleado para crear la cuenta
 
-Cuando: el empleado no tiene un correo personal registrado en Gestión Personal
+Cuando: el empleado no tiene un correo electrónico registrado en Gestión de Personal
 
-Entonces: el sistema retorna HTTP 400 y muestra el mensaje "El empleado no tiene un correo registrado. Regístrelo en Gestión Personal para poder crear el usuario"
-
-## Notas Técnicas
-
-### Dependencia: Employee debe existir antes que User
-
-- `POST /api/admin/users` requiere `employeeCode` de un `Employee` ya registrado en el sistema
-- Relación `@OneToOne` con `employee_id NOT NULL UNIQUE` en la tabla `users`
-- Un `Employee` solo puede tener un `User` asociado (error HTTP 409 si ya existe uno)
-- No todo `Employee` necesita un `User` de sistema (empleados con solo permiso de acceso físico no requieren credenciales del sistema)
-- Flujo correcto:
-  1. `POST /api/personal` → registra `Employee` (genera código EMP-XXXXXX)
-  2. `POST /api/admin/users` con `employeeCode` → crea `User` vinculado
-
-### Orden de creación
-
-```
-┌─────────────────────────────────────┐
-│  Paso 1: Registrar empleado         │
-│  POST /api/personal                     │
-│  → Crea Employee con EMP-XXXXXX     │
-│  → Retorna { id, employeeCode }     │
-└─────────────────────────────────────┘
-              │
-              ▼
-┌─────────────────────────────────────┐
-│  Paso 2: Crear usuario sistema      │
-│  POST /api/admin/users                  │
-│  { employeeCode: "EMP-000001", ... }│
-│  → Valida que Employee exista       │
-│  → Valida que no tenga User ya      │
-│  → Crea User con @OneToOne          │
-└─────────────────────────────────────┘
-```
+Entonces: el sistema muestra el mensaje "El empleado no tiene un correo registrado. Regístrelo en Gestión Personal para poder crear el usuario" y no permite crear la cuenta
 
 ## Tareas
 
 | No | Descripción |
-|---|---|---|
-| 1 | Diseñar formulario de creación de usuario con campos: empleado (selector que busca empleados existentes y muestra cargo), nombre completo (readonly desde empleado), cargo (readonly), rol (select: ADMIN/GESTOR_PERSONAL/SUPERVISOR_AUDITOR), estado (select: ACTIVO/INACTIVO). Sin campos de contraseña ni email |
-| 2 | Implementar endpoint POST /api/admin/users en Spring Boot que: valida empleado existente y sin User previo, valida que el empleado tenga email registrado, valida email único, deriva firstName/lastName/email del Employee, genera setupToken criptográfico de 96 caracteres hex, lo hashea con SHA-256, guarda User con password=null y setupTokenExpiry=now+24h |
-| 3 | Implementar servicio MagicLinkNotifier que construye el magic link con el setupToken sin hashear: {app.app-url}/configurar-contrasena?token={rawToken}. Actualmente registra el enlace en log; se reemplazará por JavaMailSender cuando exista SMTP |
-| 4 | Implementar endpoint GET /api/setup-password?token=... que valida el token contra el hash SHA-256 en BD, verifica expiración y devuelve datos del usuario para la pantalla de configuración |
-| 5 | Implementar endpoint POST /api/setup-password que recibe token + nueva contraseña, valida requisitos de seguridad (mínimo 8 caracteres, 1 mayúscula, 1 minúscula, 1 dígito, 1 carácter especial @$!%*?&), encripta con BCrypt, guarda en password, limpia setupToken y setupTokenExpiry, marca requirePasswordChange=false |
-| 6 | Agregar en User.java: setupToken (String, unique, nullable), setupTokenExpiry (LocalDateTime, nullable), password ahora nullable = true |
-| 7 | Agregar email personal (nullable) en Employee.java, RegisterEmployeeRequest y UpdateEmployeeRequest |
-| 8 | Implementar GET /api/admin/users con búsqueda (nombre/email/código), filtros por rol y estado, y paginación |
-| 9 | Implementar GET /api/admin/users/{id} con detalle del usuario y su empleado vinculado |
-| 10 | Retornar HTTP 201 con ID del usuario creado y mostrar notificación de éxito en el frontend indicando que se envió magic link |
-| 11 | Manejar respuestas de error: 409 para email duplicado o empleado ya vinculado, 400 para empleado inexistente o sin email, 410 para token expirado, 404 para token inválido |
-
-## Demo (sin SMTP)
-
-Mientras no exista SMTP configurado, `MagicLinkNotifier` solo registra el enlace en el log del backend y **no envía correo**. Para poder probar el flujo, `POST /api/admin/users` devuelve en la respuesta el campo `setupUrl` con el enlace completo; el frontend muestra un botón **"Abrir configuración"** que abre esa URL en una nueva ventana (vista `/configurar-contrasena?token=...`).
+|---|---|
+| 1 | Diseñar el formulario de creación de usuario con la selección del empleado, su rol y la búsqueda de empleados |
+| 2 | Permitir buscar y seleccionar el empleado entre los registrados en Gestión de Personal |
+| 3 | Generar el enlace de activación temporal de 24 horas al crear la cuenta |
+| 4 | Mostrar el enlace en el panel y abrir la página de configuración de contraseña en una ventana nueva |
+| 5 | Crear la página donde la persona define su propia contraseña con el enlace |
+| 6 | Mostrar los mensajes de error de las validaciones (empleado inexistente, empleado con usuario, empleado sin correo, enlace vencido) |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `POST /api/admin/users` valida que el empleado exista, no tenga usuario previo y tenga correo; deriva nombre y correo del empleado vinculado; genera `setupToken` (48 bytes aleatorios, hash SHA-256, expiración 24 h) y guarda el usuario sin contraseña. `GET/POST /api/setup-password` validan el token y completan la activación (contraseña con BCrypt, limpian `setupToken`). `MagicLinkNotifier` loguea el enlace (sin SMTP aún). Tests verdes (`AdminUserControllerTest`, `SetupPasswordControllerTest`).
+- **Frontend**: ✓ — `CreateUserView` (`/admin/usuarios/nuevo`, mockup 21) con selector de empleado; botón "Abrir configuración" que abre `SetupPasswordView` (`/configurar-contrasena?token=`) en ventana nueva.

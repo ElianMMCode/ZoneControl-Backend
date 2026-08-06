@@ -1,4 +1,4 @@
-# HU-17 - GENERAR ARCHIVO PERIÓDICO PARA SOCIOS
+# HU-17 - Generar Archivo Periódico para Socios
 
 | Campo | Valor |
 |---|---|
@@ -7,81 +7,103 @@
 | **Complejidad** | Media |
 | **HU Relacionada** | HU-03, HU-15 |
 | **Módulo** | Módulo de Reportes y Auditoría |
+| **Rol** | Supervisor o auditor |
 
 ## Descripción
 
 **Yo como** supervisor o auditor
-**Requiero** generar un archivo periódico con los accesos agrupados por departamento de producción, sin incluir datos personales que permitan identificar a los empleados
-**Para** compartir la información de actividad con los socios internacionales cumpliendo con la protección de datos sensibles según lo establecido en el plan de expansión
+**Requiero** generar un archivo periódico con la actividad de ingresos a las áreas, sin ningún dato personal
+**Para** compartir información agregada con el socio internacional cumpliendo la protección de datos establecida en el plan de expansión
 
 ## Requerimiento
 
-Generación periódica de un archivo de intercambio de información con el socio internacional, que resuma la actividad de acceso por departamento. El supervisor debe poder seleccionar el período (mes/año), los departamentos a incluir y el formato de salida. El archivo generado no debe contener ningún dato personal sensible ni información que permita identificar individualmente a los empleados. Solo debe incluir datos agregados por departamento: nombre del departamento, cantidad total de accesos registrados, cantidad de accesos autorizados, cantidad de accesos denegados, cantidad de accesos no registrados y cantidad de accesos suspendidos durante el período seleccionado.
+El sistema debe permitir al supervisor o auditor generar un archivo periódico para compartir información con el socio internacional. Se configura el período (mes y año), de forma opcional los departamentos a incluir (si no se elige ninguno, se incluyen todos) y el formato de salida (PDF, Excel o CSV).
+
+Este archivo NO contiene datos personales: no incluye nombres, números de documento ni códigos de empleado, porque es información agregada. Además, solo considera los ingresos a las áreas; las salidas quedan fuera del reporte.
+
+El archivo tiene dos secciones. La primera resume los accesos por departamento y área, con las columnas: Departamento, Área, Total, Autorizados, Denegados, No Registrados, Suspendidos y % de Autorizados. La segunda muestra la distribución por día, con las columnas: Día, Total, Autorizados, Denegados, No Registrados y Suspendidos.
+
+El botón "Enviar a Socio Internacional" abre una vista previa del contenido del archivo con un botón para descargarlo; el envío en sí se realiza fuera del sistema (no hay envío por correo ni registro de envío). Si el período elegido no tiene registros, el sistema no genera el archivo y lo indica.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el supervisor está autenticado y accede a la sección "Archivo Periódico"
+Dado: que el supervisor configura el período (mes y año), los departamentos a incluir y el formato
 
-Cuando: configura el período (mes y año), selecciona uno o más departamentos de producción, elige el formato de salida (CSV o Excel) y presiona "Generar Archivo"
+Cuando: genera el archivo
 
-Entonces: el sistema consulta el historial de accesos del período, agrupa la información por departamento, calcula las estadísticas agregadas sin incluir ningún dato de identificación personal y genera el archivo de intercambio que se descarga automáticamente en el navegador
+Entonces: el sistema produce el archivo con las dos secciones descritas y permite descargarlo
 
 Condición 02
 
-Dado: que el supervisor selecciona departamentos específicos para el reporte
+Dado: que el archivo se genera
 
-Cuando: genera el archivo periódico
+Cuando: se revisa la primera sección
 
-Entonces: el sistema incluye exclusivamente los accesos de los departamentos seleccionados, ignorando los accesos de los departamentos no marcados en la configuración
+Entonces: muestra el resumen por departamento y área con las columnas Departamento, Área, Total, Autorizados, Denegados, No Registrados, Suspendidos y % de Autorizados
 
 Condición 03
 
-Dado: que el supervisor configura un período para el reporte
+Dado: que el archivo se genera
 
-Cuando: no existen accesos registrados en el período y departamentos seleccionados
+Cuando: se revisa la segunda sección
 
-Entonces: el sistema muestra el mensaje "No se encontraron registros de acceso para el período y departamentos seleccionados" y no genera ningún archivo vacío
+Entonces: muestra la distribución por día con las columnas Día, Total, Autorizados, Denegados, No Registrados y Suspendidos
 
 Condición 04
 
-Dado: que el sistema genera el archivo de intercambio para el socio internacional
+Dado: que el archivo se genera
 
-Cuando: el archivo es creado en cualquiera de los formatos disponibles (CSV o Excel)
+Cuando: se revisa su contenido
 
-Entonces: el contenido del archivo no incluye en ninguna de sus columnas nombres de empleados, apellidos de empleados, tipos de documento de identidad, números de documento de identidad ni números de identificación internos de los empleados. El archivo contiene exclusivamente las siguientes columnas: Nombre del Departamento, Período, Total de Accesos, Accesos Autorizados, Accesos Denegados, Accesos No Registrados, Accesos Suspendidos
+Entonces: no incluye nombres de empleados, apellidos, tipos o números de documento ni códigos; solo contiene información agregada que no permite identificar a ninguna persona
 
 Condición 05
 
-Dado: que el supervisor intenta enviar el archivo al socio internacional
+Dado: que el archivo se genera para un período
 
-Cuando: presiona la opción "Enviar a Socio Internacional"
+Cuando: se contabilizan los accesos
 
-Entonces: el sistema registra la acción en los logs de auditoría con la fecha, hora, usuario que generó el envío, período del reporte, departamentos incluidos y formato del archivo, garantizando la trazabilidad de cada intercambio de información externa
+Entonces: solo se incluyen los ingresos a las áreas; las salidas no forman parte del archivo
+
+Condición 06
+
+Dado: que el supervisor elige un período y unos departamentos
+
+Cuando: no hay registros de ingreso en ese período
+
+Entonces: el sistema muestra un mensaje indicando que no hay registros y no genera un archivo vacío
+
+Condición 07
+
+Dado: que el supervisor presiona "Enviar a Socio Internacional"
+
+Cuando: quiere compartir el archivo con el socio
+
+Entonces: el sistema abre una vista previa del contenido del archivo con un botón "Descargar" para adjuntarlo al envío por el canal externo; el envío en sí queda fuera del sistema
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Diseñar interfaz de configuración del archivo periódico con selector de período (mes y año), selector múltiple de departamentos de producción y selector de formato (CSV, Excel) |
-| 2 | Implementar endpoint POST /api/reportes/archivo-periodico en Spring Boot que reciba período, lista de departamentos y formato |
-| 3 | Implementar consulta SQL que agrupe los accesos por departamento en el período seleccionado, excluyendo explícitamente las columnas de datos personales (nombres, apellidos, tipo_documento, documento_identidad, identificacion_interna) |
-| 4 | Generar archivo CSV con columnas: Departamento, Período, Total Accesos, Autorizados, Denegados, No Registrados, Suspendidos |
-| 5 | Generar archivo Excel con las mismas columnas usando Apache POI e incluir formato de tabla y autoajuste de columnas |
-| 6 | Implementar validación que impida la generación del archivo si no hay registros en el período seleccionado |
-| 7 | Registrar en logs de auditoría cada generación y envío de archivo periódico con todos los metadatos relevantes |
-| 8 | Permitir la descarga local del archivo generado y opcionalmente registrar el envío al socio internacional |
-
-## Estado de Implementación
-
-- **Backend**: ✓ — `POST /api/reportes/archivo-periodico` con **agregación por departamento SIN datos personales** (columnas: Departamento, Período, Total, Autorizados, Denegados, No Registrados, Suspendidos) y filtro opcional `departmentNames` (gap 1.2 §9 implementado). Formatos CSV/EXCEL/PDF. `POST /api/reportes/archivo-periodico/preview` devuelve la misma agregación en JSON (sin datos personales) para la vista previa del envío. Tests en `PeriodicReportControllerTest`.
-- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF), **chips de selección multi-departamento** (envía `departmentNames`) y descarga automática.
-- **Notas**: el botón "Enviar a socio internacional" abre un **modal de vista previa** (agregación por departamento obtenida de `archivo-periodico/preview`, sin datos personales) con botón **Descargar archivo** para adjuntarlo al envío por el canal externo; el envío en sí queda fuera del sistema (no hay envío real por correo ni log de auditoría de envío). Cumple la normativa del socio internacional al excluir datos personales.
+| 1 | Diseñar la pantalla de configuración con selector de mes y año, selector de departamentos y selector de formato (PDF, Excel, CSV) |
+| 2 | Implementar la generación del archivo con el período, los departamentos y el formato elegidos |
+| 3 | Implementar la sección de resumen por departamento y área con sus columnas y el porcentaje de autorizados |
+| 4 | Implementar la sección de distribución por día con sus columnas |
+| 5 | Excluir explícitamente cualquier dato personal e incluir solo los ingresos (no las salidas) |
+| 6 | Validar que existan registros en el período antes de generar el archivo |
+| 7 | Implementar la vista previa con el botón "Descargar" para el envío al socio, quedando el envío real fuera del sistema |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.2 | 2026-08-05 | | | Frontend multi-departamento + modal de vista previa con Descargar para el envío al socio (Condición 05) y endpoint `preview` | |
 | 1.1 | 2026-08-04 | | | Reescritura: agregación por departamento sin datos personales + `departmentNames` (gap 1.2 §9) | |
+| 1.2 | 2026-08-05 | | | Selección de varios departamentos + modal de vista previa con Descargar para el envío al socio | |
+| 1.3 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados (dos secciones, solo ingresos, envío fuera del sistema) | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `POST /api/reportes/archivo-periodico` con agregación **por departamento × área** SIN datos personales (columnas: Departamento, Área, Total, Autorizados, Denegados, No Registrados, Suspendidos, % Autorizados) y **distribución por día**; filtro opcional `departmentNames`; **solo ingresos** (las salidas EXIT quedan fuera). Formatos CSV/EXCEL/PDF. `POST /api/reportes/archivo-periodico/preview` devuelve `areaRows`/`dayRows` en JSON para la vista previa. Error si el período no tiene registros. Tests en `PeriodicReportControllerTest`.
+- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF), **chips de selección multi-departamento** (envía `departmentNames`) y descarga automática. El botón "Enviar a socio internacional" abre un **modal de vista previa** (de `archivo-periodico/preview`, sin datos personales) con botón **Descargar** para adjuntarlo al envío por el canal externo; el envío en sí queda fuera del sistema.

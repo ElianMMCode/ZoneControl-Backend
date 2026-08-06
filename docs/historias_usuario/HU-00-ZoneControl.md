@@ -5,7 +5,7 @@
 | **Código** | HU-00 |
 | **Nombre** | Zone Control - Sistema de Control de Acceso Físico |
 | **Complejidad** | Alta |
-| **HU Relacionada** | HU-01, HU-02, HU-03, HU-05, HU-06, HU-07, HU-08, HU-09, HU-10, HU-11, HU-12, HU-13, HU-14, HU-15, HU-16, HU-17, HU-18, HU-19 (+ HU-20..HU-27 nuevas de la §9 del PLAN_IMPLEMENTACION) |
+| **HU Relacionada** | HU-01 a HU-31 (ver listado abajo) |
 | **Módulo** | General |
 
 ## Descripción
@@ -16,59 +16,98 @@
 
 ## Requerimiento
 
-El sistema debe reflejar la estructura organizacional de la compañía, diferenciando entre el público general (consulta de información institucional básica) y el personal interno con tres roles: administrador del sistema, gestor de personal y supervisor/auditor. Debe contemplar autenticación, registro y gestión del personal, carga masiva, control de acceso físico, historial de accesos y exportación de información hacia sistemas externos para el socio internacional.
+El sistema debe reflejar la estructura de la compañía y separar claramente lo que puede hacer el público en general de lo que hace el personal interno. El acceso interno tiene tres roles: administrador del sistema, gestor de personal y supervisor/auditor. El sistema incluye el inicio de sesión, la gestión de usuarios, el registro y la administración del personal, la carga masiva de empleados, el control de acceso físico (entrada y salida), la ocupación de las zonas en tiempo real, las alertas de seguridad, el historial de accesos y la generación de reportes (descargables y periódicos) para el socio internacional.
+
+### Listado de historias de usuario
+
+| Código | Historia |
+|---|---|
+| HU-01 | Consultar la información pública de la empresa |
+| HU-02 | Descargar el folleto informativo |
+| HU-03 | Iniciar sesión en el sistema |
+| HU-05 | Crear usuario del sistema |
+| HU-06 | Editar usuario del sistema |
+| HU-07 | Activar o desactivar usuario |
+| HU-08 | Restablecer la contraseña de un usuario |
+| HU-09 | Registrar personal |
+| HU-10 | Cargar personal de forma masiva |
+| HU-11 | Otorgar acceso a un área |
+| HU-12 | Revocar acceso a un área |
+| HU-13 | Suspender el acceso a un área |
+| HU-14 | Buscar personal |
+| HU-15 | Consultar el historial de accesos |
+| HU-16 | Generar documento descargable del historial |
+| HU-17 | Generar el archivo periódico para el socio internacional |
+| HU-18 | Validar la entrada a un área restringida |
+| HU-19 | Gestionar el contenido público |
+| HU-20 | Gestionar las áreas de producción |
+| HU-21 | Consultar la ocupación en tiempo real de las zonas |
+| HU-22 | Cerrar o reabrir una zona por emergencia |
+| HU-23 | Consultar las alertas de anomalías de acceso |
+| HU-26 | Definir turnos y horarios por día |
+| HU-27 | Consultar la matriz de roles |
+| HU-28 | Registrar la salida de un área |
+| HU-29 | Gestionar mi perfil y cambiar mi contraseña |
+| HU-30 | Consultar el personal y las autorizaciones de una sala |
+| HU-31 | Consultar el detalle del empleado |
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el sistema está implementado
+Dado: que el sistema está en funcionamiento
 
 Cuando: los usuarios acceden según su rol
 
-Entonces: el sistema diferencia entre acceso público (sin autenticación) y acceso interno (con autenticación JWT y permisos por rol)
+Entonces: el sistema diferencia entre el acceso público (sin iniciar sesión) y el acceso interno (con sesión y permisos por rol)
 
 Condición 02
 
 Dado: que el sistema está en operación
 
-Cuando: se registran intentos de acceso a áreas restringidas
+Cuando: se registran intentos de entrada o salida en áreas restringidas
 
-Entonces: cada intento queda registrado en el historial con marca de tiempo, independientemente del resultado
+Entonces: cada intento queda registrado en el historial con fecha y hora, independientemente del resultado
 
 Condición 03
 
 Dado: que existe un socio internacional
 
-Cuando: se requiere reportar actividad de acceso
+Cuando: se requiere reportar la actividad de acceso
 
-Entonces: el sistema permite generar archivos periódicos de intercambio con la actividad agrupada por departamento
+Entonces: el sistema permite generar un archivo periódico sin datos personales, con resumen por departamento y área y distribución por día
+
+Condición 04
+
+Dado: que una zona tiene personal autorizado
+
+Cuando: el supervisor consulta el panel de zonas
+
+Entonces: puede ver la ocupación en tiempo real, las alertas y el detalle del personal y las autorizaciones de cada sala
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Configurar proyecto Spring Boot (backend) con estructura modular |
-| 2 | Configurar proyecto React/Vue.js (frontend) |
-| 3 | Diseñar e implementar modelo de datos en PostgreSQL (usuarios, personal, permisos, historial_accesos, departamentos) |
-| 4 | Implementar autenticación con JWT y BCrypt |
-| 5 | Implementar módulo público (información institucional, contacto, sedes, folleto) |
-| 6 | Implementar módulo de administración (CRUD de usuarios internos) |
-| 7 | Implementar módulo de gestión de personal (registro, carga masiva, permisos, búsqueda) |
-| 8 | Implementar módulo de control de acceso físico |
-| 9 | Implementar módulo de reportes y auditoría (historial, documentos descargables, archivo periódico) |
-| 10 | Documentar con diagramas PlantUML (casos de uso y flujos) |
+| 1 | Configurar la aplicación y su almacenamiento de información |
+| 2 | Implementar el sitio público (información, contacto, sedes, catálogo y folleto) |
+| 3 | Implementar el inicio de sesión y la gestión de usuarios |
+| 4 | Implementar la gestión del personal (registro, carga masiva, búsqueda, detalle y permisos) |
+| 5 | Implementar el control de acceso físico (entrada, salida, ocupación, emergencia y alertas) |
+| 6 | Implementar los reportes (historial, documentos descargables y archivo periódico) |
+| 7 | Documentar con diagramas (casos de uso y flujos) y historias de usuario |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-07-26 | | | Versión inicial | |
+| 1.1 | 2026-08-06 | | | Listado completo de historias (HU-01..31) y criterios alineados al sistema | |
 
 ## Estado de Implementación
 
-- **Backend**: todos los módulos implementados y con tests verdes (200 métodos `@Test`); `./mvnw test` en verde. Ver inventario de endpoints en `AGENTS.md`.
-- **Frontend (React en `src/main/frontend`)**: módulo público, autenticación (login + magic link), administración (usuarios, contenido público, áreas, matriz de roles), gestión del gestor (personal, registro, carga masiva, detalle, permisos, ajustes), dashboard del supervisor y validación de credencial (HU-18).
-- **Pendiente frontend**: ninguno — todas las vistas de los mockups finales están construidas.
-- **Backend §9**: todos los items de la §9 del `PLAN_IMPLEMENTACION` están implementados (1.1 PDF, 1.2 agregación por departamento, 1.3 filtro por departamento, 1.4 CRUD de áreas, 1.5 matriz de roles, 1.6 invalidación JWT, 1.7 handlers 409/500, 2.1–2.4 tiempo real/alertas, 3.1 foto, 3.2 turnos). Ver estado detallado en §9.12 y en AGENTS.md.
+- **Backend**: todos los módulos implementados y con tests en verde (202 pruebas); `./mvnw test` en verde. Detalle de rutas en `AGENTS.md`.
+- **Frontend**: módulo público, autenticación (inicio de sesión y enlace de activación), administración (usuarios, contenido público, áreas, matriz de roles), gestión del gestor (personal, registro, carga masiva, detalle, permisos, ajustes), panel del supervisor (dashboard, validación de credencial con entrada y salida, zonas en vivo, reportes) y ajustes.
+- **Pendiente frontend**: ninguno — todas las vistas están construidas.
+- **Backend §9**: todos los puntos del plan de implementación están implementados (documentos PDF, archivo periódico de dos secciones, filtros por departamento y área en el historial, gestión de áreas, matriz de roles, invalidación de sesiones al desactivar, manejo de errores, tiempo real y alertas, fotografía y turnos).
 - **Nota**: los archivos `HU-00- NOMBRE_DEL_PROYETO(5).docx` y `zonecontrol.pdf` son la fuente binaria del caso de estudio (solo lectura); la fuente de verdad editable son los `.md` y `.puml` de `docs/`.

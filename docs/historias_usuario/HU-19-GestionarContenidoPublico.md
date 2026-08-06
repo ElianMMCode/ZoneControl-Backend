@@ -1,134 +1,121 @@
-# HU-19 - GESTIONAR CONTENIDO DEL MÓDULO PÚBLICO
+# HU-19 - GESTIONAR CONTENIDO PÚBLICO
 
 | Campo | Valor |
 |---|---|
 | **Código** | HU-19 |
-| **Nombre** | Gestionar Contenido del Módulo Público |
+| **Nombre** | Gestionar Contenido Público |
 | **Complejidad** | Alta |
 | **HU Relacionada** | HU-01, HU-02, HU-03 |
 | **Módulo** | Módulo de Administración |
+| **Rol** | Administrador |
 
 ## Descripción
 
 **Yo como** administrador del sistema
-**Requiero** gestionar todo el contenido que se muestra en el módulo público del sitio web, incluyendo información institucional, datos de contacto, ubicación de sedes, catálogo de servicios/productos y el folleto informativo en PDF
-**Para** mantener actualizada la información que los visitantes consultan sin necesidad de involucrar al equipo de desarrollo
+**Requiero** gestionar directamente todo el contenido que ven los visitantes del sitio público de la empresa: información institucional, datos de contacto, sedes, catálogo de productos y folleto informativo
+**Para** mantener la información pública actualizada sin depender del equipo de desarrollo
 
 ## Requerimiento
 
-El sistema debe permitir al administrador editar la información institucional, los datos de contacto, la ubicación de sedes, el catálogo de servicios y productos farmacéuticos, así como cargar y actualizar el folleto informativo en formato PDF. El folleto debe cumplir con restricciones de formato y peso. Si no hay folleto cargado, el botón de descarga no debe mostrarse en el módulo público.
+El sistema debe ofrecer al administrador una sola pantalla con cinco secciones para administrar el sitio público. En "Información Institucional" se editan la misión, la visión y la descripción de la empresa. En "Datos de Contacto" se actualizan los teléfonos, los correos electrónicos y las redes sociales. En "Sedes" se agregan, modifican y eliminan las sedes indicando ciudad, dirección y coordenadas de ubicación. En "Catálogo de Productos" se agregan, modifican y eliminan los productos farmacéuticos con su nombre, descripción, principio activo, presentación y área de producción.
 
-## Contrato de los endpoints
+En la sección "Folleto Informativo" el administrador carga un archivo en formato PDF de máximo 10 MB que reemplaza al folleto vigente, o lo elimina cuando ya no corresponde. El botón de descarga del folleto que ve el visitante solo aparece si existe un folleto cargado; si se elimina, el botón desaparece.
 
-- `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT}` (body `Record<string,string>`) → `{ message }`. Reemplaza todos los pares clave-valor de la sección e invalida la caché pública correspondiente. Las sedes no se gestionan por esta vía: tienen CRUD propio sobre `sedes[/{id}]` (tabla offices).
-- `POST /api/admin/contenido-publico/folleto` (multipart, campo `file`, PDF ≤ 10MB) → `{ message }`.
-- `DELETE /api/admin/contenido-publico/folleto` → `{ message }`.
-- `POST /api/admin/contenido-publico/sedes` (body `OfficeRequest{name, address, openingHours, latitude?, longitude?}`) → `{ id, name }` (201).
-- `PUT /api/admin/contenido-publico/sedes/{id}` (body `OfficeRequest`) → `{ id, name }`.
-- `DELETE /api/admin/contenido-publico/sedes/{id}` → `{ message }`.
-- `POST /api/admin/contenido-publico/productos` (body `ProductRequest{name, description, activeIngredient, presentation, productionArea}`) → `{ id, name }` (201).
-- `PUT /api/admin/contenido-publico/productos/{id}` (body `ProductRequest`) → `{ id, name }`.
-- `DELETE /api/admin/contenido-publico/productos/{id}` → `{ message }`.
-
-**Origen de los identificadores para editar/eliminar sedes y productos:** los GET públicos (`/api/public/sedes`, `/api/public/catalogo`) exponen el campo `id` para que el panel admin pueda referenciar cada elemento sin necesidad de un endpoint admin adicional. El landing ignora el `id`; el admin lo usa para los `PUT/DELETE /{id}`.
+Todos los cambios guardados se reflejan de inmediato en el sitio público, sin necesidad de reiniciar ni intervención técnica. El único encargado de gestionar este contenido es el administrador; los visitantes solo leen lo publicado.
 
 ## Criterios de Aceptación
 
 Condición 01
 
-Dado: que el administrador está autenticado
+Dado: que el administrador ingresa a la pantalla de gestión de contenido público
 
-Cuando: accede a la sección "Gestionar Contenido Público" y modifica la información institucional (misión, visión, descripción de la empresa, áreas de producción)
+Cuando: modifica la información institucional (misión, visión y descripción de la empresa) y guarda
 
-Entonces: el sistema guarda los cambios en la base de datos y los visitantes del módulo público ven la información actualizada inmediatamente
+Entonces: el sistema guarda los cambios y los visitantes ven la nueva información institucional en el sitio público de inmediato, sin reiniciar el servicio
 
 Condición 02
 
-Dado: que el administrador está en la sección "Gestionar Contenido Público"
+Dado: que el administrador está en la pantalla de gestión de contenido público
 
-Cuando: modifica los datos de contacto (teléfonos, correo electrónico, redes sociales) y guarda los cambios
+Cuando: modifica los datos de contacto (teléfonos, correos y redes sociales) y guarda
 
-Entonces: el sistema actualiza la información de contacto y esta se refleja en el módulo público sin necesidad de reiniciar el servidor
+Entonces: el sistema actualiza la información de contacto y el visitante que recargue el sitio público ve los nuevos datos
 
 Condición 03
 
-Dado: que el administrador está en la sección "Gestionar Contenido Público"
+Dado: que el administrador agrega una nueva sede con ciudad, dirección y coordenadas de ubicación
 
-Cuando: modifica la ubicación de sedes (direcciones, mapa, horarios de atención) y guarda los cambios
+Cuando: guarda el registro
 
-Entonces: el sistema actualiza la información de sedes en la base de datos y los visitantes visualizan los nuevos datos al recargar la página
+Entonces: el sistema agrega la sede al listado y esta aparece en el sitio público; mientras no haya un mapa gráfico disponible, el visitante ve las coordenadas como texto
 
 Condición 04
 
-Dado: que el administrador está en la sección "Gestionar Contenido Público"
+Dado: que el administrador agrega, modifica o elimina productos del catálogo (nombre, descripción, principio activo, presentación y área de producción)
 
-Cuando: agrega, modifica o elimina productos del catálogo de servicios y productos farmacéuticos (nombre del medicamento, descripción, principio activo, presentación, área de producción asociada)
+Cuando: guarda los cambios
 
-Entonces: el sistema actualiza el catálogo y los visitantes del módulo público ven los cambios reflejados en la sección "Catálogo de Servicios/Productos"
+Entonces: el sistema actualiza el catálogo y los visitantes del sitio público ven los cambios en la sección de catálogo de productos
 
 Condición 05
 
-Dado: que el administrador está en la sección de gestión del folleto
+Dado: que el administrador elimina una sede o un producto del catálogo
 
-Cuando: selecciona un archivo PDF válido que no excede los 10MB y presiona "Cargar Folleto"
+Cuando: confirma la eliminación
 
-Entonces: el sistema almacena el archivo en el servidor, habilita el botón "Descargar Folleto" en el módulo público y muestra confirmación de carga exitosa
+Entonces: el sistema elimina el registro y este deja de mostrarse en el sitio público; si lo eliminado estaba en uso en alguna otra parte de la gestión, el sistema informa del impedimento y no completa la eliminación
 
 Condición 06
 
-Dado: que el administrador intenta cargar un folleto
+Dado: que el administrador carga un folleto en formato PDF que no supera los 10 MB
 
-Cuando: el archivo seleccionado no tiene extensión .pdf
+Cuando: confirma la carga
 
-Entonces: el sistema rechaza la carga y muestra el mensaje "Formato no permitido. Solo se aceptan archivos PDF"
+Entonces: el sistema guarda el folleto, reemplaza al anterior si existía y habilita el botón "Descargar Folleto" en el sitio público, mostrando un mensaje de carga exitosa
 
 Condición 07
 
 Dado: que el administrador intenta cargar un folleto
 
-Cuando: el archivo PDF excede los 10MB
+Cuando: el archivo no tiene formato PDF o supera los 10 MB
 
-Entonces: el sistema rechaza la carga y muestra el mensaje "El archivo excede el tamaño máximo permitido de 10MB"
+Entonces: el sistema rechaza la carga y muestra el mensaje correspondiente ("Formato no permitido. Solo se aceptan archivos PDF" o "El archivo excede el tamaño máximo permitido de 10MB"), sin modificar el folleto vigente
 
 Condición 08
 
-Dado: que el administrador elimina el folleto actualmente cargado
+Dado: que el administrador elimina el folleto actualmente publicado
 
 Cuando: confirma la eliminación
 
-Entonces: el sistema borra el archivo del servidor y oculta el botón "Descargar Folleto" del módulo público
+Entonces: el sistema borra el archivo y oculta el botón "Descargar Folleto" del sitio público
 
 Condición 09
 
-Dado: que el administrador intenta editar contenido público
+Dado: que el administrador intenta guardar contenido en cualquiera de las secciones (información institucional, contacto, sedes o catálogo)
 
-Cuando: deja campos obligatorios vacíos en cualquiera de las secciones (información institucional, contacto, sedes, catálogo)
+Cuando: deja campos obligatorios sin completar
 
-Entonces: el sistema muestra los errores de validación correspondientes a los campos incompletos e impide guardar hasta que se corrijan
+Entonces: el sistema señala los campos incompletos e impide guardar hasta que se corrijan
 
 ## Tareas
 
 | No | Descripción |
 |---|---|
-| 1 | Diseñar interfaz de administración de contenido público con pestañas: Información Institucional, Datos de Contacto, Ubicación de Sedes, Catálogo de Productos, Folleto |
-| 2 | Implementar formularios de edición para información institucional, datos de contacto y ubicación de sedes |
-| 3 | Implementar CRUD del catálogo de servicios/productos (nombre, descripción, principio activo, presentación, área de producción) |
-| 4 | Implementar carga de archivo PDF para el folleto con validación de formato (.pdf) y tamaño máximo (10MB) |
-| 5 | Implementar endpoints PUT/POST /api/admin/contenido-publico en Spring Boot para cada sección |
-| 6 | Implementar endpoint POST /api/admin/contenido-publico/folleto (multipart/form-data) con validaciones de formato y peso |
-| 7 | Implementar endpoint DELETE /api/admin/contenido-publico/folleto para eliminar el folleto actual |
-| 8 | Condicionar la visibilidad del botón "Descargar Folleto" en el módulo público a la existencia del archivo en el servidor |
-| 9 | Configurar almacenamiento de archivos en el servidor (directorio uploads/folleto/) |
-
-## Implementación (referencia)
-
-- **Backend:** ver "Contrato de los endpoints" arriba. La caché pública se invalida automáticamente en cada `PUT/POST/DELETE` para que el landing refleje los cambios sin reiniciar el servidor.
-- **Frontend:** ruta `/admin/contenido-publico` (rol ADMIN) con cinco pestañas (Institucional, Contacto, Sedes, Catálogo, Folleto) implementadas en `PublicContentView`. Formularios con RHF + Zod. Las pestañas Sedes y Catálogo hacen CRUD completo (listar/crear/editar/eliminar) usando el `id` que los GET públicos `sedes` y `catalogo` exponen en cada elemento.
-- **Validación de formulario (Condición 09):** los formularios institucionales, de contacto, sedes y productos validan con Zod; los campos obligatorios (mission, vision, description, phone, email, socialMedia, name, address) no se envían vacíos.
+| 1 | Pantalla de administración de contenido público con cinco secciones: Institucional, Contacto, Sedes, Catálogo y Folleto |
+| 2 | Formularios de edición para información institucional y datos de contacto |
+| 3 | Alta, edición y baja de sedes (ciudad, dirección, coordenadas) |
+| 4 | Alta, edición y baja de productos del catálogo |
+| 5 | Carga de folleto en PDF con validación de formato y tamaño máximo de 10 MB, reemplazo y eliminación |
+| 6 | Mostrar u ocultar el botón "Descargar Folleto" del sitio público según exista un folleto cargado |
+| 7 | Reflejar de inmediato en el sitio público todos los cambios guardados |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
-| 1.0 | 2026-07-26 | | | Versión inicial | |
-| 1.1 | 2026-08-03 | | | GET públicos `sedes` y `catalogo` exponen `id` para que el panel admin referencie cada elemento al editar/eliminar; panel admin `/admin/contenido-publico` con 5 tabs implementado en el frontend. | |
+| 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+
+## Estado de Implementación
+
+- **Backend**: ✓ — `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT}`, `POST/DELETE /api/admin/contenido-publico/folleto`, CRUD `POST/PUT/DELETE /api/admin/contenido-publico/sedes[/{id}]` y `/productos[/{id}]`; caché pública invalidada en cada escritura. Tests en `AdminPublicContentControllerTest`.
+- **Frontend**: ✓ — `PublicContentView` en `/admin/contenido-publico` (rol ADMIN) con 5 pestañas. Mapa gráfico de sedes pendiente: se muestran las coordenadas como texto.
