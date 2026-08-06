@@ -5,7 +5,7 @@
 | **Código** | HU-02 |
 | **Nombre** | Descargar Folleto Informativo |
 | **Complejidad** | Media |
-| **HU Relacionada** | HU-01, HU-19 |
+| **HU Relacionada** | HU-01, HU-18 |
 | **Módulo** | Módulo Público |
 | **Rol** | Público general (visitante) |
 

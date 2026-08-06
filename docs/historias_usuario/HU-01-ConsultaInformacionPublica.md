@@ -5,7 +5,7 @@
 | **Código** | HU-01 |
 | **Nombre** | Consulta de Información Pública |
 | **Complejidad** | Alta |
-| **HU Relacionada** | HU-02, HU-19 |
+| **HU Relacionada** | HU-02, HU-18 |
 | **Módulo** | Módulo Público |
 | **Rol** | Público general (visitante) |
 

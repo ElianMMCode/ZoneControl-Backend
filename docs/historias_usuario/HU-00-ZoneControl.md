@@ -5,7 +5,7 @@
 | **Código**         | HU-00                                              |
 | **Nombre**         | Zone Control - Sistema de Control de Acceso Físico |
 | **Complejidad**    | Alta                                               |
-| **HU Relacionada** | HU-01 a HU-31 (ver listado abajo)                  |
+| **HU Relacionada** | HU-01 a HU-29 (ver listado abajo)                  |
 | **Módulo**         | General                                            |
 
 ## Descripción
@@ -25,32 +25,32 @@ El sistema debe reflejar la estructura de la compañía y separar claramente lo 
 | HU-01  | Consultar la información pública de la empresa           |
 | HU-02  | Descargar el folleto informativo                         |
 | HU-03  | Iniciar sesión en el sistema                             |
-| HU-05  | Crear usuario del sistema                                |
-| HU-06  | Editar usuario del sistema                               |
-| HU-07  | Activar o desactivar usuario                             |
-| HU-08  | Restablecer la contraseña de un usuario                  |
-| HU-09  | Registrar personal                                       |
-| HU-10  | Cargar personal de forma masiva                          |
-| HU-11  | Otorgar acceso a un área                                 |
-| HU-12  | Revocar acceso a un área                                 |
-| HU-13  | Suspender el acceso a un área                            |
-| HU-14  | Buscar personal                                          |
-| HU-15  | Consultar el historial de accesos                        |
-| HU-16  | Generar documento descargable del historial              |
-| HU-17  | Generar el archivo periódico para el socio internacional |
-| HU-18  | Validar la entrada a un área restringida                 |
-| HU-19  | Gestionar el contenido público                           |
-| HU-20  | Gestionar las áreas de producción                        |
-| HU-21  | Consultar la ocupación en tiempo real de las zonas       |
-| HU-22  | Cerrar o reabrir una zona por emergencia                 |
-| HU-23  | Consultar las alertas de anomalías de acceso             |
-| HU-26  | Definir turnos y horarios por día                        |
-| HU-27  | Consultar la matriz de roles                             |
-| HU-28  | Registrar la salida de un área                           |
-| HU-29  | Gestionar mi perfil y cambiar mi contraseña              |
-| HU-30  | Consultar el personal y las autorizaciones de una sala   |
-| HU-31 | Consultar el detalle del empleado |
-| HU-32 | Gestionar el catálogo de cargos |
+| HU-04  | Crear usuario del sistema                                |
+| HU-05  | Editar usuario del sistema                               |
+| HU-06  | Activar o desactivar usuario                             |
+| HU-07  | Restablecer la contraseña de un usuario                  |
+| HU-08  | Registrar personal                                       |
+| HU-09  | Cargar personal de forma masiva                          |
+| HU-10  | Otorgar acceso a un área                                 |
+| HU-11  | Revocar acceso a un área                                 |
+| HU-12  | Suspender el acceso a un área                            |
+| HU-13  | Buscar personal                                          |
+| HU-14  | Consultar el historial de accesos                        |
+| HU-15  | Generar documento descargable del historial              |
+| HU-16  | Generar el archivo periódico para el socio internacional |
+| HU-17  | Validar la entrada a un área restringida                 |
+| HU-18  | Gestionar el contenido público                           |
+| HU-19  | Gestionar las áreas de producción                        |
+| HU-20  | Consultar la ocupación en tiempo real de las zonas       |
+| HU-21  | Cerrar o reabrir una zona por emergencia                 |
+| HU-22  | Consultar las alertas de anomalías de acceso             |
+| HU-23  | Definir turnos y horarios por día                        |
+| HU-24  | Consultar la matriz de roles                             |
+| HU-25  | Registrar la salida de un área                           |
+| HU-26  | Gestionar mi perfil y cambiar mi contraseña              |
+| HU-27  | Consultar el personal y las autorizaciones de una sala   |
+| HU-28 | Consultar el detalle del empleado |
+| HU-29 | Gestionar el catálogo de cargos |
 
 ## Criterios de Aceptación
 
@@ -103,7 +103,7 @@ Entonces: puede ver la ocupación en tiempo real, las alertas y el detalle del p
 | Versión | Fecha      | Autor | Revisión | Descripción                                                                | Aprobador |
 | ------- | ---------- | ----- | -------- | -------------------------------------------------------------------------- | --------- |
 | 1.0     | 2026-07-26 |       |          | Versión inicial                                                            |           |
-| 1.1     | 2026-08-06 |       |          | Listado completo de historias (HU-01..31) y criterios alineados al sistema |           |
+| 1.1     | 2026-08-06 |       |          | Listado completo de historias (HU-01..29) y criterios alineados al sistema |           |
 
 ## Estado de Implementación
 

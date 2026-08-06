@@ -5,7 +5,7 @@
 | **Código** | HU-03 |
 | **Nombre** | Iniciar Sesión |
 | **Complejidad** | Alta |
-| **HU Relacionada** | HU-05, HU-06, HU-07, HU-08 |
+| **HU Relacionada** | HU-04, HU-05, HU-06, HU-07 |
 | **Módulo** | Módulo de Autenticación |
 | **Rol** | Administrador, Gestor de Personal, Supervisor / Auditor |
 
