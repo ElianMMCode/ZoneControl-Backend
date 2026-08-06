@@ -14,32 +14,32 @@
 
 ---
 
-## Diagramas de Flujo (`flujo/`)
+## Diagramas de Proceso (`procesos/`)
 
 | # | Archivo | CU | Descripción |
 |---|---------|-----|-------------|
-| 01 | `01_flujo_autenticacion.puml` | CU-02 | Autenticación (transversal) |
-| 02 | `02_flujo_publico.puml` | CU-01 | Módulo Público |
-| 03 | `03_flujo_crear_usuario.puml` | CU-03 | Crear Usuario |
-| 04 | `04_flujo_editar_usuario.puml` | CU-03 | Editar Usuario |
-| 05 | `05_flujo_activar_desactivar.puml` | CU-03 | Activar/Desactivar |
-| 06 | `06_flujo_restablecer_password.puml` | CU-03 | Restablecer Contraseña |
-| 07 | `07_flujo_registrar_personal.puml` | CU-04 | Registrar Personal |
-| 08 | `08_flujo_carga_masiva.puml` | CU-05 | Carga Masiva |
-| 09 | `09_flujo_otorgar_acceso.puml` | CU-06 | Otorgar Acceso |
-| 10 | `10_flujo_revocar_acceso.puml` | CU-06 | Revocar Acceso |
-| 11 | `11_flujo_suspender_acceso.puml` | CU-06 | Suspender Acceso |
-| 12 | `12_flujo_buscar_personal.puml` | CU-07 | Buscar Personal |
-| 13 | `13_flujo_historial.puml` | CU-08 | Consultar Historial |
-| 14 | `14_flujo_documento_descargable.puml` | CU-09 | Generar Documento |
-| 15 | `15_flujo_archivo_periodico.puml` | CU-10 | Archivo Periódico |
-| 16 | `16_flujo_control_acceso.puml` | CU-11 | Control de Acceso |
-| 17 | `17_flujo_gestion_contenido_publico.puml` | CU-03b | Gestionar Contenido Público |
-| 18 | `18_flujo_editar_empleado.puml` | CU-07a | Editar Empleado |
-| 19 | `19_flujo_gestion_areas_produccion.puml` | CU-06a | Gestionar Áreas de Producción (implementado backend) |
-| 20 | `20_flujo_consulta_ocupacion.puml` | CU-11d | Consultar Ocupación en Tiempo Real |
-| 21 | `21_flujo_cierre_emergencia.puml` | CU-11f | Cerrar Zona por Emergencia |
-| 22 | `22_flujo_alertas_anomalias.puml` | CU-11g | Alertas de Anomalías de Acceso |
+| 01 | `01_proceso_autenticacion.puml` | CU-02 | Autenticación (transversal) |
+| 02 | `02_proceso_publico.puml` | CU-01 | Módulo Público |
+| 03 | `03_proceso_crear_usuario.puml` | CU-03 | Crear Usuario |
+| 04 | `04_proceso_editar_usuario.puml` | CU-03 | Editar Usuario |
+| 05 | `05_proceso_activar_desactivar.puml` | CU-03 | Activar/Desactivar |
+| 06 | `06_proceso_restablecer_password.puml` | CU-03 | Restablecer Contraseña |
+| 07 | `07_proceso_registrar_personal.puml` | CU-04 | Registrar Personal |
+| 08 | `08_proceso_carga_masiva.puml` | CU-05 | Carga Masiva |
+| 09 | `09_proceso_otorgar_acceso.puml` | CU-06 | Otorgar Acceso |
+| 10 | `10_proceso_revocar_acceso.puml` | CU-06 | Revocar Acceso |
+| 11 | `11_proceso_suspender_acceso.puml` | CU-06 | Suspender Acceso |
+| 12 | `12_proceso_buscar_personal.puml` | CU-07 | Buscar Personal |
+| 13 | `13_proceso_historial.puml` | CU-08 | Consultar Historial |
+| 14 | `14_proceso_documento_descargable.puml` | CU-09 | Generar Documento |
+| 15 | `15_proceso_archivo_periodico.puml` | CU-10 | Archivo Periódico |
+| 16 | `16_proceso_control_acceso.puml` | CU-11 | Control de Acceso |
+| 17 | `17_proceso_gestion_contenido_publico.puml` | CU-03b | Gestionar Contenido Público |
+| 18 | `18_proceso_editar_empleado.puml` | CU-07a | Editar Empleado |
+| 19 | `19_proceso_gestion_areas_produccion.puml` | CU-06a | Gestionar Áreas de Producción (implementado backend) |
+| 20 | `20_proceso_consulta_ocupacion.puml` | CU-11d | Consultar Ocupación en Tiempo Real |
+| 21 | `21_proceso_cierre_emergencia.puml` | CU-11f | Cerrar Zona por Emergencia |
+| 22 | `22_proceso_alertas_anomalias.puml` | CU-11g | Alertas de Anomalías de Acceso |
 
 ---
 
@@ -95,3 +95,14 @@ definidas en `src/main/frontend/src/routes/index.tsx` (React Router).
 | Base de datos | PostgreSQL |
 | Autenticación | JWT |
 | Documentación | PlantUML |
+
+---
+
+## Exportación en PDF
+
+Cada tipo de diagrama tiene una carpeta interna `pdf/` con una versión exportada en PDF de cada diagrama:
+
+- `casos_uso/pdf/` — los 7 diagramas de casos de uso.
+- `procesos/pdf/` — los 22 diagramas de proceso.
+
+Los PDF se regeneran con `java -jar plantuml.jar -tpdf` (o el renderizador de PlantUML) a partir de los archivos `.puml`; la fuente de verdad sigue siendo el `.puml`.

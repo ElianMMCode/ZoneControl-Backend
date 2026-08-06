@@ -693,7 +693,7 @@ Decisiones de diseño confirmadas:
 - **Tests**: crear, duplicado 409, editar, borrar, borrar con permisos asociados 409.
 - **Esfuerzo**: bajo-medio (1-2 días).
 
-> **Estado 1.4 — IMPLEMENTADO (backend)**: `POST/PUT/DELETE /api/permisos/areas` operativos en `PermissionController`; frontend de CRUD en `/admin/areas` (`AdminAreasView`, solo ADMIN). El histórico denormalizado `AccessHistory.productionAreaName` se conserva. Pendiente: revisar coherencia con §9.7 (flujo 19) y HU-20.
+> **Estado 1.4 — IMPLEMENTADO (backend)**: `POST/PUT/DELETE /api/permisos/areas` operativos en `PermissionController`; frontend de CRUD en `/admin/areas` (`AdminAreasView`, solo ADMIN). El histórico denormalizado `AccessHistory.productionAreaName` se conserva. Pendiente: revisar coherencia con §9.7 (proceso 19) y HU-20.
 
 #### 1.5 Matriz de roles — solo consulta (mockup 16)
 - `GET /api/admin/role-matrix` (solo ADMIN): devuelve la matriz `módulo × rol → booleano` que ya está implícita en `SecurityConfig`, incluyendo el nuevo rol SEGURIDAD.
@@ -820,9 +820,9 @@ Formato de cada HU (alineado con las existentes): tabla de metadatos, descripci�
 - `05_modulo_control_acceso_fisico.puml`: CU-11d Consultar ocupación · CU-11e Registrar salida · CU-11f Cerrar zona por emergencia · CU-11g Alertas de anomalías (actores Supervisor/Admin; sin Guardia).
 - `06_modulo_reportes_auditoria.puml`: CU-08 + filtro depto · CU-09 + PDF · CU-10 agregación por departamento.
 
-#### Flujos (`docs/diagramas/flujo/`)
-- Nuevos: `19_flujo_gestion_areas_produccion.puml` (✓ creado), `20_flujo_consulta_ocupacion.puml`, `21_flujo_cierre_emergencia.puml`, `22_flujo_alertas_anomalias.puml`. **No** se crea el flujo de consola de guardia (rol eliminado).
-- Actualizados: `13_flujo_historial.puml` (filtro depto ✓), `14_flujo_documento_descargable.puml` (opción PDF ✓), `15_flujo_archivo_periodico.puml` (agregación por departamento ✓), `16_flujo_control_acceso.puml` (emergencia + ocupación; sin Guardia).
+#### Procesos (`docs/diagramas/procesos/`)
+- Nuevos: `19_proceso_gestion_areas_produccion.puml` (✓ creado), `20_proceso_consulta_ocupacion.puml`, `21_proceso_cierre_emergencia.puml`, `22_proceso_alertas_anomalias.puml`. **No** se crea el flujo de consola de guardia (rol eliminado).
+- Actualizados: `13_proceso_historial.puml` (filtro depto ✓), `14_proceso_documento_descargable.puml` (opción PDF ✓), `15_proceso_archivo_periodico.puml` (agregación por departamento ✓), `16_proceso_control_acceso.puml` (emergencia + ocupación; sin Guardia).
 
 #### Documentos maestros
 - `docs/diagramas/README.md`: actualizar tablas de CU y flujos; asignar vistas de áreas/matriz/zonas a sus respectivos dashboards. Sin actor Guardia ni vista `/guardia`.
@@ -846,7 +846,7 @@ Rutas nuevas (protegidas por rol en `src/main/frontend/src/routes/index.tsx`): `
 |---|---|---|
 | **A — Gaps fáciles** | 1.7 → 1.3 → 1.6 → 1.1 → 1.2 | ✅ COMPLETADA: handlers 409/500, filtro por depto, invalidación JWT, export PDF y agregación por departamento. HUs 07/15/16/17 y flujos 13-15 actualizados. |
 | **B — Áreas y matriz** | 1.4 (HU-20) → 1.5 (HU-27) | ✅ COMPLETADA: CRUD áreas (backend + frontend admin) y endpoint `GET /api/admin/role-matrix` + HU-20/HU-27. |
-| **C — Tiempo real** | 2.1 (HU-21) → 2.2 (HU-22) → 2.3 (SSE) → 2.4 (HU-23) | ✅ COMPLETADA: sesiones, emergencia, SSE y alertas para ADMIN/SUPERVISOR; flujos 20-22 y HUs 21-23. Sin rol SEGURIDAD ni `SecurityActionLog`. |
+| **C — Tiempo real** | 2.1 (HU-21) → 2.2 (HU-22) → 2.3 (SSE) → 2.4 (HU-23) | ✅ COMPLETADA: sesiones, emergencia, SSE y alertas para ADMIN/SUPERVISOR; procesos 20-22 y HUs 21-23. Sin rol SEGURIDAD ni `SecurityActionLog`. |
 | **D — Personal** | 3.1 (HU-25 ✓) → 3.2 (HU-26) | ✅ COMPLETADA: foto ✓ (CU-07b) y turnos/schedules ✓ (CU-06b, HU-26). |
 
 Frontend integrado por fase, consumiendo los hooks y store ya existentes. Documentos maestros (`docs/diagramas/README.md`, HU-00, esta §9) actualizados al cierre de cada fase.
