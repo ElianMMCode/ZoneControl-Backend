@@ -15,7 +15,8 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 /**
  * HU-27 / §9 item 1.5: GET /api/admin/role-matrix (solo ADMIN) devuelve la
- * matriz módulo × rol → booleano reconstruida desde SecurityConfig.
+ * matriz módulo × rol → nivel de acceso (NINGUNO/LECTURA/ESCRITURA)
+ * reconstruida desde SecurityConfig.
  */
 @SpringBootTest
 @AutoConfigureMockMvc
@@ -35,7 +36,29 @@ class RoleMatrixControllerTest {
                 .andExpect(jsonPath("$.roles[0]").value("ADMIN"))
                 .andExpect(jsonPath("$.modules").isArray())
                 .andExpect(jsonPath("$.modules[0].module").exists())
-                .andExpect(jsonPath("$.modules[0].access.ADMIN").value(true));
+                .andExpect(jsonPath("$.modules[0].access.ADMIN").value("ESCRITURA"))
+                .andExpect(jsonPath("$.modules[0].access.GESTOR_PERSONAL").value("NINGUNO"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getRoleMatrix_includesCargosModuleWithLevels() throws Exception {
+        mockMvc.perform(get("/api/admin/role-matrix"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.modules[?(@.module=='Cargos')].access.ADMIN").value("ESCRITURA"))
+                .andExpect(jsonPath("$.modules[?(@.module=='Cargos')].access.GESTOR_PERSONAL").value("LECTURA"))
+                .andExpect(jsonPath("$.modules[?(@.module=='Cargos')].access.SUPERVISOR_AUDITOR").value("LECTURA"));
+    }
+
+    @Test
+    @WithMockUser(roles = "ADMIN")
+    void getRoleMatrix_supervisorHasReadOnAreasAndPersonal() throws Exception {
+        mockMvc.perform(get("/api/admin/role-matrix"))
+                .andExpect(status().isOk())
+                .andExpect(jsonPath("$.modules[?(@.module=='Áreas de producción')].access.SUPERVISOR_AUDITOR").value("LECTURA"))
+                .andExpect(jsonPath("$.modules[?(@.module=='Gestión de personal')].access.SUPERVISOR_AUDITOR").value("LECTURA"))
+                .andExpect(jsonPath("$.modules[?(@.module=='Permisos de acceso')].access.SUPERVISOR_AUDITOR").value("LECTURA"))
+                .andExpect(jsonPath("$.modules[?(@.module=='Control de acceso físico')].access.SUPERVISOR_AUDITOR").value("ESCRITURA"));
     }
 
     @Test
