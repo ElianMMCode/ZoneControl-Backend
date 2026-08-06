@@ -59,14 +59,6 @@ Entonces: el sistema muestra el nombre, la descripción, el principio activo y l
 
 Condición 05
 
-Dado: que el visitante revisa el catálogo de productos
-
-Cuando: observa la información de cada producto
-
-Entonces: el sistema no muestra datos internos de la empresa, como las áreas de producción o los códigos internos de los productos
-
-Condición 06
-
 Dado: que el visitante navega por las secciones del sitio público
 
 Cuando: consulta información institucional, contacto, sedes o catálogo
