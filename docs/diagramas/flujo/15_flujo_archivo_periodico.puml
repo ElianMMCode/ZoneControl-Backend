@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-10: Archivo Periódico
+title Flujo CU-10: Archivo Periódico para el Socio Internacional
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,79 +11,60 @@ skinparam swimlane {
 
 |Supervisor / Auditor|
 start
-:Acceder a "Reportes y Auditoría";
+:Ir a "Reportes de Auditoría";
 
 :Seleccionar "Archivo Periódico";
 
-|Frontend|
-:Mostrar configuración del reporte;
+|Pantalla|
+:Mostrar la configuración del reporte;
 
 |Supervisor / Auditor|
-:Seleccionar período (Mes/Año);
+:Seleccionar el mes y el año del período;
 
-:Seleccionar departamentos a incluir;
+:Seleccionar, si se desea, los departamentos a incluir;
 
-:Seleccionar formato de salida\n(CSV o Excel);
+:Elegir el formato (PDF, Excel o CSV);
 
-:Presionar "Generar Archivo";
+:Presionar "Generar";
 
-|Frontend|
-:Enviar POST;
+|Pantalla|
+:Enviar la solicitud;
 
-|Backend|
-:Recibir configuración del reporte;
+|Sistema|
+:Buscar los accesos (ingresos) del período;
 
-:Consultar historial de accesos\ndel período seleccionado;
+:Agruparlos por departamento y área;
 
-:Agrupar accesos por departamento;
+:Calcular totales, autorizados, denegados, no registrados,\nsuspendidos y el porcentaje de autorizados;
 
-:Calcular estadísticas agregadas\npor departamento (total, autorizados,\ndenegados, no registrados, suspendidos);
-
-note right
-  EXCLUSIÓN DE DATOS SENSIBLES:
-  El archivo NO debe incluir:
-  • Nombres de empleados
-  • Apellidos de empleados
-  • Tipo de documento de identidad
-  • Número de documento de identidad
-  • Número de identificación interno
-
-  Columnas del archivo:
-  Departamento, Período, Total Accesos,
-  Autorizados, Denegados,
-  No Registrados, Suspendidos
-end note
-
-:Generar archivo anonimizado;
+:Calcular la distribución de accesos por día;
 
 note right
-  Gap 1.2 §9 IMPLEMENTADO:
-  agregación GROUP BY department,
-  sin datos personales, con filtro
-  opcional departmentNames y formato
-  PDF (1.1).
+  SIN DATOS PERSONALES: el archivo no incluye
+  nombres, documentos ni códigos de empleados.
+  Contiene dos secciones: (1) resumen por
+  departamento y área, y (2) distribución por día.
 end note
 
-:Retornar archivo;
+:Generar el archivo;
 
-|Frontend|
-:Recibir archivo;
-
-:Mostrar opciones de envío;
+|Pantalla|
+:Mostrar la opción "Enviar a Socio Internacional";
 
 |Supervisor / Auditor|
-split
-  :Descargar archivo localmente;
+:Seleccionar "Enviar a Socio Internacional";
 
-split again
-  :Enviar a socio internacional;
+|Pantalla|
+:Mostrar la vista previa del archivo;
 
-  |Backend|
-  :Registrar envío en log\nde auditoría (fecha, hora,\nusuario, período, departamentos);
+:Descargar el archivo para adjuntarlo y compartirlo con el socio;
 
-end split
+note right
+  El envío externo queda fuera del sistema:
+  aquí solo se genera y descarga el archivo.
+end note
 
-:Confirmar generación;
+:Confirmar la generación;
 
 stop
 

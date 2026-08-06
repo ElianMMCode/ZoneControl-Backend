@@ -10,99 +10,78 @@ skinparam swimlane {
 }
 
 note top
-  <b>Pre-condición:</b> El empleado debe existir en el sistema
-  (registrado previamente vía <b>HU-09: Registrar Personal</b>).
-  Se requiere su <b>employeeCode</b> (formato EMP-XXXXXX).
+  <b>Condición previa:</b> la persona debe estar registrada
+  como empleado (HU-09) y tener un correo asociado.
+  El sistema identifica a cada empleado con su código
+  (formato EMP-000001).
 end note
 
 |Administrador|
 start
-:Acceder al módulo de administración;
+:Ir al panel de administración;
 
 :Seleccionar "Crear Usuario";
 
-|Frontend|
-:Pantalla: Formulario de creación;
+|Pantalla|
+:Mostrar el formulario de creación;
 
 |Administrador|
-:Ingresar employeeCode\ndel empleado (EMP-XXXXXX);
+:Buscar y seleccionar el empleado;
 
-:Completar datos del formulario\n(nombre, email, contraseña,\nrol);
+:Elegir el rol que tendrá (Administrador, Gestor o Supervisor);
 
-|Frontend|
-:Validar campos obligatorios;
+:Confirmar la creación;
 
-:Validar formato de email;
+|Pantalla|
+:Enviar la solicitud;
 
-:Validar requisitos de contraseña\n(mín 8 caracteres, 1 mayúscula,\n1 minúscula, 1 dígito,\n1 carácter especial @$!%*?&);
+|Sistema|
+:Verificar que el empleado exista;
 
-if (¿Formulario válido?) then (Sí)
-  :Enviar POST /api/admin/users;
+if (¿El empleado existe?) then (Sí)
+  :Verificar que no tenga un usuario del sistema;
 
-  |Backend|
-  :Recibir datos;
+  if (¿No tiene usuario?) then (Sí)
+    :Verificar que el correo no esté en uso;
 
-  :Validar requisitos de\ncontraseña en backend;
+    if (¿El correo está disponible?) then (Sí)
+      :Crear el usuario sin contraseña;
 
-  :Buscar empleado por employeeCode;
+      :Generar un enlace temporal de activación (24 horas);
 
-  if (¿Empleado existe?) then (Sí)
-    :Validar que el empleado\nno tenga ya un usuario asociado;
+      :Informar que el usuario fue creado;
 
-    if (¿Sin usuario previo?) then (Sí)
-      :Validar email duplicado;
+      |Pantalla|
+      :Mostrar el enlace de activación;
 
-      if (¿Email disponible?) then (Sí)
-        :Encriptar contraseña\ncon BCrypt;
+      :Abrir la página de configuración en una ventana nueva;
 
-        :Guardar User en PostgreSQL\n(vinculado a Employee via @OneToOne);
+      |Usuario nuevo|
+      :Definir su propia contraseña con el enlace;
 
-        :Retornar HTTP 201;
+      :Ingresar al sistema;
 
-        |Frontend|
-        :Pantalla: Notificación de éxito;
-
-        :Actualizar lista de usuarios;
-
-        |Administrador|
-        :Confirmar creación;
-
-      else (No)
-        :Retornar HTTP 409\n"Email ya registrado";
-
-        |Frontend|
-        :Pantalla: Error;
-        |Administrador|
-        :Corregir email;
-      endif
-
+      stop
     else (No)
-      :Retornar HTTP 409\n"El empleado ya tiene\nun usuario de sistema";
-
-      |Frontend|
-      :Pantalla: Error;
+      :Informar que ese correo ya está en uso;
+      |Pantalla|
+      :Mostrar el error;
       |Administrador|
-      :Seleccionar otro empleado;
+      :Elegir otro empleado o corregir el correo;
     endif
-
   else (No)
-    :Retornar HTTP 400\n"Empleado no encontrado:\n{employeeCode}";
-
-    |Frontend|
-    :Pantalla: Error;
+    :Informar que el empleado ya tiene un usuario;
+    |Pantalla|
+    :Mostrar el error;
     |Administrador|
-    :Verificar employeeCode\n(primero registrar empleado\nvía HU-09 si no existe);
+    :Seleccionar otro empleado;
   endif
-
 else (No)
-  if (¿Error de contraseña?) then (Sí)
-    :Pantalla: "La contraseña debe\ntener mínimo 8 caracteres,\n1 mayúscula, 1 minúscula,\n1 número y 1 carácter especial\n(@$!%*?&)";
-  else (No)
-    :Pantalla: Errores\nde validación;
-  endif
-
+  :Informar que el empleado no está registrado;
+  |Pantalla|
+  :Mostrar el error;
   |Administrador|
-  :Corregir campos inválidos;
+  :Verificar el código del empleado;
 endif
 
 stop

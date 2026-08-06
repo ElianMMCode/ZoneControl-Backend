@@ -7,55 +7,52 @@ skinparam activity {
 
 |Visitante|
 start
-:Acceder a la página principal del sitio;
+:Entrar a la página principal del sitio;
 
-:Visualizar menú;
-
-:Consultar información institucional;
+:Revisar el menú de navegación;
 
 split
 
-  |Frontend|
-  :Consultar datos de contacto;
+  |Pantalla|
+  :Consultar la información de la empresa;
 
-  :Cargar información de contacto;
-
-  :Mostrar teléfonos, email, redes sociales;
+  :Mostrar misión, visión y descripción;
 
 split again
-  :Consultar ubicación de sedes;
+  :Consultar los datos de contacto;
 
-  :Cargar datos de ubicación;
-
-  :Mostrar direcciones; 
+  :Mostrar teléfonos, correo y redes sociales;
 
 split again
-  :Consultar catálogo de\nservicios/productos;
+  :Consultar la ubicación de las sedes;
 
-  :Cargar listado de productos;
-
-  :Mostrar nombre, descripción,\nprincipio activo, presentación;
+  :Mostrar las direcciones y coordenadas de cada sede;
 
 split again
-  :Descargar folleto informativo;
+  :Consultar el catálogo de productos;
 
-  |Backend|
-  :Recibir solicitud de descarga;
+  :Mostrar el nombre, la descripción y la presentación de cada producto;
 
-  :Buscar archivo PDF en servidor;
+split again
+  :Descargar el folleto informativo;
 
-  if (¿Archivo existe?) then (Sí)
-    :Enviar archivo PDF;
+  |Sistema|
+  :Recibir la solicitud de descarga;
+
+  :Buscar el folleto;
+
+  if (¿El folleto está disponible?) then (Sí)
+    :Enviar el folleto al visitante;
   else (No)
-    :Generar error;
+    :Informar que el folleto aún no está disponible;
   endif
 
-  |Frontend|
-  :Iniciar descarga;
+  |Pantalla|
+  :Iniciar la descarga;
 
 end split
 
-:Fin de la navegación;
+:Fin de la visita;
 
 stop
 

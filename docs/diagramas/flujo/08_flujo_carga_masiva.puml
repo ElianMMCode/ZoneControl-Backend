@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-05: Carga Masiva
+title Flujo CU-05: Carga Masiva de Personal
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,88 +11,73 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Acceder a "Carga Masiva";
+:Ir a "Carga Masiva";
 
-|Frontend|
-:Mostrar interfaz de carga;
+|Pantalla|
+:Mostrar la pantalla de carga;
 
 |Gestor de Personal|
 split
-  :Descargar plantilla CSV\ncon formato admitido;
+  :Descargar la plantilla con el formato permitido;
 
-  |Backend|
-  :Servir archivo\nplantilla_carga_masiva_personal.csv\ncon encabezados y fila de ejemplo;
+  |Sistema|
+  :Entregar la plantilla con sus columnas\ny un ejemplo;
 
   |Gestor de Personal|
-  :Llenar la plantilla con\nlos datos del personal;
-
+  :Llenar la plantilla con los datos del personal;
 split again
-  :Seleccionar archivo\npreviamente preparado;
-
+  :Seleccionar un archivo ya preparado;
 end split
 
-:Subir archivo;
+:Subir el archivo;
 
-|Backend|
-:Recibir archivo;
+|Sistema|
+:Recibir el archivo;
 
-:Validar extensión del archivo\n(.csv o .txt);
+:Verificar que sea del tipo permitido (CSV o TXT) y que no supere los 10 MB;
 
-if (¿Extensión válida?) then (Sí)
-  :Leer contenido del archivo;
+if (¿El archivo es válido?) then (Sí)
+  :Leer el contenido;
 
-  :Validar estructura\ny encabezados\n(tipo_documento, documento_identidad,\nnombres, apellidos, cargo,\ndepartamento, estado);
+  :Verificar que las columnas sean las de la plantilla\n(tipo de documento, número, nombres, apellidos,\ncargo, departamento, estado y fecha de ingreso);
 
-  if (¿Encabezados correctos?) then (Sí)
-    :Iniciar validación fila por fila;
+  if (¿Las columnas son correctas?) then (Sí)
+    :Revisar cada fila;
 
-    while (¿Quedan filas?) is (Sí)
-      :Obtener siguiente fila;
+    while (¿Quedan filas por revisar?) is (Sí)
+      :Verificar el tipo de documento (CC, CE, TI, PA, RC);
 
-      :Validar tipo documento\n(CC, CE, TI, PA, RC);
+      :Verificar que el documento no esté duplicado en el archivo ni ya exista en el sistema;
 
-      :Validar documento identidad\nno duplicado en BD ni en archivo;
+      :Verificar que los campos obligatorios estén completos;
 
-      :Validar campos obligatorios;
+      :Verificar que el departamento exista;
 
-      :Validar departamento existente;
-
-      if (¿Fila válida?) then (Sí)
-        :Marcar como válida;
+      if (¿La fila es válida?) then (Sí)
+        :Marcarla como válida;
       else (No)
-        :Marcar como inválida;
-        :Registrar error\n(fila, campo, motivo);
+        :Marcarla como inválida y guardar el motivo;
       endif
-
     endwhile (No)
 
-    :Consolidar resultados;
-    :Separar filas válidas e inválidas;
+    :Registrar a los empleados válidos asignando su código (EMP-000001…);
 
-    if (¿Filas válidas?) then (Sí)
-      :Generar ID interno para\ncada registro válido\n(EMP-XXXXXX secuencial);
+    |Pantalla|
+    :Mostrar el resumen (total, registrados y errores);
 
-      :INSERT múltiple en PostgreSQL;
-
-      :Registrar operación en log;
-    endif
-
-    :Retornar HTTP 200 con resumen\ny reporte de errores descargable;
+    :Mostrar la tabla con los errores de cada fila;
 
     |Gestor de Personal|
-    :Pantalla: Resumen de carga\n(éxitos, errores, total);
-
-    :Descargar detalle de errores\nsi existen;
-
+    :Corregir las filas con errores y volver a subir si se desea;
   else (No)
-    :Retornar HTTP 400
-    "Encabezados incorrectos.
-    Descargue la plantilla";
+    :Informar que las columnas no coinciden con la plantilla;
+    |Pantalla|
+    :Mostrar el error;
   endif
 else (No)
-  :Retornar HTTP 415
-  "Solo se permiten
-  archivos .csv y .txt";
+  :Informar que el archivo no es del tipo permitido o supera el tamaño máximo;
+  |Pantalla|
+  :Mostrar el error;
 endif
 
 stop

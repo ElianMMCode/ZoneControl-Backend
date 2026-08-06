@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-11g: Alertas de Anomalías de Acceso
+title Flujo CU-11d: Alertas de Anomalías de Acceso
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,30 +11,30 @@ skinparam swimlane {
 
 |Sistema|
 start
-:Validación de acceso (POST /api/access/validate);
+:Registrar un intento de acceso;
 
-if (¿≥3 denegaciones en 15 min?) then (Sí)
-  :Crear alerta DENEGACIONES_REPETIDAS;
-elseif (¿Zona cerrada/reabierta?) then (Sí)
-  :Crear alerta ZONA_EMERGENCIA (media);
+if (¿Hay 3 o más denegaciones del mismo empleado en 15 minutos?) then (Sí)
+  :Crear una alerta de "denegaciones repetidas";
+elseif (¿Se cerró o reabrió una zona por emergencia?) then (Sí)
+  :Crear una alerta de "emergencia de zona";
 else (No)
-  :Sin alerta;
+  :No se crea ninguna alerta;
 endif
 
-:Persistir AccessAlert;
+:Guardar la alerta;
 
-:Publicar evento SSE alert.created;
+:Mostrarla en el panel en tiempo real;
 
 |Supervisor / Auditor|
-:Pantalla de zonas muestra la alerta\nen el panel de alertas;
+:Ver la alerta en el panel de "Zonas en vivo";
 
-:Consultar histórico\nGET /api/access/alerts?desde=&leido=;
+|Administrador|
+:Ver la alerta en el panel "Alertas de seguridad" del panel de administración;
 
-note right
-  HU-23 (2.4 §9): detección
-  on-write durante la validación.
-  Roles: ADMIN/SUPERVISOR.
-end note
+:Revisarla y marcarla como leída;
+
+|Sistema|
+:Guardar la alerta como leída;
 
 stop
 

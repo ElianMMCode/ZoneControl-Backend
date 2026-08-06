@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-08: Consultar Historial
+title Flujo CU-08: Consultar Historial de Accesos
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,46 +11,36 @@ skinparam swimlane {
 
 |Supervisor / Auditor|
 start
-:Acceder a "Reportes y Auditoría";
+:Ir a "Reportes de Auditoría";
 
 :Seleccionar "Consultar Historial";
 
-|Frontend|
-:Pantalla: Formulario de consulta;
+|Pantalla|
+:Mostrar el formulario de consulta;
 
 |Supervisor / Auditor|
-:Seleccionar rango de fechas;
+:Seleccionar el rango de fechas (obligatorio);
 
-:Aplicar filtros opcionales\n(empleado, departamento, resultado);
+:Aplicar filtros opcionales\n(empleado, departamento, área y resultado);
 
 :Presionar "Consultar";
 
-|Frontend|
-:Validar rango de fechas;
+|Pantalla|
+:Verificar que la fecha de inicio no sea posterior a la de fin;
 
-if (¿Fechas válidas?) then (Sí)
-  :Enviar GET\n(fechaInicio, fechaFin, employeeCode,\ndepartment, resultado);
+if (¿Las fechas son válidas?) then (Sí)
+  :Enviar la consulta;
 
-  |Backend|
-  :Consultar historial en PostgreSQL\ncon predicados AND;
+  |Sistema|
+  :Buscar los registros de acceso del período con los filtros;
 
-  :Retornar registros;
+  |Pantalla|
+  :Mostrar la tabla del historial (fecha, código, empleado, área, departamento y resultado);
 
-  |Frontend|
-  :Pantalla: Tabla de historial;
-
-  :Opción: Exportar;
-
+  :Ofrecer la opción de exportar (CU-09);
 else (No)
-  :Pantalla: Error "Rango inválido";
-
+  :Mostrar el error "Rango de fechas inválido";
 endif
-
-note right
-  Filtro por departamento (gap 1.3 §9,
-  implementado): GET /api/historial?department=
-  y ExportRequest.departamentoName.
-end note
 
 stop
 

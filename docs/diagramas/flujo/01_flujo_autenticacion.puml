@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-02: Autenticación
+title Flujo CU-02: Iniciar sesión en el sistema
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -9,72 +9,66 @@ skinparam swimlane {
   BorderThickness 2
 }
 
-|Frontend|
+|Pantalla|
 start
-:Mostrar formulario de login;
+:Mostrar el formulario de ingreso;
 
-:Ingresar correo electrónico;
+|Usuario|
+:Ingresar el correo y la contraseña;
 
-:Ingresar contraseña;
+:Confirmar el ingreso;
 
-:Validar campos obligatorios en frontend;
-
-if (¿Campos válidos?) then (Sí)
-  :Enviar POST;
+|Pantalla|
+if (¿Se completaron todos los campos?) then (Sí)
+  :Enviar la solicitud de ingreso;
 else (No)
-  :Mostrar errores de validación;
-  :Permitir corrección;
+  :Mostrar los campos que faltan;
+  :Permitir corregirlos;
   stop
 endif
 
-|Backend|
-:Recibir petición de login;
+|Sistema|
+:Recibir la solicitud;
 
-:Validar formato del email;
+:Buscar la cuenta con ese correo;
 
-:Consultar PostgreSQL - Usuarios;
+if (¿La cuenta existe?) then (Sí)
+  :Comparar la contraseña ingresada;
 
-if (¿Usuario encontrado?) then (Sí)
-  :Comparar contraseña;
+  if (¿La contraseña es correcta?) then (Sí)
+    if (¿La cuenta está activa?) then (Sí)
+      :Registrar el ingreso en el sistema;
 
-  if (¿Contraseña válida?) then (Sí)
-    if (¿Usuario activo?) then (Sí)
+      :Informar que el ingreso fue exitoso;
 
-      :Generar token con clave secreta;
+      |Pantalla|
+      :Llevar al usuario a su panel según su rol;
 
-      :Registrar intento exitoso en logs;
-
-      :Retornar HTTP 200;
-      :Body: { token, usuario: { id, nombre, email, rol } };
-
-      |Frontend|
-
-      :Redirigir según rol;
-
-      |Frontend - Dashboard|
-      if (Rol == "Administrador") then (Admin)
-        :Mostrar panel de administración;
-      elseif (Rol == "Gestor de Personal") then (Gestor)
-        :Mostrar panel de gestión de personal;
-      elseif (Rol == "Supervisor / Auditor") then (Supervisor)
-        :Mostrar panel de reportes;
+      |Usuario|
+      if (¿El rol es Administrador?) then (Admin)
+        :Mostrar el panel de administración;
+      elseif (¿El rol es Gestor de Personal?) then (Gestor)
+        :Mostrar el panel de gestión de personal;
+      elseif (¿El rol es Supervisor / Auditor?) then (Supervisor)
+        :Mostrar el panel de supervisión;
       endif
 
       stop
     else (No)
-      :Retornar HTTP 403 - "Cuenta desactivada";
+      :Informar que la cuenta está desactivada;
     endif
   else (No)
-    :Retornar HTTP 401 - "Contraseña incorrecta";
+    :Informar que la contraseña es incorrecta;
   endif
 else (No)
-  :Retornar HTTP 404 - "Usuario no registrado";
+  :Informar que no existe una cuenta con ese correo;
 endif
 
-|Frontend|
-:Mostrar mensaje de error;
+|Pantalla|
+:Mostrar el mensaje de error;
 
-:Permitir corrección contraseña;
+|Usuario|
+:Corregir los datos e intentar de nuevo;
 
 stop
 

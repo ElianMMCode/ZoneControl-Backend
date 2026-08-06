@@ -11,47 +11,42 @@ skinparam swimlane {
 
 |Administrador|
 start
-:Acceder al módulo de administración;
+:Ir al panel de administración;
 
 :Seleccionar "Gestionar Usuarios";
 
-|Frontend|
-:Pantalla: Lista de usuarios;
+|Pantalla|
+:Mostrar la lista de usuarios;
 
 |Administrador|
-:Ubicar usuario a modificar;
+:Ubicar el usuario;
 
-:Hacer clic en el toggle;
+:Cambiar su estado con el interruptor (activar o desactivar);
 
-|Frontend|
-:Enviar PATCH;
+|Pantalla|
+:Enviar la solicitud;
 
-|Backend|
-:Recibir cambio de estado;
+|Sistema|
+:Verificar que no se esté desactivando la propia cuenta;
 
-:Validar que no se desactive a sí mismo;
+if (¿El cambio es válido?) then (Sí)
+  :Guardar el nuevo estado;
 
-if (¿Cambio válido?) then (Sí)
-  :Actualizar estado en PostgreSQL;
+  :Si se desactivó, sus sesiones dejan de ser válidas de inmediato;
 
-  :Retornar HTTP 200;
+  |Pantalla|
+  :Actualizar el estado en la lista;
 
-  |Frontend|
-  :Actualizar estado en tabla;
-
-  :Pantalla: Notificación de éxito;
+  :Mostrar confirmación;
 
   |Administrador|
-  :Confirmar cambio;
-
+  :Confirmar el cambio;
 else (No)
-  :Retornar HTTP 400;
+  :Informar que no se puede desactivar la propia cuenta;
+  |Pantalla|
+  :Revertir el interruptor;
 
-  |Frontend|
-  :Revertir toggle;
-
-  :Pantalla: Error;
-
+  :Mostrar el error;
 endif
 
 stop

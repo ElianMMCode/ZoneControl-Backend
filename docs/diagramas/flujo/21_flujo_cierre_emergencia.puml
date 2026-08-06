@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-11f: Cerrar Zona por Emergencia
+title Flujo CU-11c: Cerrar Zona por Emergencia
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,50 +11,48 @@ skinparam swimlane {
 
 |Supervisor / Auditor|
 start
-:Acceder a "Zonas en vivo";
+:Ir a "Zonas en vivo";
 
-:Activar "Cerrar por emergencia"\nen una zona;
+:Seleccionar "Cerrar por emergencia" en una zona;
 
-|Frontend|
-:Enviar POST /api/access/zones/{name}/emergency\n{cerrada: true};
+|Pantalla|
+:Enviar la solicitud;
 
-|Backend|
-:Marcar emergencyClosed = true;
+|Sistema|
+:Marcar la zona como cerrada por emergencia;
 
-:Crear alerta ZONA_EMERGENCIA\n(severidad media);
+:Crear una alerta de emergencia de la zona;
 
-:Publicar eventos SSE\nzone.updated + alert.created;
+:Actualizar el panel en tiempo real;
 
-|Frontend|
-:Zona muestra estado EMERGENCIA;
-
-|Supervisor / Auditor|
-:Intentar validar un acceso\nen la zona cerrada;
-
-|Backend|
-:Resultado → DENIED\n"ZONA CERRADA POR EMERGENCIA";
-
-:Registrar en AccessHistory;
-
-|Frontend|
-:Mostrar denegación en vivo;
+|Pantalla|
+:Mostrar la zona en estado de EMERGENCIA;
 
 |Supervisor / Auditor|
-:Reabrir zona;\nPOST .../emergency {cerrada: false};
+:Intentar validar una entrada en la zona cerrada;
 
-|Backend|
-:emergencyClosed = false;
+|Sistema|
+:Denegar el ingreso por emergencia y guardarlo en el historial;
 
-:Crear alerta de reapertura;
+|Pantalla|
+:Mostrar la denegación en vivo;
 
-:Publicar zone.updated;
+|Supervisor / Auditor|
+:Seleccionar "Reabrir zona";
 
-|Frontend|
-:Zona vuelve a estado operativo;
+|Sistema|
+:Marcar la zona como operativa;
+
+:Crear una alerta de reapertura;
+
+:Actualizar el panel en tiempo real;
+
+|Pantalla|
+:Mostrar la zona en estado operativo;
 
 note right
-  HU-22 (2.2 §9): kill switch.
-  Roles: ADMIN/SUPERVISOR.
+  Una zona cerrada por emergencia deniega
+  todo ingreso hasta que se reabra.
 end note
 
 stop

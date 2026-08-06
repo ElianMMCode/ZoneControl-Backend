@@ -11,58 +11,55 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Acceder a "Gestionar Permisos";
+:Ir a "Gestionar Permisos";
 
-:Buscar empleado por ID o nombre;
+:Buscar al empleado por código o nombre;
 
-|Backend|
-:Consultar PostgreSQL;
-
-:Retornar resultados;
+|Sistema|
+:Buscar al empleado;
 
 |Gestor de Personal|
-:Seleccionar empleado;
+:Seleccionar al empleado;
 
 :Seleccionar "Suspender Acceso";
 
-|Frontend|
-:Pantalla: Permisos activos del empleado;
+|Pantalla|
+:Mostrar los permisos del empleado;
 
 |Gestor de Personal|
-:Seleccionar permiso a suspender;
+:Seleccionar el permiso a suspender;
 
-:Definir fecha de reactivación;
+:Definir la fecha en que se podrá reactivar;
 
-:Enviar PATCH /api/permisos/{id}/suspend;
+:Confirmar la suspensión;
 
-|Backend|
-:Actualizar estado a "suspendido";
+|Pantalla|
+:Enviar la solicitud;
 
-:Guardar fecha de reactivación;
+|Sistema|
+:Marcar el permiso como suspendido;
 
-:Retornar HTTP 200;
+:Guardar la fecha de reactivación;
+
+|Pantalla|
+:Mostrar confirmación;
 
 |Gestor de Personal|
-:Confirmar suspensión;
+:Confirmar la suspensión;
 
 split
-  :(Opcional) Reactivar permiso\nantes de la fecha programada;
-  :Enviar PATCH\n/api/permisos/{id}/reactivate;
-  |Backend|
-  :Estado → ACTIVO;\nlimpiar fechaReactivacion;
-  |Gestor de Personal|
-  :Confirmar reactivación;
+  :(Opcional) Reactivar el permiso antes de la fecha prevista;
+  :Confirmar la reactivación;
+  |Sistema|
+  :Marcar el permiso como activo y limpiar la fecha de reactivación;
 split again
-  :(Opcional) Editar fechas/horarios;
-  :Enviar PATCH /api/permisos/{id};
+  :(Opcional) Editar las fechas u horarios del permiso;
 end split
 
 note right
-  NO hay auto-reactivación
-  (@Scheduled). La reactivación
-  es manual (PATCH /reactivate)
-  o por cascade al reactivar el
-  empleado.
+  El sistema NO reactiva permisos de forma
+  automática. La reactivación es manual, o
+  se aplica al reactivar al empleado.
 end note
 
 stop

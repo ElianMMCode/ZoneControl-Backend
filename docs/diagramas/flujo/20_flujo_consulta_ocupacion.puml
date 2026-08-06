@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-11d: Consultar Ocupación en Tiempo Real
+title Flujo CU-11b: Consultar la Ocupación en Tiempo Real
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,41 +11,33 @@ skinparam swimlane {
 
 |Supervisor / Auditor|
 start
-:Acceder a "Zonas en vivo";
+:Ir a "Zonas en vivo";
 
-|Frontend|
-:Pantalla: panel de zonas con\nocupación y alertas (SSE);
+|Sistema|
+:Conectar el panel para recibir la información en tiempo real;
 
-|Backend|
-:Conectar GET /api/access/stream\n(token por query param);
+:Enviar el estado inicial de las zonas y su ocupación;
 
-:Enviar snapshot\n(zonas + ocupación);
-
-|Frontend|
-:Renderizar ocupación por zona;
+|Pantalla|
+:Mostrar cada zona con su aforo total (cuántas personas están dentro);
 
 |Supervisor / Auditor|
-:Registrar salida de un empleado;
-:Enviar POST /api/access/exit\n(employeeCode, productionAreaName);
+:Seleccionar "Personal / Autorizaciones" en una zona;
 
-|Backend|
-if (¿Existe sesión activa?) then (Sí)
-  :Cerrar sesión (exitTime = now);
-  :Retornar 200;
-else (No)
-  :Retornar HTTP 400\n"Sin sesión activa";
-endif
+|Pantalla|
+:Mostrar la ocupación detallada de la zona\n(quiénes están dentro y desde qué hora);
 
-:Publicar evento SSE\noccupancy.updated;
+:Mostrar las pestañas "Empleados asignados" y "Autorizaciones";
 
-|Frontend|
-:Actualizar aforo en vivo;
+:Mostrar los empleados con acceso a la zona\ny sus permisos (vigencia, horario y turnos por día);
+
+|Supervisor / Auditor|
+:Cerrar el panel de la zona;
 
 note right
-  HU-21 (2.1 §9): al validar un
-  acceso autorizado se abre una
-  sesión; doble entrada cierra la
-  anterior. Sin rol SEGURIDAD.
+  La entrada de una persona se registra desde
+  "Validar Credencial". La salida también se
+  registra allí, en la pestaña "Salida".
 end note
 
 stop

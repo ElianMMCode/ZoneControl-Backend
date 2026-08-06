@@ -11,57 +11,55 @@ skinparam swimlane {
 
 |Gestor de Personal / Administrador|
 start
-:Acceder a "Áreas de Producción";
+:Ir a "Áreas de Producción";
 
-|Frontend|
-:Pantalla: listado de áreas\n(GET /api/permisos/areas);
+|Pantalla|
+:Mostrar el listado de áreas;
 
 |Gestor de Personal / Administrador|
 split
-  :Crear área;
-  |Frontend|
-  :Modal: nombre (≤30) y descripción;
-  :Enviar POST /api/permisos/areas;
-  |Backend|
-  if (¿Nombre único?) then (Sí)
-    :Crear y retornar 201;
+  :Crear un área;
+  |Pantalla|
+  :Mostrar el formulario (nombre de hasta 30 caracteres y descripción);
+  :Enviar la solicitud;
+  |Sistema|
+  if (¿El nombre está disponible?) then (Sí)
+    :Crear el área;
   else (No)
-    :Retornar HTTP 409;
-    |Frontend|
-    :Error "Ya existe un área\ncon ese nombre";
+    :Informar que ya existe un área con ese nombre;
+    |Pantalla|
+    :Mostrar el error;
   endif
 split again
-  :Editar área;
-  |Frontend|
-  :Modal con datos actuales;
-  :Enviar PUT /api/permisos/areas/{id};
-  |Backend|
-  if (¿Área existe?) then (Sí)
-    :Actualizar y retornar 200;
+  :Editar un área;
+  |Pantalla|
+  :Mostrar el formulario con los datos actuales;
+  :Enviar la solicitud;
+  |Sistema|
+  if (¿El área existe?) then (Sí)
+    :Actualizar el área;
   else (No)
-    :Retornar HTTP 404;
+    :Informar que el área no existe;
   endif
 split again
-  :Eliminar área;
-  |Frontend|
-  :Confirmar eliminación;
-  :Enviar DELETE /api/permisos/areas/{id};
-  |Backend|
-  if (¿Tiene permisos activos asociados?) then (No)
-    :Eliminar y retornar 200;
+  :Eliminar un área;
+  |Pantalla|
+  :Pedir confirmación;
+  :Enviar la solicitud;
+  |Sistema|
+  if (¿El área tiene permisos activos asociados?) then (No)
+    :Eliminar el área;
   else (Sí)
-    :Retornar HTTP 409\n"Área con permisos activos";
-    |Frontend|
-    :Error; no se permite eliminar;
+    :Informar que no se puede eliminar porque tiene permisos activos;
+    |Pantalla|
+    :Mostrar el error;
   endif
 end split
 
 note right
-  Implementado backend
-  (PermissionController). El
-  histórico AccessHistory conserva
-  el nombre del área aunque se
-  renombre. Frontend: /admin/areas
+  El historial conserva el nombre del área
+  aunque se renombre. La gestión de áreas
+  también está en el panel del administrador.
 end note
 
 stop

@@ -11,63 +11,42 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Acceder a "Buscar Personal";
+:Ir a "Buscar Personal";
 
-|Frontend|
-:Mostrar formulario de búsqueda;
+|Pantalla|
+:Mostrar el formulario de búsqueda;
 
 |Gestor de Personal|
-:Ingresar filtros de búsqueda\n(tipo doc, nro. doc., nombre,\napellido, departamento, estado);
+:Ingresar los filtros deseados\n(tipo o número de documento, nombre,\napellido, departamento y estado);
 
-:Seleccionar al menos un filtro;
+note right
+  Todos los filtros son opcionales: si no se
+  elige ninguno, se listan todos los empleados.
+end note
 
 :Presionar "Buscar";
 
-|Frontend|
-:Validar que haya al menos un filtro;
+|Pantalla|
+:Enviar la búsqueda;
 
-:Enviar GET;
+|Sistema|
+:Buscar a los empleados según los filtros;
 
-|Backend|
-:Recibir parámetros de consulta;
-
-:Consultar PostgreSQL con filtros;
-
-:Retornar resultados;
-
-|Frontend|
-:Renderizar tabla de resultados;
-
-split
-  :Mostrar resultados paginados;
-
-  :Navegar entre páginas;
-
-split again
-  :Ordenar por columna;
-
-  :Re-consultar con nuevo orden;
-
-split again
-  :Exportar resultados;
-
-  :Descargar CSV/Excel;
-
-end split
+|Pantalla|
+:Mostrar la tabla de resultados con paginación;
 
 |Gestor de Personal|
-:Seleccionar empleado de la lista;
-
 split
-  :Ver detalle del empleado;
+  :Avanzar de página o ordenar por una columna;
 split again
-  :Editar empleado;
-  note right: PATCH /api/personal/{id}\n(cambio de datos\ny/o estado)
+  :Seleccionar un empleado para ver su detalle;
 split again
-  :Gestionar permisos;
+  :Seleccionar un empleado para editarlo;
+split again
+  :Seleccionar un empleado para gestionar sus permisos;
 end split
 
-:Fin de búsqueda;
+:Fin de la búsqueda;
 
 stop
 

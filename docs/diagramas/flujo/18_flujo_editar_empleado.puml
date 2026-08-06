@@ -11,104 +11,88 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Seleccionar empleado\nde resultados de búsqueda;
+:Seleccionar al empleado de los resultados de búsqueda;
 
-:Hacer clic en "Editar";
+:Seleccionar "Editar";
 
-|Frontend|
-:Mostrar formulario de edición\ncon datos actuales del empleado\ny selector de estado\n(ACTIVO/INACTIVO/SUSPENDIDO);
+|Pantalla|
+:Mostrar el formulario con los datos actuales del empleado\ny el selector de estado (activo, inactivo o suspendido);
 
 |Gestor de Personal|
-:Modificar campos requeridos\n(nombre, apellido, cargo,\ntipo doc, nro. doc.,\ndepartamento, estado);
+:Modificar los campos deseados\n(nombres, apellidos, cargo, documento,\ndepartamento y estado);
 
-:Presionar "Guardar";
+:Guardar;
 
-|Frontend|
-:Validar campos;
+|Pantalla|
+:Enviar la solicitud;
 
-:Enviar PATCH /api/personal/{id};
+|Sistema|
+if (¿El empleado existe?) then (Sí)
+  :Guardar los campos modificados;
 
-|Backend|
-:Recibir actualización;
+  if (¿Cambió el tipo o número de documento?) then (Sí)
+    :Verificar que el nuevo documento no exista;
 
-if (¿Empleado existe?) then (Sí)
-  :Actualizar campos\nsolo si fueron enviados\n(patch parcial);
-
-  if (¿Cambió tipo/número documento?) then (Sí)
-    :Verificar unicidad\ntipo doc + nro. doc.;
-
-    if (¿Documento disponible?) then (Sí)
-      :Actualizar documento;
+    if (¿El documento está disponible?) then (Sí)
+      :Guardar el nuevo documento;
     else (No)
-      :Retornar HTTP 409\n"Ya existe un empleado\ncon ese documento";
-      |Frontend|
-      :Pantalla: Error de documento duplicado;
+      :Informar que ya existe un empleado con ese documento;
+      |Pantalla|
+      :Mostrar el error;
       stop
     endif
   endif
 
-  if (¿Cambió departamento?) then (Sí)
-    :Verificar que exista;
-    if (¿Departamento existe?) then (Sí)
-      :Actualizar departamento;
-    else (No)
-      :Retornar HTTP 400\n"Departamento no encontrado";
-      stop
-    endif
+  if (¿El nuevo estado es inactivo o suspendido?) then (Sí)
+    :Suspender automáticamente sus permisos de acceso;
+
+    :Desactivar automáticamente su usuario del sistema, si lo tiene;
   endif
 
-  if (¿Status nuevo = INACTIVO o SUSPENDIDO?) then (Sí)
-    :CASCADE a permisos:\n→ AccessPermission.status = SUSPENDIDO;
+  :Guardar los cambios;
 
-    :CASCADE a User:\n→ User.status = INACTIVO\n(si existe User vinculado);
-  endif
+  |Pantalla|
+  :Mostrar confirmación;
 
-  :Guardar en PostgreSQL;
-
-  :Retornar HTTP 200\ncon datos actualizados;
-
-  |Frontend|
-  :Pantalla: Notificación de éxito;
-
-  :Actualizar fila en tabla;
+  :Actualizar la fila en la lista;
 
   |Gestor de Personal|
-  :Confirmar edición;
+  :Confirmar la edición;
 
-  :(Opcional) Gestionar fotografía;
-  |Frontend|
+  :(Opcional) Cambiar la fotografía;
+  |Pantalla|
   split
-    :Subir/cambiar foto\nPOST /api/personal/{id}/photo;
+    :Subir o reemplazar la fotografía;
   split again
-    :Eliminar foto\nDELETE /api/personal/{id}/photo;
+    :Eliminar la fotografía;
   end split
-  |Backend|
-  :Validar formato/tamaño\ny guardar/eliminar archivo;
-  |Frontend|
-  :Actualizar photoUrl;
+  |Sistema|
+  :Verificar el tipo y el tamaño y guardar o eliminar la foto;
 
   |Gestor de Personal|
-  :(Opcional) Asignar nueva área;
-  |Frontend|
-  :Modal "Asignar nueva área"\nPOST /api/permisos\n(empleado + área + fechas + horario);
-  |Backend|
-  :Validar empleado activo\ny unicidad empleado+área;
-  if (¿Sin conflictos?) then (Sí)
-    :Retornar HTTP 201;
+  :(Opcional) Asignar una nueva área de acceso;
+  |Pantalla|
+  :Mostrar el formulario de permiso (área, fechas, horarios y turnos por día);
+
+  |Sistema|
+  :Verificar que el empleado esté activo y que no tenga\nun permiso para esa área;
+
+  if (¿Todo es válido?) then (Sí)
+    :Guardar el permiso;
   else (No)
-    :Retornar HTTP 409;
-    |Frontend|
-    :Error "El empleado ya tiene\nun permiso para esta área";
+    :Informar que el empleado ya tiene un permiso para esa área;
+    |Pantalla|
+    :Mostrar el error;
   endif
 
   |Gestor de Personal|
-  :Confirmar;
-
+  :(Opcional) Suspender o reactivar un permiso desde el detalle;
+  |Sistema|
+  :Actualizar el estado del permiso;
 else (No)
-  :Retornar HTTP 404\n"Empleado no encontrado";
-
-  |Frontend|
-  :Pantalla: Error\n"Empleado no encontrado";
+  :Informar que el empleado no existe;
+  |Pantalla|
+  :Mostrar el error;
 endif
 
 stop

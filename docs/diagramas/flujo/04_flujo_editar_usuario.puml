@@ -11,59 +11,54 @@ skinparam swimlane {
 
 |Administrador|
 start
-:Acceder al módulo de administración;
+:Ir al panel de administración;
 
 :Seleccionar "Gestionar Usuarios";
 
-|Frontend|
-:Pantalla: Lista de usuarios;
+|Pantalla|
+:Mostrar la lista de usuarios;
 
 |Administrador|
-:Buscar y seleccionar usuario;
+:Buscar y seleccionar el usuario;
 
-:Hacer clic en "Editar";
+:Seleccionar "Editar";
 
-|Frontend|
-:Pantalla: Formulario de edición;
+|Pantalla|
+:Mostrar el formulario con los datos del usuario;
 
-:Cargar datos actuales del usuario;
+note right
+  El rol se define al crear el usuario y no se
+  puede cambiar aquí. Nombre, apellido y cargo
+  provienen del empleado vinculado.
+end note
 
 |Administrador|
-:Modificar campos requeridos;
+:Modificar el correo y/o el estado (activo o inactivo);
 
-|Frontend|
-:Validar cambios;
+:Guardar los cambios;
 
-:Enviar PUT /api/admin/usuarios/{id};
+|Pantalla|
+:Enviar la solicitud;
 
-|Backend|
-:Recibir actualización;
+|Sistema|
+:Verificar que el nuevo correo no esté en uso;
 
-:Validar email duplicado;
+if (¿El correo está disponible?) then (Sí)
+  :Guardar los cambios;
 
-if (¿Email disponible?) then (Sí)
-  :Actualizar en PostgreSQL;
+  |Pantalla|
+  :Mostrar confirmación;
 
-  :Retornar HTTP 200;
-
-  |Frontend|
-  :Pantalla: Notificación de éxito;
-
-  :Cerrar formulario;
-
-  :Actualizar fila en tabla;
+  :Actualizar el usuario en la lista;
 
   |Administrador|
-  :Confirmar edición;
-
+  :Confirmar la edición;
 else (No)
-  :Retornar HTTP 409;
-
-  |Frontend|
-  :Pantalla: Error "Email en uso";
-
+  :Informar que ese correo ya está en uso;
+  |Pantalla|
+  :Mostrar el error;
   |Administrador|
-  :Corregir email;
+  :Corregir el correo;
 endif
 
 stop

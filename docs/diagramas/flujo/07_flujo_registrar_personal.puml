@@ -11,74 +11,66 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Acceder a "Gestionar Personal";
+:Ir a "Gestionar Personal";
 
 :Seleccionar "Registrar Personal";
 
-|Frontend|
-:Pantalla: Formulario de registro;
+|Pantalla|
+:Mostrar el formulario de registro;
 
 |Gestor de Personal|
-:Completar datos del empleado\n(tipo documento, nro. documento,\nnombres, apellidos, cargo,\ndepartamento, estado);
+:Completar los datos del empleado\n(tipo y número de documento,\nnombres, apellidos, cargo,\ndepartamento y estado);
 
-|Frontend|
-:Validar campos obligatorios;
+|Pantalla|
+:Verificar que los campos obligatorios estén completos;
 
-:Validar tipo de documento\n(CC, CE, TI, PA, RC);
+:Verificar que el tipo de documento sea válido (CC, CE, TI, PA o RC);
 
-:Validar longitud mínima\nnombres y apellidos;
+if (¿Los datos son válidos?) then (Sí)
+  :Enviar la solicitud;
 
-if (¿Formulario válido?) then (Sí)
-  :Enviar POST;
+  |Sistema|
+  :Recibir los datos;
 
-  |Backend|
-  :Recibir datos del empleado\n(sin ID interno);
+  :Verificar que no exista otro empleado con el mismo documento;
 
-  :Validar tipo de documento\ncontra lista de documentos\ncolombianos válidos;
+  if (¿El documento está disponible?) then (Sí)
+    :Asignar automáticamente un código de empleado (EMP-000001…);
 
-  :Verificar unicidad de\ncombinación tipo documento\n+ número documento;
+    :Guardar al empleado;
 
-  if (¿Documento disponible?) then (Sí)
-    :Generar ID interno\nautomáticamente\n(EMP-XXXXXX secuencial);
+    |Pantalla|
+    if (¿Se quiere adjuntar una fotografía? (opcional)) then (Sí)
+      |Gestor de Personal|
+      :Seleccionar la fotografía (JPG, PNG o WebP, hasta 2 MB);
 
-    :Guardar en PostgreSQL;
+      |Pantalla|
+      :Enviar la fotografía;
 
-    :Retornar HTTP 201\ncon ID interno generado;
+      |Sistema|
+      :Verificar el tipo y el tamaño;
 
-    |Frontend|
-    if (¿Incluye fotografía? (opcional)) then (Sí)
-      :Subir archivo POST\n/api/personal/{id}/photo\n(multipart, JPG/PNG/WebP ≤ 2MB);
-
-      |Backend|
-      :Validar extensión y tamaño;
-
-      :Guardar en uploads/photos/\n{employeeCode}.{ext};
-
-      :Retornar EmployeeSearchResponse\ncon photoUrl actualizada;
+      :Guardar la fotografía y asociarla al empleado;
     else (No)
     endif
 
-    |Frontend|
-    :Pantalla: Notificación de éxito\nmostrando ID interno asignado;
+    |Pantalla|
+    :Mostrar el código de empleado asignado;
 
     |Gestor de Personal|
-    :Confirmar registro;
-
+    :Confirmar el registro;
   else (No)
-    :Retornar HTTP 409;
-
-    |Frontend|
-    :Pantalla: Error\n"Ya existe un empleado\ncon ese documento";
-
+    :Informar que ya existe un empleado con ese documento;
+    |Pantalla|
+    :Mostrar el error;
     |Gestor de Personal|
-    :Corregir tipo o número\nde documento;
-
+    :Corregir el tipo o número de documento;
   endif
 else (No)
-  :Pantalla: Errores de validación;
-
+  |Pantalla|
+  :Mostrar los errores de validación;
   |Gestor de Personal|
-  :Corregir campos inválidos;
+  :Corregir los campos inválidos;
 endif
 
 stop

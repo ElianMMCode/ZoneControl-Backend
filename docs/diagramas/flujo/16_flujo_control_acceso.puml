@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-11: Control de Acceso
+title Flujo CU-11: Validar la Entrada a un Área Restringida
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -9,70 +9,54 @@ skinparam swimlane {
   BorderThickness 2
 }
 
-|Empleado|
+|Supervisor / Auditor|
 start
-:Presenta credencial (employeeCode);
+:Ir a "Validar Credencial";
 
-:Ingresar número de identificación;
+:Seleccionar la pestaña "Entrada";
 
-|Frontend|
-:Validar formato de identificación;
+:Ingresar el código del empleado (EMP-000001…);
 
-:Enviar POST;
+:Seleccionar la zona a la que quiere ingresar;
 
-|Backend|
-:Recibir petición de acceso;
+:Confirmar la validación;
 
-:Registrar timestamp del intento;
+|Pantalla|
+:Enviar la solicitud;
 
-:Consultar PostgreSQL por employeeCode;
+|Sistema|
+:Verificar si la zona está cerrada por emergencia;
 
-if (¿Usuario encontrado?) then (Sí)
-  :Obtener estado del usuario;
+if (¿La zona está en emergencia?) then (Sí)
+  :Resultado: ingreso denegado por emergencia;
+else (No)
+  :Buscar al empleado por su código;
 
-  if (¿Estado == "Activo"?) then (Sí)
-    :Verificar permisos de acceso vigentes;
+  if (¿El empleado existe?) then (Sí)
+    :Verificar que el empleado esté activo;
 
-    if (¿Permiso vigente?) then (Sí)
-      :Establecer resultado: "INGRESO AUTORIZADO";
+    if (¿El empleado está activo?) then (Sí)
+      :Verificar que tenga un permiso vigente para la zona,\nel horario y el día actuales;
 
+      if (¿El permiso es válido?) then (Sí)
+        :Resultado: ingreso autorizado;
+
+        :Abrir la sesión del empleado en la zona;
+      else (No)
+        :Resultado: acceso suspendido;
+      endif
     else (No)
-      :Establecer resultado: "ACCESO SUSPENDIDO";
-
+      :Resultado: ingreso denegado;
     endif
-
   else (No)
-    :Establecer resultado: "INGRESO DENEGADO";
-
+    :Resultado: no registrado;
   endif
-
-else (No)
-  :Establecer resultado: "NO REGISTRADO";
-
 endif
 
-:Registrar en tabla historial_accesos;
+:Guardar el intento en el historial con su resultado y hora;
 
-:Retornar HTTP 200 con resultado;
-
-|Frontend|
-:Recibir respuesta;
-
-if (¿Autorizado?) then (Sí)
-  :Mostrar alerta VERDE;
-
-  :Activar mecanismo de apertura;
-
-else (No)
-  if (¿No Registrado?) then (Sí)
-    :Mostrar alerta AMARILLA;
-
-  else (No)
-    :Mostrar alerta ROJA;
-
-  endif
-
-endif
+|Pantalla|
+:Mostrar el resultado y los datos del empleado;
 
 stop
 

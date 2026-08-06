@@ -1,5 +1,5 @@
 @startuml
-title Flujo CU-09: Generar Documento
+title Flujo CU-09: Generar Documento Descargable
 skinparam activity {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -11,68 +11,44 @@ skinparam swimlane {
 
 |Supervisor / Auditor|
 start
-:Consultar historial (CU-08);
+:Consultar el historial (CU-08);
 
 :Seleccionar "Exportar";
 
-|Frontend|
-:Mostrar opciones de formato;
+|Pantalla|
+:Mostrar las opciones de formato;
 
 |Supervisor / Auditor|
 split
-  :Seleccionar formato PDF;
-
+  :Elegir PDF;
 split again
-  :Seleccionar formato CSV;
-
+  :Elegir Excel;
 split again
-  :Seleccionar formato Excel;
-
+  :Elegir CSV;
 end split
 
-  :Enviar POST;
+  :Confirmar la exportación;
 
-|Backend|
-:Recibir solicitud de exportación;
+|Pantalla|
+:Enviar la solicitud;
 
-:Obtener datos del historial;
+|Sistema|
+:Obtener los registros del historial consultado;
 
-:Construir documento;
-
-note right
-  Estructura del documento:
-  • Encabezado del reporte
-  • Fecha de generación
-  • Filtros aplicados
-  • Tabla de datos
-  • Resumen estadístico
-end note
-
-:Generar archivo;
-
-if (¿Formato PDF?) then (Sí)
-  :Generar PDF con itextpdf 5\n(PdfExporter compartido);
-elseif (¿Formato CSV?) then (CSV)
-  :Generar CSV con separador comma;
-else (Excel)
-  :Generar XLSX con Apache POI;
-endif
+:Construir el documento con los mismos filtros aplicados;
 
 note right
-  Gap 1.1 §9 IMPLEMENTADO:
-  el formato PDF está disponible en
-  /api/historial/export y en el
-  archivo periódico.
+  El documento incluye el período, los
+  filtros usados, la tabla de registros y
+  un resumen de resultados.
 end note
 
-:Retornar archivo como descarga;
+:Entregar el archivo para descarga;
 
-|Frontend|
-:Recibir archivo;
+|Pantalla|
+:Descargar el archivo;
 
-:Navegador descarga el archivo;
-
-:Confirmar descarga al;
+:Confirmar la descarga;
 
 stop
 

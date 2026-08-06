@@ -11,38 +11,37 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Acceder a "Gestionar Permisos";
+:Ir a "Gestionar Permisos";
 
-:Buscar empleado por ID o nombre;
+:Buscar al empleado por código o nombre;
 
-|Backend|
-:Consultar PostgreSQL;
-
-:Retornar resultados;
+|Sistema|
+:Buscar al empleado;
 
 |Gestor de Personal|
-:Seleccionar empleado;
+:Seleccionar al empleado;
 
 :Seleccionar "Revocar Acceso";
 
-|Frontend|
-:Pantalla: Permisos activos del empleado;
+|Pantalla|
+:Mostrar los permisos del empleado;
 
 |Gestor de Personal|
-:Seleccionar permiso a revocar;
+:Seleccionar el permiso a revocar;
 
-|Frontend|
-:Confirmar revocación;
+:Confirmar la revocación (es una acción definitiva);
 
-:Enviar DELETE;
+|Pantalla|
+:Enviar la solicitud;
 
-|Backend|
-:Eliminar permiso en PostgreSQL;
+|Sistema|
+:Eliminar el permiso;
 
-:Retornar HTTP 200;
+|Pantalla|
+:Mostrar confirmación;
 
 |Gestor de Personal|
-:Confirmar revocación;
+:Confirmar la revocación;
 
 stop
 

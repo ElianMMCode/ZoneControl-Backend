@@ -11,48 +11,48 @@ skinparam swimlane {
 
 |Gestor de Personal|
 start
-:Acceder a "Gestionar Permisos";
+:Ir a "Gestionar Permisos";
 
-:Buscar empleado por ID o nombre;
+:Buscar al empleado por código o nombre;
 
-|Backend|
-:Consultar PostgreSQL;
-
-:Retornar resultados;
+|Sistema|
+:Buscar al empleado;
 
 |Gestor de Personal|
-:Seleccionar empleado;
+:Seleccionar al empleado;
 
 :Seleccionar "Otorgar Acceso";
 
-:Seleccionar áreas/zonas permitidas;
+:Seleccionar el área a la que tendrá acceso;
 
-:Definir horarios de acceso;
+:Definir los horarios de acceso (hora de inicio y fin);
 
-:Definir fecha de inicio y expiración;
+:Definir, si se desea, horarios distintos por día de la semana (turnos);
 
-|Frontend|
-:Enviar POST;
+:Definir la fecha de inicio y de vencimiento del permiso;
 
-|Backend|
-:Validar que empleado esté activo;
+:Confirmar;
 
-:Verificar conflictos de permisos;
+|Pantalla|
+:Enviar la solicitud;
 
-if (¿Sin conflictos?) then (Sí)
-  :Guardar en tabla permisos;
+|Sistema|
+:Verificar que el empleado esté activo;
 
-  :Retornar HTTP 201;
+:Verificar que el empleado no tenga ya un permiso para esa área;
+
+if (¿Todo es válido?) then (Sí)
+  :Guardar el permiso;
+
+  |Pantalla|
+  :Mostrar confirmación;
 
   |Gestor de Personal|
-  :Confirmar permisos otorgados;
-
+  :Confirmar el permiso otorgado;
 else (No)
-  :Retornar HTTP 409;
-
-  |Gestor de Personal|
-  :Pantalla: Error "Conflicto de permisos";
-
+  :Informar que el empleado ya tiene un permiso para esa área;
+  |Pantalla|
+  :Mostrar el error;
 endif
 
 stop
