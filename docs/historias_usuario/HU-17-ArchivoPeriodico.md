@@ -81,7 +81,7 @@ Dado: que el supervisor presiona "Enviar a Socio Internacional"
 
 Cuando: quiere compartir el archivo con el socio
 
-Entonces: el sistema abre una vista previa del contenido del archivo con un botón "Descargar" para adjuntarlo al envío por el canal externo; el envío en sí queda fuera del sistema
+Entonces: el sistema abre una vista previa del contenido del archivo con un botón "Descargar"; el supervisor descarga el archivo y lo comparte con el socio por su cuenta
 
 ## Tareas
 
@@ -106,4 +106,4 @@ Entonces: el sistema abre una vista previa del contenido del archivo con un bot�
 ## Estado de Implementación
 
 - **Backend**: ✓ — `POST /api/reportes/archivo-periodico` con agregación **por departamento × área** SIN datos personales (columnas: Departamento, Área, Total, Autorizados, Denegados, No Registrados, Suspendidos, % Autorizados) y **distribución por día**; filtro opcional `departmentNames`; **solo ingresos** (las salidas EXIT quedan fuera). Formatos CSV/EXCEL/PDF. `POST /api/reportes/archivo-periodico/preview` devuelve `areaRows`/`dayRows` en JSON para la vista previa. Error si el período no tiene registros. Tests en `PeriodicReportControllerTest`.
-- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF), **chips de selección multi-departamento** (envía `departmentNames`) y descarga automática. El botón "Enviar a socio internacional" abre un **modal de vista previa** (de `archivo-periodico/preview`, sin datos personales) con botón **Descargar** para adjuntarlo al envío por el canal externo; el envío en sí queda fuera del sistema.
+- **Frontend**: ✓ — panel "Archivo periódico para socios" en `ReportsView` (`/supervisor/reportes`, mockup 37) con selector de mes/año/formato (CSV/Excel/PDF), **chips de selección multi-departamento** (envía `departmentNames`) y descarga automática. El botón "Enviar a socio internacional" abre un **modal de vista previa** (de `archivo-periodico/preview`, sin datos personales) con botón **Descargar**; el supervisor descarga el archivo y lo comparte con el socio por el canal externo.

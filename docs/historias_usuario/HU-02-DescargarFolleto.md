@@ -19,7 +19,7 @@
 
 El sitio público ofrece un botón llamado "Descargar Folleto" que pone a disposición del visitante el folleto de Laboratorio XYZ como un archivo PDF. La descarga se realiza sin necesidad de iniciar sesión.
 
-El folleto es un documento preparado por el equipo de administración que resume la información de la empresa. Cuando existe un folleto cargado, el visitante puede descargarlo y abrirlo en su dispositivo. Cuando aún no hay un folleto disponible, el sistema no muestra el botón de descarga y tampoco presenta errores de página, simplemente omite esta opción.
+El folleto es un documento preparado por el equipo de administración que resume la información de la empresa. Cuando existe un folleto cargado, el visitante puede descargarlo y abrirlo en su dispositivo. Si no hay un folleto cargado, el sistema no muestra el botón de descarga y simplemente omite esta opción, sin presentar errores.
 
 De esta forma, el sitio público se adapta solo: si hay folleto, se ofrece la descarga; si no lo hay, el visitante nunca ve un aviso de error ni un enlace roto.
 

@@ -21,7 +21,7 @@ El sitio público del sistema le permite a cualquier persona, sin necesidad de i
 
 Además, el visitante puede ver los datos de contacto de la empresa (números de teléfono, correo electrónico y redes sociales), la ubicación de las sedes con sus direcciones y horarios de atención, y el catálogo de productos farmacéuticos. En el catálogo se muestra de cada producto su nombre, su descripción, su principio activo y su presentación.
 
-Por seguridad, el catálogo no muestra información interna de la empresa, como las áreas de producción o los códigos internos. La ubicación de las sedes se muestra actualmente como texto con direcciones y coordenadas; el mapa gráfico aún no está disponible. El sistema también ofrece la descarga de un folleto (historia HU-02).
+El sistema también ofrece la descarga de un folleto informativo (historia HU-02).
 
 ## Criterios de Aceptación
 
@@ -47,7 +47,7 @@ Dado: que el visitante desea conocer dónde se ubican las sedes
 
 Cuando: consulta la sección de sedes
 
-Entonces: el sistema muestra la dirección y los horarios de atención de cada sede; mientras el mapa gráfico está pendiente, la ubicación se muestra como texto con las coordenadas
+Entonces: el sistema muestra la dirección, los horarios de atención y las coordenadas de cada sede
 
 Condición 04
 
@@ -94,4 +94,4 @@ Entonces: el sistema muestra la información sin solicitar inicio de sesión y s
 ## Estado de Implementación
 
 - **Backend**: ✓ — `PublicController` expone `GET /api/public/institucional`, `GET /api/public/contacto`, `GET /api/public/sedes`, `GET /api/public/catalogo` y `GET /api/public/folleto`; `CacheConfig` habilita caché para la información estática. Tests verdes (`PublicControllerTest`).
-- **Frontend**: ✓ — `LandingView` en la ruta `/` replica el mockup 27: hero, secciones Institucional/Contacto/Sedes/Catálogo y botón de folleto. El catálogo no muestra `productionArea` ni `id`. Mapa de sedes pendiente (las coordenadas se muestran como texto).
+- **Frontend**: ✓ — `LandingView` en la ruta `/` replica el mockup 27: hero, secciones Institucional/Contacto/Sedes/Catálogo y botón de folleto. El catálogo no muestra `productionArea` ni `id`. La sección de sedes muestra direcciones, horarios y coordenadas.

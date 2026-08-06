@@ -1,12 +1,12 @@
 # HU-00 - ZONE CONTROL
 
-| Campo | Valor |
-|---|---|
-| **Código** | HU-00 |
-| **Nombre** | Zone Control - Sistema de Control de Acceso Físico |
-| **Complejidad** | Alta |
-| **HU Relacionada** | HU-01 a HU-31 (ver listado abajo) |
-| **Módulo** | General |
+| Campo              | Valor                                              |
+| ------------------ | -------------------------------------------------- |
+| **Código**         | HU-00                                              |
+| **Nombre**         | Zone Control - Sistema de Control de Acceso Físico |
+| **Complejidad**    | Alta                                               |
+| **HU Relacionada** | HU-01 a HU-31 (ver listado abajo)                  |
+| **Módulo**         | General                                            |
 
 ## Descripción
 
@@ -20,36 +20,36 @@ El sistema debe reflejar la estructura de la compañía y separar claramente lo 
 
 ### Listado de historias de usuario
 
-| Código | Historia |
-|---|---|
-| HU-01 | Consultar la información pública de la empresa |
-| HU-02 | Descargar el folleto informativo |
-| HU-03 | Iniciar sesión en el sistema |
-| HU-05 | Crear usuario del sistema |
-| HU-06 | Editar usuario del sistema |
-| HU-07 | Activar o desactivar usuario |
-| HU-08 | Restablecer la contraseña de un usuario |
-| HU-09 | Registrar personal |
-| HU-10 | Cargar personal de forma masiva |
-| HU-11 | Otorgar acceso a un área |
-| HU-12 | Revocar acceso a un área |
-| HU-13 | Suspender el acceso a un área |
-| HU-14 | Buscar personal |
-| HU-15 | Consultar el historial de accesos |
-| HU-16 | Generar documento descargable del historial |
-| HU-17 | Generar el archivo periódico para el socio internacional |
-| HU-18 | Validar la entrada a un área restringida |
-| HU-19 | Gestionar el contenido público |
-| HU-20 | Gestionar las áreas de producción |
-| HU-21 | Consultar la ocupación en tiempo real de las zonas |
-| HU-22 | Cerrar o reabrir una zona por emergencia |
-| HU-23 | Consultar las alertas de anomalías de acceso |
-| HU-26 | Definir turnos y horarios por día |
-| HU-27 | Consultar la matriz de roles |
-| HU-28 | Registrar la salida de un área |
-| HU-29 | Gestionar mi perfil y cambiar mi contraseña |
-| HU-30 | Consultar el personal y las autorizaciones de una sala |
-| HU-31 | Consultar el detalle del empleado |
+| Código | Historia                                                 |
+| ------ | -------------------------------------------------------- |
+| HU-01  | Consultar la información pública de la empresa           |
+| HU-02  | Descargar el folleto informativo                         |
+| HU-03  | Iniciar sesión en el sistema                             |
+| HU-05  | Crear usuario del sistema                                |
+| HU-06  | Editar usuario del sistema                               |
+| HU-07  | Activar o desactivar usuario                             |
+| HU-08  | Restablecer la contraseña de un usuario                  |
+| HU-09  | Registrar personal                                       |
+| HU-10  | Cargar personal de forma masiva                          |
+| HU-11  | Otorgar acceso a un área                                 |
+| HU-12  | Revocar acceso a un área                                 |
+| HU-13  | Suspender el acceso a un área                            |
+| HU-14  | Buscar personal                                          |
+| HU-15  | Consultar el historial de accesos                        |
+| HU-16  | Generar documento descargable del historial              |
+| HU-17  | Generar el archivo periódico para el socio internacional |
+| HU-18  | Validar la entrada a un área restringida                 |
+| HU-19  | Gestionar el contenido público                           |
+| HU-20  | Gestionar las áreas de producción                        |
+| HU-21  | Consultar la ocupación en tiempo real de las zonas       |
+| HU-22  | Cerrar o reabrir una zona por emergencia                 |
+| HU-23  | Consultar las alertas de anomalías de acceso             |
+| HU-26  | Definir turnos y horarios por día                        |
+| HU-27  | Consultar la matriz de roles                             |
+| HU-28  | Registrar la salida de un área                           |
+| HU-29  | Gestionar mi perfil y cambiar mi contraseña              |
+| HU-30  | Consultar el personal y las autorizaciones de una sala   |
+| HU-31  | Consultar el detalle del empleado                        |
 
 ## Criterios de Aceptación
 
@@ -87,27 +87,27 @@ Entonces: puede ver la ocupación en tiempo real, las alertas y el detalle del p
 
 ## Tareas
 
-| No | Descripción |
-|---|---|
-| 1 | Configurar la aplicación y su almacenamiento de información |
-| 2 | Implementar el sitio público (información, contacto, sedes, catálogo y folleto) |
-| 3 | Implementar el inicio de sesión y la gestión de usuarios |
-| 4 | Implementar la gestión del personal (registro, carga masiva, búsqueda, detalle y permisos) |
-| 5 | Implementar el control de acceso físico (entrada, salida, ocupación, emergencia y alertas) |
-| 6 | Implementar los reportes (historial, documentos descargables y archivo periódico) |
-| 7 | Documentar con diagramas (casos de uso y flujos) y historias de usuario |
+| No  | Descripción                                                                                |
+| --- | ------------------------------------------------------------------------------------------ |
+| 1   | Configurar la aplicación y su almacenamiento de información                                |
+| 2   | Implementar el sitio público (información, contacto, sedes, catálogo y folleto)            |
+| 3   | Implementar el inicio de sesión y la gestión de usuarios                                   |
+| 4   | Implementar la gestión del personal (registro, carga masiva, búsqueda, detalle y permisos) |
+| 5   | Implementar el control de acceso físico (entrada, salida, ocupación, emergencia y alertas) |
+| 6   | Implementar los reportes (historial, documentos descargables y archivo periódico)          |
+| 7   | Documentar con diagramas (casos de uso y flujos) y historias de usuario                    |
 
 ## Control de Versiones
 
-| Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
-|---|---|---|---|---|---|
-| 1.0 | 2026-07-26 | | | Versión inicial | |
-| 1.1 | 2026-08-06 | | | Listado completo de historias (HU-01..31) y criterios alineados al sistema | |
+| Versión | Fecha      | Autor | Revisión | Descripción                                                                | Aprobador |
+| ------- | ---------- | ----- | -------- | -------------------------------------------------------------------------- | --------- |
+| 1.0     | 2026-07-26 |       |          | Versión inicial                                                            |           |
+| 1.1     | 2026-08-06 |       |          | Listado completo de historias (HU-01..31) y criterios alineados al sistema |           |
 
 ## Estado de Implementación
 
 - **Backend**: todos los módulos implementados y con tests en verde (202 pruebas); `./mvnw test` en verde. Detalle de rutas en `AGENTS.md`.
 - **Frontend**: módulo público, autenticación (inicio de sesión y enlace de activación), administración (usuarios, contenido público, áreas, matriz de roles), gestión del gestor (personal, registro, carga masiva, detalle, permisos, ajustes), panel del supervisor (dashboard, validación de credencial con entrada y salida, zonas en vivo, reportes) y ajustes.
-- **Pendiente frontend**: ninguno — todas las vistas están construidas.
+- **Estado frontend**: todas las vistas están construidas.
 - **Backend §9**: todos los puntos del plan de implementación están implementados (documentos PDF, archivo periódico de dos secciones, filtros por departamento y área en el historial, gestión de áreas, matriz de roles, invalidación de sesiones al desactivar, manejo de errores, tiempo real y alertas, fotografía y turnos).
 - **Nota**: los archivos `HU-00- NOMBRE_DEL_PROYETO(5).docx` y `zonecontrol.pdf` son la fuente binaria del caso de estudio (solo lectura); la fuente de verdad editable son los `.md` y `.puml` de `docs/`.

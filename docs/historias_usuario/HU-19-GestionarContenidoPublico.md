@@ -118,4 +118,4 @@ Entonces: el sistema señala los campos incompletos e impide guardar hasta que s
 ## Estado de Implementación
 
 - **Backend**: ✓ — `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT}`, `POST/DELETE /api/admin/contenido-publico/folleto`, CRUD `POST/PUT/DELETE /api/admin/contenido-publico/sedes[/{id}]` y `/productos[/{id}]`; caché pública invalidada en cada escritura. Tests en `AdminPublicContentControllerTest`.
-- **Frontend**: ✓ — `PublicContentView` en `/admin/contenido-publico` (rol ADMIN) con 5 pestañas. Mapa gráfico de sedes pendiente: se muestran las coordenadas como texto.
+- **Frontend**: ✓ — `PublicContentView` en `/admin/contenido-publico` (rol ADMIN) con 5 pestañas. La sección de sedes muestra direcciones, horarios y coordenadas.

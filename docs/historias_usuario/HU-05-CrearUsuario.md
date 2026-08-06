@@ -92,5 +92,5 @@ Entonces: el sistema muestra el mensaje "El empleado no tiene un correo registra
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `POST /api/admin/users` valida que el empleado exista, no tenga usuario previo y tenga correo; deriva nombre y correo del empleado vinculado; genera `setupToken` (48 bytes aleatorios, hash SHA-256, expiración 24 h) y guarda el usuario sin contraseña. `GET/POST /api/setup-password` validan el token y completan la activación (contraseña con BCrypt, limpian `setupToken`). `MagicLinkNotifier` loguea el enlace (sin SMTP aún). Tests verdes (`AdminUserControllerTest`, `SetupPasswordControllerTest`).
+- **Backend**: ✓ — `POST /api/admin/users` valida que el empleado exista, no tenga usuario previo y tenga correo; deriva nombre y correo del empleado vinculado; genera `setupToken` (48 bytes aleatorios, hash SHA-256, expiración 24 h) y guarda el usuario sin contraseña. `GET/POST /api/setup-password` validan el token y completan la activación (contraseña con BCrypt, limpian `setupToken`). `MagicLinkNotifier` deja el enlace visible en la consola del sistema. Tests verdes (`AdminUserControllerTest`, `SetupPasswordControllerTest`).
 - **Frontend**: ✓ — `CreateUserView` (`/admin/usuarios/nuevo`, mockup 21) con selector de empleado; botón "Abrir configuración" que abre `SetupPasswordView` (`/configurar-contrasena?token=`) en ventana nueva.

@@ -19,7 +19,7 @@
 
 El sistema debe permitir al gestor de personal revocar (eliminar definitivamente) el permiso de acceso de un empleado a un área restringida. Esta acción no se puede deshacer: una vez confirmada, el empleado pierde inmediatamente el acceso a esa área y el permiso deja de existir.
 
-Como es una acción permanente, el sistema pide confirmación antes de ejecutarla y advierte que el empleado perderá el acceso al área. Para que el empleado vuelva a ingresar a esa área en el futuro, habrá que otorgarle un permiso nuevo. Si por algún motivo el permiso ya no existe al momento de revocarlo, el sistema lo informa y no realiza ninguna acción.
+Como es una acción permanente, el sistema pide confirmación antes de ejecutarla y advierte que el empleado perderá el acceso al área. Si el empleado necesita volver a entrar a esa área, debe otorgársele un permiso nuevo. Si por algún motivo el permiso ya no existe al momento de revocarlo, el sistema lo informa y no realiza ninguna acción.
 
 ## Criterios de Aceptación
 
