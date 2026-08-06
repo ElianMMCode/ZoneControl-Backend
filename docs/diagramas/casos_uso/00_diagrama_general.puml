@@ -1,5 +1,9 @@
 @startuml
 title Diagrama General - Casos de Uso del Sistema Zone Control
+
+' =============================================
+' CONFIGURACIÓN VISUAL Y RENDERIZADO
+' =============================================
 skinparam usecase {
   BackgroundColor LightCyan
   BorderColor DarkSlateGray
@@ -8,74 +12,72 @@ skinparam actorStyle awesome
 skinparam packageStyle rectangle
 left to right direction
 
+' Parámetros de espaciado optimizados para crear la estructura de columnas
+' (ranksep amplio para que las flechas de los módulos se crucen lo mínimo)
+skinparam nodesep 60
+skinparam ranksep 350
+
 ' =============================================
-' FLUJO DE INICIO DE SESIÓN
-' Todo parte del "Usuario del sistema": los roles
-' internos inician sesión y, según su rol, acceden
-' a los módulos que les corresponden.
+' DEFINICIÓN DE ACTORES Y JERARQUÍA HORIZONTAL
 ' =============================================
 
-actor "Usuario del sistema" as Autenticado #BDBDBD
-actor "Público General" as Publico #LightBlue
-actor "Administrador" as Admin #LightGreen
-actor "Gestor de Personal" as Gestor #LightYellow
-actor "Supervisor / Auditor" as Supervisor #LightPink
-actor "Socio Internacional" as Socio #Wheat
-
-package "Acceso al sistema" as ModuloAutenticacion #E3F2FD {
-  usecase "CU-02: Iniciar sesión en el sistema" as UC_LOGIN
-  usecase "CU-02a: Cambiar la contraseña" as UC_CAMBIO
-  usecase "CU-02b: Establecer la contraseña por enlace de activación" as UC_SETUP
+' COLUMNA 1 (Far Left / Rank 1): Usuario base y módulo de autenticación
+together {
+  actor "Usuario del sistema" as Autenticado #BDBDBD
+  
+  package "Acceso al sistema" as ModuloAutenticacion #E3F2FD {
+    usecase "CU-02: Iniciar sesión en el sistema" as UC_LOGIN
+    usecase "CU-02a: Cambiar la contraseña" as UC_CAMBIO
+    usecase "CU-02b: Establecer la contraseña por enlace de activación" as UC_SETUP
+  }
 }
 
-Autenticado --> UC_LOGIN
-Autenticado --> UC_CAMBIO
-Autenticado --> UC_SETUP
+' Nota del usuario base, colocada estratégicamente
+note bottom of Autenticado
+  Administrador, Gestor y Supervisor
+  inician sesión (CU-02).
+end note
 
+' Nota de CU_SETUP
 note right of UC_SETUP
-  Al crear un usuario o restablecer su
-  contraseña, el sistema genera un enlace
-  temporal con el que la persona define
-  su propia contraseña.
+  Al crear usuario o restablecer contraseña,
+  se genera un enlace temporal con el que la
+  persona define su propia contraseña.
 end note
 
-' -------------------------------------------------
-' HERENCIAS: Administrador, Gestor de Personal y
-' Supervisor / Auditor inician sesión como
-' "Usuario del sistema" (CU-02).
-' -------------------------------------------------
-
-Admin --|> Autenticado
-Gestor --|> Autenticado
-Supervisor --|> Autenticado
-
-note right of Autenticado
-  Administrador, Gestor de Personal y
-  Supervisor / Auditor inician sesión
-  con su usuario y contraseña (CU-02).
-end note
-
-' =============================================
-' MÓDULOS (cada rol accede a los suyos)
-' =============================================
-
-ModuloAutenticacion -[hidden]down- ModuloPublico
-
-package "Módulo Público" as ModuloPublico #E8F5E9 {
-  usecase "CU-01: Consultar información de la empresa" as UC01
-  usecase "CU-01a: Consultar datos de contacto" as UC01a
-  usecase "CU-01b: Consultar ubicación de las sedes" as UC01b
-  usecase "CU-01c: Descargar el folleto informativo" as UC01c
-  usecase "CU-01d: Consultar el catálogo de productos" as UC01d
+' COLUMNA 2 (Rank 2): Pilar de roles heredados y módulo público
+together {
+  actor "Administrador" as Admin #LightGreen
+  actor "Gestor de Personal" as Gestor #LightYellow
+  actor "Supervisor / Auditor" as Supervisor #LightPink
+  
+  package "Módulo Público" as ModuloPublico #E8F5E9 {
+    usecase "CU-01: Consultar información de la empresa" as UC01
+    usecase "CU-01a: Consultar datos de contacto" as UC01a
+    usecase "CU-01b: Consultar ubicación de las sedes" as UC01b
+    usecase "CU-01c: Descargar el folleto informativo" as UC01c
+    usecase "CU-01d: Consultar el catálogo de productos" as UC01d
+  }
 }
 
-Publico --> UC01
-Publico --> UC01a
-Publico --> UC01b
-Publico --> UC01c
-Publico --> UC01d
+' HERENCIAS: Roles heredan de Usuario base, apuntando a la izquierda (-left-|>)
+' para forzar que los roles se coloquen a la derecha.
+Admin -left-|> Autenticado
+Gestor -left-|> Autenticado
+Supervisor -left-|> Autenticado
 
-ModuloPublico -[hidden]down- ModuloAdmin
+' Actor externo colocado a la izquierda de su módulo
+actor "Público General" as Publico #LightBlue
+Publico -[hidden]right-> ModuloPublico
+
+' =============================================
+' PILARES DE MÓDULOS PRINCIPALES (Rank 3+)
+' =============================================
+' Usamos enlaces ocultos para crear pilas verticales limpias
+ModuloPublico -[hidden]down-> ModuloAdmin
+ModuloAdmin -[hidden]down-> ModuloGestion
+ModuloGestion -[hidden]down-> ModuloAcceso
+ModuloAcceso -[hidden]down-> ModuloReportes
 
 package "Módulo de Administración" as ModuloAdmin #FFF3E0 {
   usecase "CU-03a: Administrar usuarios (crear, editar, activar o desactivar)" as UC03a
@@ -83,17 +85,10 @@ package "Módulo de Administración" as ModuloAdmin #FFF3E0 {
   usecase "CU-03c: Consultar la matriz de roles" as UC03c
 }
 
-Admin --> UC03a
-Admin --> UC03b
-Admin --> UC03c
-
 note right of UC03c
-  Muestra qué puede hacer cada rol en el
-  sistema. Es solo de consulta: no se
-  modifican los permisos desde aquí.
+  Consulta de permisos por rol.
+  No editable desde aquí.
 end note
-
-ModuloAdmin -[hidden]down- ModuloGestion
 
 package "Módulo de Gestión de Personal" as ModuloGestion #F3E5F5 {
   usecase "CU-04: Registrar personal" as UC04
@@ -106,21 +101,10 @@ package "Módulo de Gestión de Personal" as ModuloGestion #F3E5F5 {
   usecase "CU-07b: Consultar el detalle del empleado" as UC07b
 }
 
-Gestor --> UC04
-Gestor --> UC05
-Gestor --> UC06
-Gestor --> UC06a
-Gestor --> UC06b
-Gestor --> UC07
-Gestor --> UC07a
-Gestor --> UC07b
-
 note right of UC06b
-  Cada permiso puede tener horarios
-  distintos por día de la semana.
+  Horarios distintos por
+  día de la semana.
 end note
-
-ModuloGestion -[hidden]down- ModuloAcceso
 
 package "Módulo de Control de Acceso Físico" as ModuloAcceso #FFEBEE {
   usecase "CU-11: Registrar la entrada a un área restringida" as UC11
@@ -131,21 +115,10 @@ package "Módulo de Control de Acceso Físico" as ModuloAcceso #FFEBEE {
   usecase "CU-11e: Consultar el personal asignado y las autorizaciones de una sala" as UC11e
 }
 
-Supervisor --> UC11
-Supervisor --> UC11a
-Supervisor --> UC11b
-Supervisor --> UC11c
-Supervisor --> UC11d
-Supervisor --> UC11e
-
 note right of UC11
-  El sistema verifica si la persona
-  tiene permiso y está dentro del
-  horario permitido, y registra cada
-  intento en el historial.
+  Verifica permiso, horario y
+  registra el intento.
 end note
-
-ModuloAcceso -[hidden]down- ModuloReportes
 
 package "Módulo de Reportes y Auditoría" as ModuloReportes #E0F7FA {
   usecase "CU-08: Consultar el historial de accesos" as UC08
@@ -153,28 +126,61 @@ package "Módulo de Reportes y Auditoría" as ModuloReportes #E0F7FA {
   usecase "CU-10: Generar el archivo periódico para el socio internacional" as UC10
 }
 
+note right of UC08
+  Filtros: fecha, empleado,
+  departamento, área y resultado.
+end note
+
+' =============================================
+' SOCIO INTERNACIONAL (Far Right)
+' =============================================
+' Actor externo colocado a la derecha de todos
+actor "Socio Internacional" as Socio #Wheat
+Socio -[hidden]left-> ModuloReportes
+
+note bottom of Socio
+  Recibe el archivo periódico que
+  el Supervisor le comparte.
+end note
+
+' =============================================
+' RELACIONES DE USO ACTORES -> CASOS DE USO
+' =============================================
+
+Publico --> UC01
+Publico --> UC01a
+Publico --> UC01b
+Publico --> UC01c
+Publico --> UC01d
+
+Autenticado --> UC_LOGIN
+Autenticado --> UC_CAMBIO
+Autenticado --> UC_SETUP
+
+Admin --> UC03a
+Admin --> UC03b
+Admin --> UC03c
+
+Gestor --> UC04
+Gestor --> UC05
+Gestor --> UC06
+Gestor --> UC06a
+Gestor --> UC06b
+Gestor --> UC07
+Gestor --> UC07a
+Gestor --> UC07b
+
+Supervisor --> UC11
+Supervisor --> UC11a
+Supervisor --> UC11b
+Supervisor --> UC11c
+Supervisor --> UC11d
+Supervisor --> UC11e
+
 Supervisor --> UC08
 Supervisor --> UC09
 Supervisor --> UC10
 
-note right of UC08
-  El historial se puede filtrar por
-  fechas, empleado, departamento,
-  área y resultado.
-end note
-
-note right of UC10
-  Resumen sin datos personales con
-  dos partes: detalle por departamento
-  y área, y distribución por día.
-end note
-
 UC10 --> Socio
-
-note bottom of Socio
-  El Socio Internacional no accede al
-  sistema: recibe el archivo periódico
-  que el Supervisor le descarga y comparte.
-end note
 
 @enduml
