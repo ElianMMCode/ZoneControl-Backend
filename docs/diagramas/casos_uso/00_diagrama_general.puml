@@ -13,9 +13,8 @@ skinparam packageStyle rectangle
 left to right direction
 
 ' Parámetros de espaciado optimizados para crear la estructura de columnas
-' (ranksep amplio para que las flechas de los módulos se crucen lo mínimo)
 skinparam nodesep 60
-skinparam ranksep 350
+skinparam ranksep 100
 
 ' =============================================
 ' DEFINICIÓN DE ACTORES Y JERARQUÍA HORIZONTAL
@@ -40,9 +39,8 @@ end note
 
 ' Nota de CU_SETUP
 note right of UC_SETUP
-  Al crear usuario o restablecer contraseña,
-  se genera un enlace temporal con el que la
-  persona define su propia contraseña.
+  Al crear usuario o restablecer
+  contraseña, se genera un enlace temporal.
 end note
 
 ' COLUMNA 2 (Rank 2): Pilar de roles heredados y módulo público
@@ -74,7 +72,6 @@ Publico -[hidden]right-> ModuloPublico
 ' PILARES DE MÓDULOS PRINCIPALES (Rank 3+)
 ' =============================================
 ' Usamos enlaces ocultos para crear pilas verticales limpias
-ModuloPublico -[hidden]down-> ModuloAdmin
 ModuloAdmin -[hidden]down-> ModuloGestion
 ModuloGestion -[hidden]down-> ModuloAcceso
 ModuloAcceso -[hidden]down-> ModuloReportes
@@ -127,8 +124,7 @@ package "Módulo de Reportes y Auditoría" as ModuloReportes #E0F7FA {
 }
 
 note right of UC08
-  Filtros: fecha, empleado,
-  departamento, área y resultado.
+  Filtros: fecha, empleado, área, resultado...
 end note
 
 ' =============================================
