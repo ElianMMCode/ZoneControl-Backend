@@ -9,16 +9,16 @@ skinparam swimlane {
   BorderThickness 2
 }
 
-note top
+|Administrador|
+start
+:Ir al panel de administración;
+
+note right
   <b>Condición previa:</b> la persona debe estar registrada
   como empleado (HU-09) y tener un correo asociado.
   El sistema identifica a cada empleado con su código
   (formato EMP-000001).
 end note
-
-|Administrador|
-start
-:Ir al panel de administración;
 
 :Seleccionar "Crear Usuario";
 
