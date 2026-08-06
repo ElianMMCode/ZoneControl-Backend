@@ -3,24 +3,21 @@ skinparam usecase {
     BackgroundColor LightCyan
     BorderColor DarkSlateGray
 }
+skinparam actorStyle awesome
 skinparam packageStyle rectangle
 left to right direction
 
 actor "Gestor de Personal" as Gestor #LightYellow
 
 package "Módulo de Gestión de Personal" {
-    usecase "CU-04: Registrar personal y asignar departamento" as UC_Gest1
-    usecase "CU-05: Carga masiva (Archivo plano)" as UC_Gest2
-    usecase "CU-05a: Validar estructura e información" as UC_Gest3
-    usecase "CU-06: Gestionar permisos (Otorgar/Editar/Suspender/Reactivar/Revocar)" as UC_Gest4
-    usecase "CU-06a: Gestionar áreas de producción" as UC_Gest7
-    usecase "CU-06b: Turnos y horarios por día" as UC_Gest9
-    usecase "CU-07: Buscar personal por filtros" as UC_Gest5
-    usecase "CU-07a: Editar empleado y cambiar estado" as UC_Gest6
-    usecase "CU-07b: Fotografía del empleado" as UC_Gest8
-
-    UC_Gest2 ..> UC_Gest3 : <<include>>
-    UC_Gest6 ..> UC_Gest5 : <<include>>
+    usecase "CU-04: Registrar personal" as UC_Gest1
+    usecase "CU-05: Cargar personal de forma masiva" as UC_Gest2
+    usecase "CU-06: Gestionar permisos de acceso (otorgar, editar, suspender, reactivar, revocar)" as UC_Gest4
+    usecase "CU-06a: Gestionar las áreas de producción" as UC_Gest7
+    usecase "CU-06b: Definir turnos y horarios por día" as UC_Gest9
+    usecase "CU-07: Buscar personal" as UC_Gest5
+    usecase "CU-07a: Editar datos del empleado y cambiar su estado" as UC_Gest6
+    usecase "CU-07b: Consultar el detalle del empleado" as UC_Gest8
 }
 
 Gestor --> UC_Gest1
@@ -32,28 +29,40 @@ Gestor --> UC_Gest7
 Gestor --> UC_Gest8
 Gestor --> UC_Gest9
 
+note bottom of UC_Gest1
+  Al registrar a un empleado se puede
+  adjuntar una fotografía (opcional).
+end note
+
+note bottom of UC_Gest2
+  La carga masiva valida cada fila del
+  archivo e informa los errores de
+  forma clara. El archivo tiene un
+  tamaño máximo permitido.
+end note
+
 note bottom of UC_Gest4
-  POST /api/permisos (Otorgar)
-  PATCH /api/permisos/{id} (Editar)
-  PATCH /api/permisos/{id}/suspend
-  PATCH /api/permisos/{id}/reactivate
-  DELETE /api/permisos/{id}
+  Solo puede existir un permiso por
+  empleado y área. Un permiso solo se
+  puede editar si está activo; la
+  suspensión y reactivación son manuales.
 end note
 
 note bottom of UC_Gest7
-  POST/PUT/DELETE /api/permisos/areas
-  Implementado backend; frontend
-  en /admin/areas (admin)
-end note
-
-note bottom of UC_Gest8
-  POST/GET/DELETE /api/personal/{id}/photo
-  Implementado backend y frontend
+  El catálogo de áreas también está
+  disponible en el panel del
+  administrador.
 end note
 
 note bottom of UC_Gest9
-  PermissionSchedule LUN..DOM
-  Implementado (3.2 §9)
+  Cada permiso puede tener horarios
+  distintos por día de la semana.
+end note
+
+note bottom of UC_Gest8
+  Muestra la ficha del empleado con su
+  fotografía, sus permisos de acceso y
+  su historial de accesos.
 end note
 
 @enduml

@@ -3,19 +3,18 @@ skinparam usecase {
     BackgroundColor LightCyan
     BorderColor DarkSlateGray
 }
+skinparam actorStyle awesome
 skinparam packageStyle rectangle
 left to right direction
 
 actor "Público General" as Pub #LightBlue
 
 package "Módulo Público" {
-    usecase "CU-01: Consultar información institucional" as UC_Pub1
+    usecase "CU-01: Consultar información de la empresa" as UC_Pub1
     usecase "CU-01a: Consultar datos de contacto" as UC_Pub2
-    usecase "CU-01b: Consultar ubicación de sedes" as UC_Pub3
-    usecase "CU-01c: Descargar folleto informativo" as UC_Pub4
-    usecase "CU-01d: Consultar catálogo de servicios/productos" as UC_Pub5
-
-    UC_Pub4 ..> UC_Pub1 : <<extend>>
+    usecase "CU-01b: Consultar la ubicación de las sedes" as UC_Pub3
+    usecase "CU-01c: Descargar el folleto informativo" as UC_Pub4
+    usecase "CU-01d: Consultar el catálogo de productos" as UC_Pub5
 }
 
 Pub --> UC_Pub1
@@ -23,5 +22,18 @@ Pub --> UC_Pub2
 Pub --> UC_Pub3
 Pub --> UC_Pub4
 Pub --> UC_Pub5
+
+note bottom of UC_Pub5
+  El visitante ve el nombre del
+  producto, su descripción y su
+  presentación. No se muestran
+  datos internos del laboratorio.
+end note
+
+note bottom of UC_Pub3
+  Se muestran las direcciones y
+  coordenadas de cada sede.
+  (El mapa gráfico está pendiente.)
+end note
 
 @enduml

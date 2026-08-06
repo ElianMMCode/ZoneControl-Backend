@@ -3,33 +3,34 @@ skinparam usecase {
     BackgroundColor LightCyan
     BorderColor DarkSlateGray
 }
+skinparam actorStyle awesome
 skinparam packageStyle rectangle
 left to right direction
 
 actor "Administrador" as Admin #LightGreen
 
 package "Módulo de Administración" {
-    usecase "CU-03a: CRUD de usuarios del sistema" as UC_Admin1
-    usecase "CU-03b: Gestionar contenido del módulo público" as UC_Admin2
-    usecase "CU-03c: Gestionar matriz de roles y permisos" as UC_Admin3
+    usecase "CU-03a: Administrar usuarios (crear, editar, activar o desactivar)" as UC_Admin1
+    usecase "CU-03b: Gestionar el contenido público" as UC_Admin2
+    usecase "CU-03c: Consultar la matriz de roles" as UC_Admin3
 }
 
 Admin --> UC_Admin1
 Admin --> UC_Admin2
 Admin --> UC_Admin3
 
-note right of UC_Admin1
-  Para crear un usuario se requiere
-  un employeeCode de un empleado ya
-  registrado (CU-04). Relación @OneToOne
-  obligatoria: User → Employee.
+note bottom of UC_Admin1
+  Para crear un usuario se necesita
+  un empleado ya registrado (CU-04).
+  Al crearlo o al restablecer su
+  contraseña se genera el enlace de
+  activación (CU-02b).
 end note
 
 note bottom of UC_Admin3
-  Matriz de roles y permisos: SOLO
-  consulta. No existe endpoint
-  GET /api/admin/role-matrix aún
-  (pendiente, §9 item 1.5).
+  Muestra qué puede hacer cada rol
+  en el sistema. Es solo de consulta:
+  no se modifican los permisos aquí.
 end note
 
 @enduml

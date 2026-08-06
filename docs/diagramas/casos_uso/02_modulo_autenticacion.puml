@@ -3,25 +3,39 @@ skinparam usecase {
     BackgroundColor LightCyan
     BorderColor DarkSlateGray
 }
+skinparam actorStyle awesome
 skinparam packageStyle rectangle
 left to right direction
 
-actor "Usuario Autenticado" as Auth #BDBDBD
+actor "Usuario del sistema" as Auth #BDBDBD
+actor "Administrador" as Admin #LightGreen
+actor "Gestor de Personal" as Gestor #LightYellow
+actor "Supervisor / Auditor" as Sup #LightPink
+
+Admin --|> Auth
+Gestor --|> Auth
+Sup --|> Auth
 
 package "Módulo de Autenticación" {
-    usecase "CU-02: Iniciar sesión JWT" as UC_Login
-    usecase "CU-02a: Cambiar contraseña" as UC_ChangePwd
+    usecase "CU-02: Iniciar sesión en el sistema" as UC_Login
+    usecase "CU-02a: Cambiar la contraseña" as UC_ChangePwd
+    usecase "CU-02b: Establecer la contraseña por enlace de activación" as UC_Setup
 }
 
 Auth --> UC_Login
 Auth --> UC_ChangePwd
+Auth --> UC_Setup
 
-note top of UC_Login : Módulo transversal:\nrequerido por todos los\nmódulos internos
+note top of UC_Login
+  Requerido por todos los módulos
+  internos del sistema.
+end note
 
-note bottom of UC_ChangePwd
-  POST /api/auth/change-password
-  (authenticated) — implementado
-  backend y frontend (/ajustes)
+note bottom of UC_Setup
+  Al crear un usuario o restablecer
+  su contraseña, el sistema genera un
+  enlace temporal (24 horas) con el
+  que la persona define su contraseña.
 end note
 
 @enduml

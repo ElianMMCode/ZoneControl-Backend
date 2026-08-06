@@ -3,32 +3,47 @@ skinparam usecase {
     BackgroundColor LightCyan
     BorderColor DarkSlateGray
 }
+skinparam actorStyle awesome
 skinparam packageStyle rectangle
 left to right direction
 
 actor "Supervisor / Auditor" as Sup #LightPink
+actor "Socio Internacional" as Socio #Wheat
 
 package "Módulo de Reportes y Auditoría" {
-    usecase "CU-08: Consultar historial por rango de fechas" as UC_Rep1
-    usecase "CU-09: Generar documento descargable del historial" as UC_Rep2
-    usecase "CU-10: Generar archivo periódico por departamentos" as UC_Rep3
-
-    UC_Rep2 ..> UC_Rep1 : <<include>>
+    usecase "CU-08: Consultar el historial de accesos" as UC_Rep1
+    usecase "CU-09: Descargar el historial en un documento" as UC_Rep2
+    usecase "CU-10: Generar el archivo periódico para el socio internacional" as UC_Rep3
 }
 
 Sup --> UC_Rep1
 Sup --> UC_Rep2
 Sup --> UC_Rep3
 
-note right of UC_Rep2
-  Exporta el historial consultado
-  a formato CSV o Excel.
+UC_Rep3 --> Socio
+
+note bottom of UC_Rep1
+  El historial se puede filtrar por
+  fechas, empleado, departamento,
+  área y resultado.
 end note
 
-note right of UC_Rep3
-  Agrupa accesos por departamento
-  y genera archivo de intercambio
-  para el Socio Internacional.
+note bottom of UC_Rep2
+  El documento puede generarse en
+  PDF, Excel o CSV.
+end note
+
+note bottom of UC_Rep3
+  Resumen sin datos personales con
+  dos partes: detalle por departamento
+  y área (con % de autorizados) y
+  distribución por día.
+end note
+
+note bottom of Socio
+  El Socio Internacional no accede
+  al sistema: recibe el archivo que
+  el Supervisor le comparte.
 end note
 
 @enduml
