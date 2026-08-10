@@ -1,0 +1,267 @@
+@startuml
+title Diagrama de Clases - Sistema Zone Control
+
+skinparam class {
+  BackgroundColor LightCyan
+  BorderColor DarkSlateGray
+}
+
+skinparam packageStyle rectangle
+skinparam shadowing false
+
+' ============================================================
+' ENUMS
+' ============================================================
+
+enum Role {
+  ADMIN
+  GESTOR_PERSONAL
+  SUPERVISOR_AUDITOR
+}
+
+enum UserStatus {
+  ACTIVO
+  INACTIVO
+}
+
+enum EmployeeStatus {
+  ACTIVO
+  INACTIVO
+}
+
+enum PermissionStatus {
+  ACTIVO
+  SUSPENDIDO
+  EXPIRADO
+}
+
+enum AccessResult {
+  AUTORIZADO
+  DENEGADO
+  NO_REGISTRADO
+  SUSPENDIDO
+}
+
+enum ContractType {
+  INDEFINIDO
+  DEFINIDO
+  PRESTACION_SERVICIOS
+  PRACTICAS
+}
+
+enum DocumentType {
+  CC
+  TI
+  CE
+  PASAPORTE
+}
+
+enum WorkShift {
+  MANANA
+  TARDE
+  NOCHE
+}
+
+enum WeekDay {
+  LUN
+  MAR
+  MIE
+  JUE
+  VIE
+  SAB
+  DOM
+}
+
+enum ContentSection {
+  INSTITUTIONAL
+  CONTACT
+}
+
+' ============================================================
+' PAQUETE: GESTIÓN DE PERSONAL
+' ============================================================
+
+package "Módulo Gestión de Personal" as GestionPersonal {
+
+  class Employee {
+    -id: UUID
+    -employeeCode: String
+    -documentType: DocumentType
+    -documentNumber: String
+    -firstName: String
+    -lastName: String
+    -position: String
+    -email: String
+    -status: EmployeeStatus
+    -systemRole: Role
+    -contractType: ContractType
+    -workShift: WorkShift
+    -hireDate: LocalDate
+    -contractEndDate: LocalDate
+    -photoUrl: String
+  }
+
+  class Position {
+    -id: UUID
+    -name: String
+    -systemRole: Role
+  }
+
+  class AccessPermission {
+    -id: UUID
+    -status: PermissionStatus
+    -startDate: LocalDate
+    -expirationDate: LocalDate
+    -reactivationDate: LocalDate
+    -startTime: LocalTime
+    -endTime: LocalTime
+  }
+
+  class PermissionSchedule {
+    -id: UUID
+    -dayOfWeek: WeekDay
+    -startTime: LocalTime
+    -endTime: LocalTime
+  }
+
+  Position "1" o-- "0..*" Employee : cargo
+  Employee "1" -- "0..*" AccessPermission
+  AccessPermission "1" -- "0..*" PermissionSchedule : schedules
+}
+
+' ============================================================
+' PAQUETE: ENTIDADES BASE
+' ============================================================
+
+package "Entidades Base" as Base {
+
+  class Department {
+    -id: UUID
+    -name: String
+    -description: String
+  }
+
+  class Office {
+    -id: UUID
+    -name: String
+    -address: String
+    -openingHours: String
+    -latitude: Double
+    -longitude: Double
+  }
+
+  class ProductionArea {
+    -id: UUID
+    -name: String
+    -description: String
+    -emergencyClosed: boolean
+  }
+}
+
+Department "1" o-- "0..*" Employee : department
+Office "1" o-- "0..*" Employee : baseOffice
+ProductionArea "1" o-- "0..*" AccessPermission : permissions
+
+' ============================================================
+' PAQUETE: AUTENTICACIÓN
+' ============================================================
+
+package "Módulo Autenticación" as Autenticacion {
+
+  class User {
+    -id: UUID
+    -firstName: String
+    -lastName: String
+    -email: String
+    -password: String
+    -setupToken: String
+    -setupTokenExpiry: LocalDateTime
+    -role: Role
+    -status: UserStatus
+    -requirePasswordChange: boolean
+  }
+}
+
+Employee "1" -- "0..1" User : usuario
+User "1" -- "1" Employee : employee
+
+' ============================================================
+' PAQUETE: CONTROL DE ACCESO FÍSICO
+' ============================================================
+
+package "Módulo Control de Acceso" as ControlAcceso {
+
+  class AccessHistory {
+    -id: UUID
+    -department: String
+    -productionAreaName: String
+    -timestamp: LocalDateTime
+    -result: AccessResult
+  }
+
+  class AccessSession {
+    -id: UUID
+    -entryTime: LocalDateTime
+    -exitTime: LocalDateTime
+  }
+
+  class AccessAlert {
+    -id: UUID
+    -tipo: AlertType
+    -severidad: AlertSeverity
+    -employeeCode: String
+    -productionAreaName: String
+    -message: String
+    -timestamp: LocalDateTime
+    -leido: boolean
+    --
+    +enum AlertType { DENEGACIONES_REPETIDAS, ZONA_EMERGENCIA }
+    +enum AlertSeverity { LOW, MEDIUM, HIGH }
+  }
+}
+
+Employee "1" -- "0..*" AccessHistory : historial
+Employee "1" -- "0..*" AccessSession : sesiones
+ProductionArea "1" -- "0..*" AccessSession : sesiones
+
+' ============================================================
+' PAQUETE: MÓDULO PÚBLICO
+' ============================================================
+
+package "Módulo Público" as Publico {
+
+  class ProductCatalog {
+    -id: UUID
+    -name: String
+    -description: String
+    -activeIngredient: String
+    -presentation: String
+    -productionArea: String
+  }
+
+  class PublicContent {
+    -id: UUID
+    -section: ContentSection
+    -key: String
+    -value: String
+  }
+}
+
+' ============================================================
+' RELACIONES DE USO ENTRE ENUMS
+' ============================================================
+
+Employee --> DocumentType
+Employee --> EmployeeStatus
+Employee --> Role
+Employee --> ContractType
+Employee --> WorkShift
+Position --> Role
+User --> Role
+User --> UserStatus
+AccessPermission --> PermissionStatus
+AccessHistory --> AccessResult
+PermissionSchedule --> WeekDay
+PublicContent --> ContentSection
+
+@enduml

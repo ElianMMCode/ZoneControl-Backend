@@ -15,7 +15,7 @@ Sistema de **control de acceso físico** para un laboratorio farmacéutico (caso
 
 **Roles del sistema**: `ADMIN`, `GESTOR_PERSONAL`, `SUPERVISOR_AUDITOR`.
 
-**Estado**: backend y frontend implementados; **173 tests verdes** (`./mvnw test`).
+**Estado**: backend y frontend implementados; **214 tests verdes** (`./mvnw test`).
 
 ## Índice
 
@@ -39,7 +39,7 @@ Sistema de **control de acceso físico** para un laboratorio farmacéutico (caso
 | PostgreSQL | 14+ (probado en 18) | Servidor corriendo en `localhost:5432`, BD `zonecontrol` |
 | JDK | 21 | `JAVA_HOME` apuntando al JDK 21 |
 | Maven | Wrapper incluido (`./mvnw`) | No hace falta instalarlo aparte |
-| Node.js | 18+ (probado en 26) | Para el frontend (Vite) |
+| Node.js | 20.19+ / 22.12+ (lo exige Vite 8; probado en 24) | Para el frontend (Vite) |
 | npm | 9+ | Viene con Node.js |
 
 No se requieren variables de entorno extra: el proyecto usa `spring-dotenv` para leer `.env` de la raíz.
@@ -53,14 +53,21 @@ Instala el servidor:
 ```bash
 # Arch Linux
 sudo pacman -S postgresql
+
+# Ubuntu / Debian
+sudo apt update && sudo apt install postgresql
 ```
 
-> En Debian/Ubuntu: `sudo apt install postgresql` — y con systemd: `sudo systemctl enable --now postgresql`.
-
-Inicializa el data dir (solo la primera vez) y arranca el servicio:
+Inicializa el data dir y arranca el servicio. En Arch el data dir se inicializa
+a mano (solo la primera vez); en Ubuntu/Debian el paquete ya crea un clúster por
+defecto (`pg_createcluster`) y solo hay que arrancar el servicio:
 
 ```bash
+# Arch Linux — inicializar data dir (solo la primera vez) y arrancar
 sudo -u postgres initdb -D /var/lib/postgres/data --locale=C.UTF-8 --encoding=UTF8
+sudo systemctl enable --now postgresql
+
+# Ubuntu / Debian — el clúster ya existe; solo arrancar
 sudo systemctl enable --now postgresql
 ```
 
@@ -84,6 +91,10 @@ PGPASSWORD='admin123*' psql -h localhost -U postgres -d zonecontrol -c "SELECT v
 ```bash
 # Arch Linux
 sudo pacman -S jdk21-openjdk
+
+# Ubuntu / Debian
+sudo apt update && sudo apt install openjdk-21-jdk
+
 java -version   # debe mostrar 21.x
 ```
 
@@ -92,6 +103,12 @@ java -version   # debe mostrar 21.x
 ```bash
 # Arch Linux
 sudo pacman -S nodejs npm
+
+# Ubuntu / Debian — apt trae una versión de Node demasiado antigua para Vite 8;
+# se instala una versión reciente vía NodeSource:
+curl -fsSL https://deb.nodesource.com/setup_24.x | sudo -E bash -
+sudo apt install -y nodejs
+
 node --version && npm --version
 ```
 
@@ -107,7 +124,7 @@ DB_PASSWORD=admin123*
 ### 2.6 Backend (Maven)
 
 ```bash
-./mvnw test                  # opcional: comprueba que todo está verde (173 tests)
+./mvnw test                  # opcional: comprueba que todo está verde (214 tests)
 ./mvnw spring-boot:run       # arranca la API en http://localhost:8080
 ```
 
@@ -141,6 +158,11 @@ El `DataInitializer` crea estos usuarios al primer arranque. Credenciales para p
 | GESTOR_PERSONAL | `gestor@zonecontrol.com` | `Gestor123!` |
 | GESTOR_PERSONAL | `sandra.ruiz@laboratorioxzy.com.co` | `Demo1234!` |
 | SUPERVISOR_AUDITOR | `javier.soto@laboratorioxzy.com.co` | `Demo1234!` |
+
+> También se siembran `ana.martinez@...` (ADMIN) y `ricardo.diaz@...`
+> (GESTOR_PERSONAL), pero tienen **setup token pendiente**: su contraseña se
+> define vía magic link, no tienen credencial fija. `miguel.angel@...`
+> (GESTOR_PERSONAL) se crea **INACTIVO** y no puede iniciar sesión.
 
 ## 4. Comandos útiles
 
