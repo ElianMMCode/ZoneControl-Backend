@@ -1,10 +1,13 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -35,4 +38,9 @@ public class Position {
     @Enumerated(EnumType.STRING)
     @Column(name = "system_role", length = 20, nullable = true)
     private Role systemRole;
+
+    @OneToMany(mappedBy = "cargo")
+    @JsonIgnore
+    @Builder.Default
+    private List<Employee> employees = new ArrayList<>();
 }

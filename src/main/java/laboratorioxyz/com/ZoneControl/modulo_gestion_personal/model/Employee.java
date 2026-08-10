@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.Size;
@@ -10,9 +11,14 @@ import laboratorioxyz.com.ZoneControl.model.enums.DocumentType;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.model.enums.Role;
 import laboratorioxyz.com.ZoneControl.model.enums.WorkShift;
+import laboratorioxyz.com.ZoneControl.modulo_autenticacion.model.User;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
+import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessSession;
 import lombok.*;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -120,4 +126,23 @@ public class Employee {
     @Size(max = 255)
     @Column(name = "photo_url", length = 255, nullable = true)
     private String photoUrl;
+
+    @OneToOne(mappedBy = "employee")
+    @JsonIgnore
+    private User user;
+
+    @OneToMany(mappedBy = "employee")
+    @JsonIgnore
+    @Builder.Default
+    private List<AccessPermission> permissions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee")
+    @JsonIgnore
+    @Builder.Default
+    private List<AccessSession> sessions = new ArrayList<>();
+
+    @OneToMany(mappedBy = "employee")
+    @JsonIgnore
+    @Builder.Default
+    private List<AccessHistory> accessHistory = new ArrayList<>();
 }

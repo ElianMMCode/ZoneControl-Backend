@@ -1,9 +1,13 @@
 package laboratorioxyz.com.ZoneControl.model.entity;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Size;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -37,4 +41,9 @@ public class Office {
     private Double latitude;
 
     private Double longitude;
+
+    @OneToMany(mappedBy = "baseOffice")
+    @JsonIgnore
+    @Builder.Default
+    private List<Employee> employees = new ArrayList<>();
 }

@@ -161,6 +161,8 @@ class AccessMonitoringControllerTest {
 
     @Test
     void deleteNocturnalAlerts_removesLegacyRows() {
+        jdbcTemplate.execute("ALTER TABLE access_alerts DROP CONSTRAINT IF EXISTS access_alerts_tipo_check");
+
         jdbcTemplate.update("INSERT INTO access_alerts (id, tipo, severidad, message, timestamp, leido) "
                         + "VALUES (?, 'ACCESO_NOCTURNO', 'LOW', 'legacy', ?, false)",
                 UUID.randomUUID(), LocalDateTime.now());

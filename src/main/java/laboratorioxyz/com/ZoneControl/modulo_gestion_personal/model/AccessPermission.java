@@ -1,5 +1,6 @@
 package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import laboratorioxyz.com.ZoneControl.model.entity.ProductionArea;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
@@ -7,6 +8,8 @@ import lombok.*;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.UUID;
 
 /**
@@ -51,4 +54,9 @@ public class AccessPermission {
 
     @Column(nullable = false)
     private LocalTime endTime;
+
+    @OneToMany(mappedBy = "permission")
+    @JsonIgnore
+    @Builder.Default
+    private List<PermissionSchedule> schedules = new ArrayList<>();
 }
