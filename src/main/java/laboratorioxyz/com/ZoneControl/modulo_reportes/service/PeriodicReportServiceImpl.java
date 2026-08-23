@@ -23,10 +23,12 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * Archivo periódico para el socio internacional (HU-17). Emite una agregación
- * SIN datos personales en dos secciones: resumen por departamento × área
- * (con % de autorización) y distribución por día. Refleja solo ingresos/intentos
- * (las salidas EXIT quedan fuera como registro de auditoría).
+ * Archivo periódico para el socio internacional (HU-16). Emite tres secciones
+ * en inglés: resumen por departamento × área (con % de autorización),
+ * distribución por día y log detallado de accesos (solo nombre, cargo,
+ * código de empleado, departamento, área y resultado — sin documentos ni
+ * datos sensibles). Refleja solo ingresos/intentos (las salidas EXIT quedan
+ * fuera como registro de auditoría).
  */
 @Service
 @RequiredArgsConstructor
@@ -34,10 +36,13 @@ import java.util.Map;
 public class PeriodicReportServiceImpl implements PeriodicReportService {
 
     private static final String[] AREA_HEADERS = {
-            "Departamento", "Área", "Total", "Autorizados", "Denegados", "No Registrados", "Suspendidos", "% Autorizados"
+            "Department", "Area", "Total", "Authorized", "Denied", "Unregistered", "Suspended", "% Authorized"
     };
     private static final String[] DAY_HEADERS = {
-            "Día", "Total", "Autorizados", "Denegados", "No Registrados", "Suspendidos"
+            "Day", "Total", "Authorized", "Denied", "Unregistered", "Suspended"
+    };
+    private static final String[] LOG_HEADERS = {
+            "Date/Time", "Employee", "Position", "Employee ID", "Department", "Area", "Result"
     };
 
     private final AccessHistoryRepository accessHistoryRepository;
@@ -48,14 +53,15 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
         List<AccessHistory> records = records(request);
         List<AreaAgg> areaRows = aggregateByArea(records);
         List<DayAgg> dayRows = aggregateByDay(records);
+        List<LogRow> logRows = toLogRows(records);
 
-        log.info("Periodic report generated: mes={}, anio={}, areas={}, dias={}",
-                request.getMes(), request.getAnio(), areaRows.size(), dayRows.size());
+        log.info("Periodic report generated: mes={}, anio={}, areas={}, dias={}, logs={}",
+                request.getMes(), request.getAnio(), areaRows.size(), dayRows.size(), logRows.size());
 
         return switch (request.getFormato().toUpperCase()) {
-            case "CSV" -> generateCsv(areaRows, dayRows, request);
-            case "EXCEL" -> generateExcel(areaRows, dayRows, request);
-            case "PDF" -> generatePdf(areaRows, dayRows, request);
+            case "CSV" -> generateCsv(areaRows, dayRows, logRows, request);
+            case "EXCEL" -> generateExcel(areaRows, dayRows, logRows, request);
+            case "PDF" -> generatePdf(areaRows, dayRows, logRows, request);
             default -> throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Formato no soportado: " + request.getFormato());
         };
@@ -106,8 +112,8 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
     private List<AreaAgg> aggregateByArea(List<AccessHistory> records) {
         Map<String, int[]> acc = new LinkedHashMap<>();
         for (AccessHistory h : records) {
-            String dept = h.getDepartment() != null ? h.getDepartment() : "Sin departamento";
-            String area = h.getProductionAreaName() != null ? h.getProductionAreaName() : "Sin área";
+            String dept = h.getDepartment() != null ? h.getDepartment() : "Unassigned";
+            String area = h.getProductionAreaName() != null ? h.getProductionAreaName() : "No area";
             String key = dept + "\u0000" + area;
             int[] c = acc.computeIfAbsent(key, k -> new int[5]);
             count(c, h.getResult());
@@ -119,6 +125,28 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
             rows.add(new AreaAgg(parts[0], parts[1], c[0], c[1], c[2], c[3], c[4]));
         }
         return rows;
+    }
+
+    /**
+     * Filas del log detallado: solo nombre, cargo, código de empleado,
+     * departamento, área y resultado. Sin tipo/número de documento ni
+     * ningún otro dato personal. Ordenadas cronológicamente.
+     */
+    private List<LogRow> toLogRows(List<AccessHistory> records) {
+        return records.stream()
+                .sorted(java.util.Comparator.comparing(AccessHistory::getTimestamp))
+                .map(h -> new LogRow(
+                        h.getTimestamp().format(java.time.format.DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm")),
+                        h.getEmployee() != null
+                                ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName()
+                                : "-",
+                        h.getEmployee() != null && h.getEmployee().getPosition() != null
+                                ? h.getEmployee().getPosition() : "-",
+                        h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : "-",
+                        h.getDepartment() != null ? h.getDepartment() : "-",
+                        h.getProductionAreaName() != null ? h.getProductionAreaName() : "-",
+                        h.getResult().name()))
+                .toList();
     }
 
     private List<DayAgg> aggregateByDay(List<AccessHistory> records) {
@@ -149,11 +177,12 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
         return Math.round((part * 100f) / total);
     }
 
-    private byte[] generateCsv(List<AreaAgg> areaRows, List<DayAgg> dayRows, PeriodicReportRequest request) {
-        String periodo = String.format("%d-%02d", request.getAnio(), request.getMes());
+    private byte[] generateCsv(List<AreaAgg> areaRows, List<DayAgg> dayRows,
+                               List<LogRow> logRows, PeriodicReportRequest request) {
+        String period = String.format("%d-%02d", request.getAnio(), request.getMes());
         StringBuilder sb = new StringBuilder();
-        sb.append("ARCHIVO PERIÓDICO PARA EL SOCIO — ").append(periodo).append("\n\n");
-        sb.append("SECCIÓN 1: RESUMEN POR DEPARTAMENTO × ÁREA\n");
+        sb.append("PERIODIC FILE FOR PARTNER — ").append(period).append("\n\n");
+        sb.append("SECTION 1: SUMMARY BY DEPARTMENT x AREA\n");
         sb.append(String.join(";", AREA_HEADERS)).append("\n");
         int[] at = new int[5];
         for (AreaAgg r : areaRows) {
@@ -167,7 +196,7 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
           .append(at[3]).append(";").append(at[4]).append(";")
           .append(pct(at[1], at[0])).append("\n\n");
 
-        sb.append("SECCIÓN 2: DISTRIBUCIÓN POR DÍA\n");
+        sb.append("SECTION 2: DAILY DISTRIBUTION\n");
         sb.append(String.join(";", DAY_HEADERS)).append("\n");
         int[] dt = new int[5];
         for (DayAgg r : dayRows) {
@@ -176,15 +205,23 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
             for (int i = 0; i < 5; i++) dt[i] += toArr(r)[i];
         }
         sb.append("TOTAL;").append(dt[0]).append(";").append(dt[1]).append(";").append(dt[2]).append(";")
-          .append(dt[3]).append(";").append(dt[4]).append("\n");
+          .append(dt[3]).append(";").append(dt[4]).append("\n\n");
+
+        sb.append("SECTION 3: ACCESS LOG (INGRESSES ONLY)\n");
+        sb.append(String.join(";", LOG_HEADERS)).append("\n");
+        for (LogRow r : logRows) {
+            sb.append(r.dateTime()).append(";").append(r.employee()).append(";")
+              .append(r.position()).append(";").append(r.employeeId()).append(";")
+              .append(r.department()).append(";").append(r.area()).append(";").append(r.result()).append("\n");
+        }
         return sb.toString().getBytes(java.nio.charset.StandardCharsets.UTF_8);
     }
 
-    private byte[] generateExcel(List<AreaAgg> areaRows, List<DayAgg> dayRows, PeriodicReportRequest request) {
+    private byte[] generateExcel(List<AreaAgg> areaRows, List<DayAgg> dayRows,
+                                 List<LogRow> logRows, PeriodicReportRequest request) {
         try (Workbook wb = new XSSFWorkbook(); ByteArrayOutputStream out = new ByteArrayOutputStream()) {
-            String periodo = String.format("%d-%02d", request.getAnio(), request.getMes());
 
-            Sheet areaSheet = wb.createSheet("Por Área");
+            Sheet areaSheet = wb.createSheet("By Area");
             Row areaHeader = areaSheet.createRow(0);
             for (int i = 0; i < AREA_HEADERS.length; i++) {
                 areaHeader.createCell(i).setCellValue(AREA_HEADERS[i]);
@@ -213,7 +250,7 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
             atRow.createCell(6).setCellValue(at[4]);
             atRow.createCell(7).setCellValue(pct(at[1], at[0]));
 
-            Sheet daySheet = wb.createSheet("Por Día");
+            Sheet daySheet = wb.createSheet("By Day");
             Row dayHeader = daySheet.createRow(0);
             for (int i = 0; i < DAY_HEADERS.length; i++) {
                 dayHeader.createCell(i).setCellValue(DAY_HEADERS[i]);
@@ -238,6 +275,23 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
             dtRow.createCell(4).setCellValue(dt[3]);
             dtRow.createCell(5).setCellValue(dt[4]);
 
+            Sheet logSheet = wb.createSheet("Access Log");
+            Row logHeader = logSheet.createRow(0);
+            for (int i = 0; i < LOG_HEADERS.length; i++) {
+                logHeader.createCell(i).setCellValue(LOG_HEADERS[i]);
+            }
+            rowNum = 1;
+            for (LogRow r : logRows) {
+                Row row = logSheet.createRow(rowNum++);
+                row.createCell(0).setCellValue(r.dateTime());
+                row.createCell(1).setCellValue(r.employee());
+                row.createCell(2).setCellValue(r.position());
+                row.createCell(3).setCellValue(r.employeeId());
+                row.createCell(4).setCellValue(r.department());
+                row.createCell(5).setCellValue(r.area());
+                row.createCell(6).setCellValue(r.result());
+            }
+
             wb.write(out);
             return out.toByteArray();
         } catch (Exception e) {
@@ -246,8 +300,9 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
         }
     }
 
-    private byte[] generatePdf(List<AreaAgg> areaRows, List<DayAgg> dayRows, PeriodicReportRequest request) {
-        String periodo = String.format("%d-%02d", request.getAnio(), request.getMes());
+    private byte[] generatePdf(List<AreaAgg> areaRows, List<DayAgg> dayRows,
+                               List<LogRow> logRows, PeriodicReportRequest request) {
+        String period = String.format("%d-%02d", request.getAnio(), request.getMes());
         List<PdfExporter.PdfTable> sections = new ArrayList<>();
 
         List<String[]> areaData = areaRows.stream().map(r -> new String[]{
@@ -256,17 +311,23 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
                 String.valueOf(r.noRegistrados()), String.valueOf(r.suspendidos()),
                 String.valueOf(pct(r.autorizados(), r.total()))
         }).toList();
-        sections.add(new PdfExporter.PdfTable("Resumen por departamento × área", AREA_HEADERS, areaData));
+        sections.add(new PdfExporter.PdfTable("Summary by Department x Area", AREA_HEADERS, areaData));
 
         List<String[]> dayData = dayRows.stream().map(r -> new String[]{
                 r.dia(), String.valueOf(r.total()), String.valueOf(r.autorizados()),
                 String.valueOf(r.denegados()), String.valueOf(r.noRegistrados()),
                 String.valueOf(r.suspendidos())
         }).toList();
-        sections.add(new PdfExporter.PdfTable("Distribución por día", DAY_HEADERS, dayData));
+        sections.add(new PdfExporter.PdfTable("Daily Distribution", DAY_HEADERS, dayData));
 
-        return pdfExporter.exportSections("Archivo Periódico para el Socio",
-                "Período: " + periodo, sections);
+        List<String[]> logData = logRows.stream().map(r -> new String[]{
+                r.dateTime(), r.employee(), r.position(), r.employeeId(),
+                r.department(), r.area(), r.result()
+        }).toList();
+        sections.add(new PdfExporter.PdfTable("Access Log (Ingresses Only)", LOG_HEADERS, logData));
+
+        return pdfExporter.exportSections("Periodic File for Partner",
+                "Period: " + period, sections);
     }
 
     private int[] toArr(AreaAgg r) {
@@ -282,4 +343,7 @@ public class PeriodicReportServiceImpl implements PeriodicReportService {
 
     private record DayAgg(String dia, int total,
                           int autorizados, int denegados, int noRegistrados, int suspendidos) {}
+
+    private record LogRow(String dateTime, String employee, String position, String employeeId,
+                          String department, String area, String result) {}
 }

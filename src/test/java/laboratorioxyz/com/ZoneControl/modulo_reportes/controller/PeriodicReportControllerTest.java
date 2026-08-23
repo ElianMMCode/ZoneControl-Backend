@@ -128,7 +128,7 @@ class PeriodicReportControllerTest {
     }
 
     @Test
-    void periodicReport_aggregatesByDepartment_withoutPersonalData() throws Exception {
+    void periodicReport_aggregatesByDepartment_withLimitedPersonalData() throws Exception {
         // "Esterilización" no tiene historial sembrado → conteos deterministas.
         Department esterilizacion = departmentRepository.findByName("Esterilización").orElseThrow();
         Employee emp2 = employeeRepository.save(Employee.builder()
@@ -157,11 +157,15 @@ class PeriodicReportControllerTest {
                                 "mes", mes, "anio", anio, "formato", "CSV"
                         ))))
                 .andExpect(status().isOk())
-                // Agregación por departamento × área, sin datos personales
+                // Agregación por departamento × área
                 .andExpect(content().string(containsString("Esterilización;Sala Blanca A;1;1;0;0;0;100")))
                 .andExpect(content().string(containsString("Esterilización;Sala Blanca B;1;0;1;0;0;0")))
-                .andExpect(content().string(not(containsString("EMP-PER-01"))))
-                .andExpect(content().string(not(containsString("Periodico Test"))));
+                // El log detallado solo expone nombre, cargo y código de empleado
+                .andExpect(content().string(containsString("SECTION 3: ACCESS LOG (INGRESSES ONLY)")))
+                .andExpect(content().string(containsString("EMP-PER-01")))
+                // Nunca documentos ni otros datos sensibles
+                .andExpect(content().string(not(containsString("8888888888"))))
+                .andExpect(content().string(not(containsString("CC;"))));
     }
 
     @Test

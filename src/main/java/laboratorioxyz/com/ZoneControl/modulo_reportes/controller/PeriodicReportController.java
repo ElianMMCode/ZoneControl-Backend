@@ -42,7 +42,8 @@ public class PeriodicReportController {
         return ResponseEntity.ok()
                 .contentType(MediaType.parseMediaType(contentType))
                 .header(HttpHeaders.CONTENT_DISPOSITION,
-                        "attachment; filename=archivo_periodico_" + request.getMes() + "_" + request.getAnio() + "." + ext)
+                        "attachment; filename=partner_periodic_file_"
+                                + request.getAnio() + "_" + request.getMes() + "." + ext)
                 .body(data);
     }
 }
