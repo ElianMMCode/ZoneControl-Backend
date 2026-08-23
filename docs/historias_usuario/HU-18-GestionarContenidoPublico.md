@@ -17,7 +17,9 @@
 
 ## Requerimiento
 
-El sistema debe ofrecer al administrador una sola pantalla con cinco secciones para administrar el sitio público. En "Información Institucional" se editan la misión, la visión y la descripción de la empresa. En "Datos de Contacto" se actualizan los teléfonos, los correos electrónicos y las redes sociales. En "Sedes" se agregan, modifican y eliminan las sedes indicando ciudad, dirección y coordenadas de ubicación. En "Catálogo de Productos" se agregan, modifican y eliminan los productos farmacéuticos con su nombre, descripción, principio activo, presentación y área de producción.
+El sistema debe ofrecer al administrador una sola pantalla con cinco secciones para administrar el sitio público. En "Información Institucional" se editan la misión, la visión y la descripción de la empresa. En "Datos de Contacto" se actualizan los teléfonos, los correos electrónicos y las redes sociales. En "Sedes" se agregan, modifican y eliminan las sedes indicando ciudad, dirección, coordenadas de ubicación e imagen representativa. En "Catálogo de Productos" se agregan, modifican y eliminan los productos farmacéuticos con su nombre, descripción, principio activo, presentación, área de producción e imagen del producto.
+
+Cada producto y cada sede admite una imagen (JPG, JPEG, PNG o WebP de máximo 2 MB) que el administrador puede subir al crear el registro, reemplazar más adelante o eliminar; si un registro con imagen se elimina, su archivo de imagen también se elimina. La imagen es opcional: sin ella, el sitio público muestra un ícono de marcador de posición.
 
 En la sección "Folleto Informativo" el administrador carga un archivo en formato PDF de máximo 10 MB que reemplaza al folleto vigente, o lo elimina cuando ya no corresponde. El botón de descarga del folleto que ve el visitante solo aparece si existe un folleto cargado; si se elimina, el botón desaparece.
 
@@ -97,6 +99,30 @@ Cuando: deja campos obligatorios sin completar
 
 Entonces: el sistema señala los campos incompletos e impide guardar hasta que se corrijan
 
+Condición 10
+
+Dado: que el administrador crea o edita un producto o una sede y selecciona una imagen (JPG, JPEG, PNG o WebP de máximo 2 MB)
+
+Cuando: guarda el registro
+
+Entonces: el sistema almacena la imagen, la asocia al registro y los visitantes la ven en el sitio público; si el registro es nuevo, la imagen se sube automáticamente tras crearlo
+
+Condición 11
+
+Dado: que el administrador intenta cargar una imagen de producto o sede
+
+Cuando: el archivo no tiene un formato permitido (JPG, JPEG, PNG, WebP) o supera los 2 MB
+
+Entonces: el sistema rechaza la carga y muestra el mensaje correspondiente ("Extensión no permitida. Solo se aceptan: jpg, jpeg, png, webp" o "La imagen excede el tamaño máximo permitido de 2MB"), sin modificar la imagen vigente
+
+Condición 12
+
+Dado: que el administrador elimina la imagen de un producto o sede, o elimina por completo un producto o sede que tenía imagen
+
+Cuando: confirma la acción
+
+Entonces: el sistema borra el archivo asociado; en el sitio público desaparece la imagen (o el registro completo) y se muestra el ícono de marcador de posición cuando corresponde
+
 ## Tareas
 
 | No | Descripción |
@@ -105,17 +131,19 @@ Entonces: el sistema señala los campos incompletos e impide guardar hasta que s
 | 2 | Formularios de edición para información institucional y datos de contacto |
 | 3 | Alta, edición y baja de sedes (ciudad, dirección, coordenadas) |
 | 4 | Alta, edición y baja de productos del catálogo |
-| 5 | Carga de folleto en PDF con validación de formato y tamaño máximo de 10 MB, reemplazo y eliminación |
-| 6 | Mostrar u ocultar el botón "Descargar Folleto" del sitio público según exista un folleto cargado |
-| 7 | Reflejar de inmediato en el sitio público todos los cambios guardados |
+| 5 | Gestión de imagen por producto y sede: subida al crear, reemplazo y eliminación (máx. 2 MB; jpg, jpeg, png, webp), con borrado del archivo al eliminar el registro |
+| 6 | Carga de folleto en PDF con validación de formato y tamaño máximo de 10 MB, reemplazo y eliminación |
+| 7 | Mostrar u ocultar el botón "Descargar Folleto" del sitio público según exista un folleto cargado |
+| 8 | Reflejar de inmediato en el sitio público todos los cambios guardados |
 
 ## Control de Versiones
 
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+| 1.1 | 2026-08-23 | | | Se agrega gestión de imágenes para productos y sedes (condiciones 10-12) | |
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT}`, `POST/DELETE /api/admin/contenido-publico/folleto`, CRUD `POST/PUT/DELETE /api/admin/contenido-publico/sedes[/{id}]` y `/productos[/{id}]`; caché pública invalidada en cada escritura. Tests en `AdminPublicContentControllerTest`.
-- **Frontend**: ✓ — `PublicContentView` en `/admin/contenido-publico` (rol ADMIN) con 5 pestañas. La sección de sedes muestra direcciones, horarios y coordenadas.
+- **Backend**: ✓ — `PUT /api/admin/contenido-publico/{INSTITUTIONAL|CONTACT}`, `POST/DELETE /api/admin/contenido-publico/folleto`, CRUD `POST/PUT/DELETE /api/admin/contenido-publico/sedes[/{id}]` y `/productos[/{id}]`; imágenes con `POST/DELETE /api/admin/contenido-publico/productos/{id}/imagen` y `/sedes/{id}/imagen`; servicio público con `GET /api/public/catalogo/{id}/imagen` y `GET /api/public/sedes/{id}/imagen`. Archivos en `uploads/products/` y `uploads/offices/`; caché pública invalidada en cada escritura.
+- **Frontend**: ✓ — `PublicContentView` en `/admin/contenido-publico` (rol ADMIN) con 5 pestañas. Los modales de producto y sede permiten subir/reemplazar/quitar imagen con vista previa; las tablas muestran miniaturas. La sección de sedes muestra direcciones, horarios y coordenadas.

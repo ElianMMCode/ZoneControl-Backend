@@ -19,7 +19,7 @@
 
 El sitio público del sistema le permite a cualquier persona, sin necesidad de identificarse, conocer a Laboratorio XYZ. En la primera pantalla se presenta la información institucional: el nombre de la empresa, su misión, su visión y una descripción de la organización.
 
-Además, el visitante puede ver los datos de contacto de la empresa (números de teléfono, correo electrónico y redes sociales), la ubicación de las sedes con sus direcciones y horarios de atención, y el catálogo de productos farmacéuticos. En el catálogo se muestra de cada producto su nombre, su descripción, su principio activo y su presentación.
+Además, el visitante puede ver los datos de contacto de la empresa (números de teléfono, correo electrónico y redes sociales), la ubicación de las sedes con sus direcciones y horarios de atención, y el catálogo de productos farmacéuticos. En el catálogo se muestra de cada producto su imagen (si tiene), su nombre, su descripción, su principio activo y su presentación. Las sedes también muestran una imagen representativa cuando el administrador la haya cargado.
 
 El sistema también ofrece la descarga de un folleto informativo (historia HU-02).
 
@@ -55,7 +55,7 @@ Dado: que el visitante desea conocer los productos de la empresa
 
 Cuando: consulta el catálogo de productos
 
-Entonces: el sistema muestra el nombre, la descripción, el principio activo y la presentación de cada producto farmacéutico
+Entonces: el sistema muestra la imagen, el nombre, la descripción, el principio activo y la presentación de cada producto farmacéutico; si un producto no tiene imagen se muestra un ícono de marcador de posición
 
 Condición 05
 
@@ -73,7 +73,7 @@ Entonces: el sistema muestra la información sin solicitar inicio de sesión y s
 | 2 | Implementar la sección de información institucional con nombre, misión, visión y descripción |
 | 3 | Implementar la sección de datos de contacto con teléfonos, correo y redes sociales |
 | 4 | Implementar la sección de sedes con direcciones, horarios y coordenadas |
-| 5 | Implementar el catálogo de productos con nombre, descripción, principio activo y presentación, sin datos internos |
+| 5 | Implementar el catálogo de productos con imagen, nombre, descripción, principio activo y presentación, sin datos internos |
 | 6 | Preparar la sección para el botón de descarga del folleto de la historia HU-02 |
 | 7 | Verificar que el sitio público se consulta sin iniciar sesión y que no altera datos del sistema |
 
@@ -82,8 +82,9 @@ Entonces: el sistema muestra la información sin solicitar inicio de sesión y s
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+| 1.1 | 2026-08-23 | | | Se agregan imágenes de productos y sedes en el sitio público | |
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `PublicController` expone `GET /api/public/institucional`, `GET /api/public/contacto`, `GET /api/public/sedes`, `GET /api/public/catalogo` y `GET /api/public/folleto`; `CacheConfig` habilita caché para la información estática. Tests verdes (`PublicControllerTest`).
-- **Frontend**: ✓ — `LandingView` en la ruta `/` replica el mockup 27: hero, secciones Institucional/Contacto/Sedes/Catálogo y botón de folleto. El catálogo no muestra `productionArea` ni `id`. La sección de sedes muestra direcciones, horarios y coordenadas.
+- **Backend**: ✓ — `PublicController` expone `GET /api/public/institucional`, `GET /api/public/contacto`, `GET /api/public/sedes`, `GET /api/public/catalogo`, `GET /api/public/folleto`, y las imágenes con `GET /api/public/catalogo/{id}/imagen` y `GET /api/public/sedes/{id}/imagen`; `CacheConfig` habilita caché para la información estática. Tests verdes (`PublicControllerTest`).
+- **Frontend**: ✓ — `LandingView` en la ruta `/` replica el mockup 27: hero, secciones Institucional/Contacto/Sedes/Catálogo y botón de folleto. El catálogo muestra la imagen del producto (o ícono de marcador de posición) y no expone `productionArea` ni `id`. La sección de sedes muestra imagen, direcciones, horarios y coordenadas.
