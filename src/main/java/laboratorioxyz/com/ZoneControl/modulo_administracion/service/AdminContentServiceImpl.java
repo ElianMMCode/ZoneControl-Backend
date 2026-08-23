@@ -4,6 +4,8 @@ import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.ContentSection;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.OfficeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ProductRequest;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
@@ -22,9 +24,13 @@ import org.springframework.web.server.ResponseStatusException;
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Set;
 import java.util.UUID;
 
 @Service
@@ -33,6 +39,20 @@ import java.util.UUID;
 public class AdminContentServiceImpl implements AdminContentService {
 
     private static final long MAX_BROCHURE_BYTES = 10L * 1024 * 1024;
+    private static final Path PRODUCT_IMAGE_DIR = Paths.get("uploads", "products");
+    private static final Path OFFICE_IMAGE_DIR = Paths.get("uploads", "offices");
+    private static final Set<String> ALLOWED_IMAGE_EXT = Set.of("jpg", "jpeg", "png", "webp");
+    private static final long MAX_IMAGE_BYTES = 2L * 1024 * 1024;
+
+    @jakarta.annotation.PostConstruct
+    void initImageDirs() {
+        try {
+            Files.createDirectories(PRODUCT_IMAGE_DIR);
+            Files.createDirectories(OFFICE_IMAGE_DIR);
+        } catch (IOException e) {
+            log.warn("No se pudieron crear los directorios de imágenes: {}", e.getMessage());
+        }
+    }
 
     private final PublicContentRepository publicContentRepository;
     private final ProductCatalogRepository productCatalogRepository;
@@ -144,12 +164,54 @@ public class AdminContentServiceImpl implements AdminContentService {
     @Override
     @Transactional
     public Map<String, String> deleteProduct(UUID id) {
-        if (!productCatalogRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado");
-        }
+        ProductCatalog product = productCatalogRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producto no encontrado"));
+        deleteFile(product.getImageUrl());
         productCatalogRepository.deleteById(id);
         evictCache("catalog");
         return Map.of("message", "Producto eliminado correctamente");
+    }
+
+    @Override
+    @Transactional
+    public CatalogResponse uploadProductImage(UUID id, MultipartFile file) {
+        ProductCatalog product = requireProduct(id);
+        String filename = saveImage(file, PRODUCT_IMAGE_DIR, "PR-" + id);
+        deleteFile(product.getImageUrl());
+        product.setImageUrl(filename);
+        productCatalogRepository.save(product);
+        evictCache("catalog");
+        return toCatalogResponse(product);
+    }
+
+    @Override
+    @Transactional
+    public CatalogResponse deleteProductImage(UUID id) {
+        ProductCatalog product = requireProduct(id);
+        deleteFile(product.getImageUrl());
+        product.setImageUrl(null);
+        productCatalogRepository.save(product);
+        evictCache("catalog");
+        return toCatalogResponse(product);
+    }
+
+    private ProductCatalog requireProduct(UUID id) {
+        return productCatalogRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Producto no encontrado"));
+    }
+
+    private CatalogResponse toCatalogResponse(ProductCatalog p) {
+        return CatalogResponse.builder()
+                .id(p.getId())
+                .name(p.getName())
+                .description(p.getDescription())
+                .activeIngredient(p.getActiveIngredient())
+                .presentation(p.getPresentation())
+                .productionArea(p.getProductionArea())
+                .imageUrl(p.getImageUrl() != null
+                        ? "/api/public/catalogo/" + p.getId() + "/imagen" : null)
+                .build();
     }
 
     @Override
@@ -185,12 +247,98 @@ public class AdminContentServiceImpl implements AdminContentService {
     @Override
     @Transactional
     public Map<String, String> deleteOffice(UUID id) {
-        if (!officeRepository.existsById(id)) {
-            throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Sede no encontrada");
-        }
+        Office office = officeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Sede no encontrada"));
+        deleteFile(office.getImageUrl());
         officeRepository.deleteById(id);
         evictCache("offices");
         return Map.of("message", "Sede eliminada correctamente");
+    }
+
+    @Override
+    @Transactional
+    public OfficeResponse uploadOfficeImage(UUID id, MultipartFile file) {
+        Office office = officeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Sede no encontrada"));
+        String filename = saveImage(file, OFFICE_IMAGE_DIR, "OF-" + id);
+        deleteFile(office.getImageUrl());
+        office.setImageUrl(filename);
+        officeRepository.save(office);
+        evictCache("offices");
+        return toOfficeResponse(office);
+    }
+
+    @Override
+    @Transactional
+    public OfficeResponse deleteOfficeImage(UUID id) {
+        Office office = officeRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Sede no encontrada"));
+        deleteFile(office.getImageUrl());
+        office.setImageUrl(null);
+        officeRepository.save(office);
+        evictCache("offices");
+        return toOfficeResponse(office);
+    }
+
+    private OfficeResponse toOfficeResponse(Office o) {
+        return OfficeResponse.builder()
+                .id(o.getId())
+                .name(o.getName())
+                .address(o.getAddress())
+                .openingHours(o.getOpeningHours())
+                .latitude(o.getLatitude())
+                .longitude(o.getLongitude())
+                .imageUrl(o.getImageUrl() != null
+                        ? "/api/public/sedes/" + o.getId() + "/imagen" : null)
+                .build();
+    }
+
+    /**
+     * Guarda la imagen validando extensión y tamaño. El nombre se deriva del
+     * prefijo dado (PR-{id} / OF-{id}) conservando la extensión original.
+     * Retorna la ruta pública relativa para servir el archivo.
+     */
+    private String saveImage(MultipartFile file, Path dir, String baseName) {
+        if (file == null || file.isEmpty()) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Debe adjuntar una imagen");
+        }
+        if (file.getSize() > MAX_IMAGE_BYTES) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "La imagen excede el tamaño máximo permitido de 2MB");
+        }
+        String original = file.getOriginalFilename();
+        String ext = original != null && original.contains(".")
+                ? original.substring(original.lastIndexOf('.') + 1).toLowerCase(Locale.ROOT)
+                : "";
+        if (!ALLOWED_IMAGE_EXT.contains(ext)) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
+                    "Extensión no permitida. Solo se aceptan: jpg, jpeg, png, webp");
+        }
+        try {
+            Files.createDirectories(dir);
+            Path target = dir.resolve(baseName + "." + ext);
+            Files.write(target, file.getBytes());
+            return dir.getFileName().resolve(baseName + "." + ext).toString();
+        } catch (IOException e) {
+            throw new ResponseStatusException(HttpStatus.INTERNAL_SERVER_ERROR,
+                    "No se pudo guardar la imagen: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Elimina el archivo en disco correspondiente a una ruta relativa
+     * bajo uploads/ (p. ej. products/PR-{id}.png).
+     */
+    private void deleteFile(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) return;
+        try {
+            Files.deleteIfExists(Paths.get("uploads").resolve(relativePath));
+        } catch (IOException e) {
+            log.warn("No se pudo eliminar la imagen {}: {}", relativePath, e.getMessage());
+        }
     }
 
     private void evictCache(String cacheName) {

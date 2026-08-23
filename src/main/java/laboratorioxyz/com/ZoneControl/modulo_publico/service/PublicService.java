@@ -7,6 +7,7 @@ import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Servicio del módulo público.
@@ -21,4 +22,12 @@ public interface PublicService {
     List<OfficeResponse> getOffices();
     List<CatalogResponse> getCatalog();
     Resource getBrochure();
+    /**
+     * Imagen del producto. Retorna null si el producto no existe o no tiene imagen.
+     */
+    Resource getProductImage(UUID id);
+    /**
+     * Imagen de la sede. Retorna null si la sede no existe o no tiene imagen.
+     */
+    Resource getOfficeImage(UUID id);
 }

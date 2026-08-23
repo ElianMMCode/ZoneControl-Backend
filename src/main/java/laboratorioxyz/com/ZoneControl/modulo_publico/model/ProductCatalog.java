@@ -40,4 +40,12 @@ public class ProductCatalog {
     @Size(max = 30)
     @Column(length = 30)
     private String productionArea;
+
+    /**
+     * Ruta relativa del archivo de imagen bajo uploads/ (p. ej. products/PR-{id}.png).
+     * Se expone al público mediante GET /api/public/catalogo/{id}/imagen.
+     * Null si no tiene imagen.
+     */
+    @Column
+    private String imageUrl;
 }

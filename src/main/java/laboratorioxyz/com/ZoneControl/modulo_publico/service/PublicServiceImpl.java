@@ -13,6 +13,7 @@ import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCatalogRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.PublicContentRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cache.annotation.Cacheable;
 import org.springframework.core.io.FileSystemResource;
@@ -20,8 +21,12 @@ import org.springframework.core.io.Resource;
 import org.springframework.stereotype.Service;
 
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -38,6 +43,7 @@ import java.util.stream.Collectors;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class PublicServiceImpl implements PublicService {
 
     private final PublicContentRepository publicContentRepository;
@@ -87,6 +93,8 @@ public class PublicServiceImpl implements PublicService {
                         .openingHours(o.getOpeningHours())
                         .latitude(o.getLatitude())
                         .longitude(o.getLongitude())
+                        .imageUrl(o.getImageUrl() != null
+                                ? "/api/public/sedes/" + o.getId() + "/imagen" : null)
                         .build())
                 .collect(Collectors.toList());
     }
@@ -103,6 +111,8 @@ public class PublicServiceImpl implements PublicService {
                         .activeIngredient(p.getActiveIngredient())
                         .presentation(p.getPresentation())
                         .productionArea(p.getProductionArea())
+                        .imageUrl(p.getImageUrl() != null
+                                ? "/api/public/catalogo/" + p.getId() + "/imagen" : null)
                         .build())
                 .collect(Collectors.toList());
     }
@@ -119,5 +129,29 @@ public class PublicServiceImpl implements PublicService {
             return null;
         }
         return new FileSystemResource(file);
+    }
+
+    @Override
+    public Resource getProductImage(UUID id) {
+        ProductCatalog product = productCatalogRepository.findById(id).orElse(null);
+        return imageResource(product == null ? null : product.getImageUrl());
+    }
+
+    @Override
+    public Resource getOfficeImage(UUID id) {
+        Office office = officeRepository.findById(id).orElse(null);
+        return imageResource(office == null ? null : office.getImageUrl());
+    }
+
+    private Resource imageResource(String relativePath) {
+        if (relativePath == null || relativePath.isBlank()) {
+            return null;
+        }
+        Path path = Paths.get("uploads").resolve(relativePath);
+        if (!Files.exists(path)) {
+            log.warn("Imagen registrada pero archivo ausente en disco: {}", path);
+            return null;
+        }
+        return new FileSystemResource(path);
     }
 }

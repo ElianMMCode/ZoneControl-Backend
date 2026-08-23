@@ -11,10 +11,12 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Controlador del módulo público.
@@ -60,5 +62,39 @@ public class PublicController {
                 .header(HttpHeaders.CONTENT_DISPOSITION,
                         "attachment; filename=\"Folleto_Laboratorio_XYZ.pdf\"")
                 .body(resource);
+    }
+
+    @GetMapping("/catalogo/{id}/imagen")
+    public ResponseEntity<Resource> getProductImage(@PathVariable UUID id) {
+        Resource resource = publicService.getProductImage(id);
+        if (resource == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(imageMediaType(resource.getFilename()))
+                .cacheControl(org.springframework.http.CacheControl.maxAge(java.time.Duration.ofMinutes(5)))
+                .body(resource);
+    }
+
+    @GetMapping("/sedes/{id}/imagen")
+    public ResponseEntity<Resource> getOfficeImage(@PathVariable UUID id) {
+        Resource resource = publicService.getOfficeImage(id);
+        if (resource == null) {
+            return ResponseEntity.notFound().build();
+        }
+        return ResponseEntity.ok()
+                .contentType(imageMediaType(resource.getFilename()))
+                .cacheControl(org.springframework.http.CacheControl.maxAge(java.time.Duration.ofMinutes(5)))
+                .body(resource);
+    }
+
+    private MediaType imageMediaType(String filename) {
+        if (filename != null) {
+            String lower = filename.toLowerCase();
+            if (lower.endsWith(".png")) return MediaType.IMAGE_PNG;
+            if (lower.endsWith(".webp")) return MediaType.parseMediaType("image/webp");
+            if (lower.endsWith(".jpg") || lower.endsWith(".jpeg")) return MediaType.IMAGE_JPEG;
+        }
+        return MediaType.APPLICATION_OCTET_STREAM;
     }
 }

@@ -25,4 +25,5 @@ public class CatalogResponse {
     private String activeIngredient;
     private String presentation;
     private String productionArea;
+    private String imageUrl;
 }

@@ -42,6 +42,14 @@ public class Office {
 
     private Double longitude;
 
+    /**
+     * Ruta relativa del archivo de imagen bajo uploads/ (p. ej. offices/OF-{id}.png).
+     * Se expone al público mediante GET /api/public/sedes/{id}/imagen.
+     * Null si no tiene imagen.
+     */
+    @Column
+    private String imageUrl;
+
     @OneToMany(mappedBy = "baseOffice")
     @JsonIgnore
     @Builder.Default

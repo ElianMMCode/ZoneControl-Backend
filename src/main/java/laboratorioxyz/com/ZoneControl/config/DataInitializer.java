@@ -302,21 +302,21 @@ public class DataInitializer implements CommandLineRunner {
 
     private void seedProductCatalog() {
         seedProduct(ProductCatalog.builder()
-                .name("Ácido Acetilsalicílico Genfar")
+                .name("Ácido Acetilsalicílico 500mg")
                 .description("Analgésico y antiinflamatorio no esteroideo")
                 .activeIngredient("Ácido Acetilsalicílico")
                 .presentation("Tabletas 500mg x 30")
                 .productionArea("Sala Blanca A")
                 .build());
         seedProduct(ProductCatalog.builder()
-                .name("Omeprazol MK")
+                .name("Omeprazol 20mg")
                 .description("Inhibidor de la bomba de protones para tratamiento de acidez gástrica")
                 .activeIngredient("Omeprazol")
                 .presentation("Cápsulas 20mg x 14")
                 .productionArea("Sala Blanca B")
                 .build());
         seedProduct(ProductCatalog.builder()
-                .name("Losartán LabX 50mg")
+                .name("Losartán Potásico 50mg")
                 .description("Antihipertensivo para el control de la presión arterial")
                 .activeIngredient("Losartán Potásico")
                 .presentation("Tabletas 50mg x 30")
