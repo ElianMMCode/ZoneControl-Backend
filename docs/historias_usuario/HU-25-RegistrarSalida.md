@@ -79,5 +79,5 @@ Entonces: las salidas no se cuentan como accesos de entrada (los indicadores y e
 ## Estado de Implementación
 
 - **Backend**: ✓ — `POST /api/access/exit` cierra la sesión y guarda el registro con resultado EXIT; la salida no suma a los indicadores de acceso ni al archivo periódico.
-- **Frontend**: ✓ — pestaña "Salida" en la validación de credencial (`/supervisor/validar`).
+- **Frontend**: ✓ — pestaña "Salida" en el kiosko de validación (`/validar`, autoservicio público).
 - **Tests**: ✓ — `exit_registersExitHistory` y cierre de sesión en `AccessMonitoringControllerTest`.

@@ -47,7 +47,7 @@ administrativa** para un laboratorio farmacéutico. Cubre dos grandes frentes:
 | Módulo Autenticación       | `modulo_autenticacion`    | `/login`, `/configurar-contrasena`         | Público + autenticado     |
 | Módulo Administración      | `modulo_administracion`   | `/admin/**`                                | ADMIN                     |
 | Módulo Gestión de Personal | `modulo_gestion_personal` | `/personal`, `/permisos`                   | ADMIN, GESTOR_PERSONAL    |
-| Módulo Control de Acceso   | `modulo_control_acceso`   | `/supervisor/validar`, `/supervisor/zones` | ADMIN, SUPERVISOR_AUDITOR |
+| Módulo Control de Acceso   | `modulo_control_acceso`   | `/validar` (autoservicio público), `/supervisor/zones` | Público (validar), ADMIN, SUPERVISOR_AUDITOR |
 | Módulo Reportes            | `modulo_reportes`         | `/supervisor/reportes`                     | ADMIN, SUPERVISOR_AUDITOR |
 
 ### 1.2 Roles del sistema
@@ -890,9 +890,9 @@ src/main/frontend/src/
 │   ├── auth/               # LoginView, SetupPasswordView
 │   ├── personal/           # EmployeeListView, RegisterEmployeeView, BulkUploadView,
 │   │                       #   EmployeeDetailView, PermissionsView
-│   ├── supervisor/         # DashboardView, AccessValidationView, ReportsView, ZonesView
+│   ├── supervisor/         # DashboardView, ReportsView, ZonesView
 │   ├── settings/           # SettingsView
-│   ├── public/             # LandingView
+│   ├── public/             # LandingView, ValidateAccessView (/validar)
 │   ├── ForbiddenView.tsx   # /403
 │   └── NotFoundView.tsx    # 404
 ├── styles/tailwind.css     # @theme tokens + @layer components
@@ -1308,7 +1308,9 @@ POST /api/reportes/archivo-periodico · /api/reportes/archivo-periodico/preview
 | `/admin/areas` · `/admin/cargos` · `/admin/matriz-roles`                             | AdminAreasView · AdminCargosView · RoleMatrixView                             | ADMIN                                                     |
 | `/personal` · `/personal/nuevo` · `/personal/carga-masiva` · `/personal/:id`         | EmployeeListView · RegisterEmployeeView · BulkUploadView · EmployeeDetailView | GESTOR_PERSONAL                                           |
 | `/permisos`                                                                          | PermissionsView                                                               | GESTOR_PERSONAL                                           |
-| `/supervisor` · `/supervisor/validar` · `/supervisor/zones` · `/supervisor/reportes` | SupervisorDashboard · AccessValidationView · ZonesView · ReportsView          | SUPERVISOR_AUDITOR (validar/zones/reportes también ADMIN) |
+| `/personal/historial` · `/personal/socio`                                            | AccessHistoryView · PartnerExportView                                         | GESTOR_PERSONAL (también ADMIN)                           |
+| `/supervisor` · `/supervisor/zones` · `/supervisor/reportes`                         | SupervisorDashboard · ZonesView · ReportsView                                 | SUPERVISOR_AUDITOR (zones/reportes también ADMIN)         |
+| `/validar`                                                                           | ValidateAccessView (kiosko autoservicio, sin login)                           | Público                                                   |
 | `/ajustes`                                                                           | SettingsView                                                                  | los 3 roles                                               |
 | `/403` · `*`                                                                         | ForbiddenView · NotFoundView                                                  | —                                                         |
 

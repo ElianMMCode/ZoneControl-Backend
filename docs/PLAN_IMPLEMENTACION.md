@@ -583,7 +583,7 @@ Fase 8: Frontend React (rama `feat/frontend-gestor`)          en progreso
   ✓ Detalle de empleado (mockup 41): edición, foto, asignar área, acciones de permiso e historial completo
   ✓ Gestión de permisos (mockup 45): otorgar/editar/suspender/reactivar/revocar + KPIs derivables
   ✓ Dashboard del supervisor (mockup 09)
-  ✓ Validación de credencial (mockup 44) en `/supervisor/validar` — consume `POST /api/access/validate`
+  ✓ Validación de acceso (mockup 44) en `/validar` como kiosko público de autoservicio — consume `POST /api/access/validate`
   ✓ Reportes / historial (mockup 37) en `/supervisor/reportes` — filtros, export CSV/Excel y archivo periódico
   ✓ Matriz de roles (mockup 16) en `/admin/matriz-roles` — solo lectura, reconstruida de `SecurityConfig`
   ✓ Ajustes/Perfil (mockup 00) con cambio de contraseña (HU-03 adicional)
@@ -632,7 +632,7 @@ Los mockups finales en `.stitch/screens/` (marca Laboratorio XYZ) asumen funcion
 | `42_...registro-de-personal` | Fotografía del empleado (opcional) | **Implementado** (HU-25, §9 item 3.1): `POST/GET/DELETE /api/personal/{id}/photo` + frontend en registro y detalle |
 | `46_...inicio-de-sesi-n-interno` | "¿Olvidó su contraseña?" | No hay flujo público de recovery; solo reset vía `POST /api/admin/users/{id}/reset-password` (magic link) |
 | `37_...reportes-de-auditor-a` | Exportar PDF | **Implementado** (gap 1.1 §9): PDF en `/api/historial/export` y archivo periódico (itextpdf 5, `PdfExporter`); frontend en `/supervisor/reportes` con botón PDF |
-> **Cobertura:** la funcionalidad de los mockups 22 (CRUD áreas — backend ✓, frontend `/admin/areas`), 42 (foto — implementada), 44 (validación — frontend `/supervisor/validar`), 37 (reportes — CSV/Excel/**PDF** + agregación por departamento implementados) y 16 (matriz — endpoint `GET /api/admin/role-matrix` + frontend `/admin/matriz-roles`, §9 item 1.5) está incorporada a la hoja de ruta de la §9. Lo que queda en la §9: 28/09 (mapa y alertas en vivo, §9.3) y turnos (§9.4 3.2). El flujo público de "¿Olvidó su contraseña?" (mockup 46) y la edición real de la matriz de permisos quedan fuera de alcance de §9.
+> **Cobertura:** la funcionalidad de los mockups 22 (CRUD áreas — backend ✓, frontend `/admin/areas`), 42 (foto — implementada), 44 (validación — frontend `/validar`), 37 (reportes — CSV/Excel/**PDF** + agregación por departamento implementados) y 16 (matriz — endpoint `GET /api/admin/role-matrix` + frontend `/admin/matriz-roles`, §9 item 1.5) está incorporada a la hoja de ruta de la §9. Lo que queda en la §9: 28/09 (mapa y alertas en vivo, §9.3) y turnos (§9.4 3.2). El flujo público de "¿Olvidó su contraseña?" (mockup 46) y la edición real de la matriz de permisos quedan fuera de alcance de §9.
 
 ---
 
@@ -838,7 +838,7 @@ Formato de cada HU (alineado con las existentes): tabla de metadatos, descripci�
 | Panel de zonas | Estado por área, aforo en vivo, toggle de emergencia, alertas en vivo vía SSE | 28, 09 |
 | Gestión personal | Subida de foto (✓), schedules de turnos en el formulario de permiso | 42, 45 |
 
-Rutas nuevas (protegidas por rol en `src/main/frontend/src/routes/index.tsx`): `/admin/areas` (✓), `/admin/matriz-roles` (✓), `/supervisor/zones`, `/supervisor/reportes` (✓), `/supervisor/validar` (✓). No se implementa `/guardia` (rol SEGURIDAD eliminado).
+Rutas nuevas (protegidas por rol en `src/main/frontend/src/routes/index.tsx`): `/admin/areas` (✓), `/admin/matriz-roles` (✓), `/supervisor/zones`, `/supervisor/reportes` (✓), `/validar` (✓, pública). No se implementa `/guardia` (rol SEGURIDAD eliminado).
 
 ### 9.9 Fases de implementación
 

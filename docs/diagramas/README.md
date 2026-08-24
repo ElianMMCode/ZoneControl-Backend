@@ -76,7 +76,7 @@ definidas en `src/main/frontend/src/routes/index.tsx` (React Router).
 | **Compartido** | Usuario Autenticado (CU-02) | `/login`, `/configurar-contrasena`, `/ajustes` (`SettingsView` — perfil + cambio de contraseña) |
 | **Admin** | Administrador (CU-03a/03b/03c/06a) | `/admin/dashboard`, `/admin/usuarios`, `/admin/usuarios/nuevo`, `/admin/contenido-publico`, `/admin/areas` (CU-06a), `/admin/matriz-roles` (CU-03c) |
 | **Gestor** | Gestor de Personal (CU-04/05/06/06a/07/07a/07b) | `/personal`, `/personal/nuevo`, `/personal/carga-masiva`, `/personal/:id`, `/permisos` |
-| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `/supervisor`, `/supervisor/validar` (CU-11), `/supervisor/reportes` (CU-08/09/10) |
+| **Supervisor** | Supervisor/Auditor (CU-08/09/10/11) | `/supervisor`, `/supervisor/reportes` (CU-08/09/10); CU-11 pasa a `/validar` (autoservicio público) |
 
 > **Nota**: `settings.html`/`/ajustes` es transversal porque el perfil y el cambio de contraseña
 > (`POST /api/auth/change-password`) aplican a los tres roles autenticados (CU-02).

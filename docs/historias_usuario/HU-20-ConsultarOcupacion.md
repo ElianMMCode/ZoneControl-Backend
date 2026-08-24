@@ -93,4 +93,4 @@ Entonces: el sistema muestra los registros de los últimos 30 días correspondie
 ## Estado de Implementación
 
 - **Backend**: ✓ — entidad `AccessSession`, apertura/cierre en `POST /api/access/validate` y `POST /api/access/exit`, `GET /api/access/occupancy`, SSE `RealtimeEventPublisher` (2.1 §9). Tests en `AccessMonitoringControllerTest`.
-- **Frontend**: ✓ — panel de zonas en `/supervisor/zones` (roles ADMIN y SUPERVISOR_AUDITOR). Entrada vía `/supervisor/validar` (HU-17) y salida vía pestaña Salida (HU-25).
+- **Frontend**: ✓ — panel de zonas en `/supervisor/zones` (roles ADMIN y SUPERVISOR_AUDITOR). Entrada vía `/validar` (HU-17, autoservicio público) y salida vía pestaña Salida (HU-25).

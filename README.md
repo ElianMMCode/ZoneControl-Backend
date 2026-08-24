@@ -14,16 +14,16 @@ frontend (`src/main/resources/static/`).
 
 | Módulo | Descripción |
 |---|---|
-| **Público** | Sitio corporativo (institucional, contacto, sedes, catálogo) y descarga del folleto PDF |
+| **Público** | Sitio corporativo (institucional, contacto, sedes, catálogo con imágenes), descarga del folleto PDF y **kiosko de validación de acceso `/validar`** (autoservicio sin login: tarjetas por zona, entrada/salida con código de empleado) |
 | **Autenticación** | Login JWT por rol, configuración/restablecimiento de contraseña vía **magic link**, cambio de contraseña voluntario |
-| **Administración** | CRUD de usuarios internos (activar/desactivar invalida el JWT al instante), contenido público, áreas de producción y **matriz de roles** (solo consulta) |
-| **Gestión de Personal** | Registro individual con foto, carga masiva CSV con reporte de errores, búsqueda con filtros, detalle/edición de empleado, permisos de acceso con **turnos y horarios por día** |
-| **Control de Acceso** | Validación de credencial, **ocupación en tiempo real** (quién está dentro), **cierre de emergencia por zona**, alertas de anomalías y panel de zonas en vivo vía **SSE** |
-| **Reportes / Auditoría** | Historial con filtros (incluye departamento), export **CSV / Excel / PDF** y archivo periódico para socios **agregado por departamento sin datos personales** |
+| **Administración** | CRUD de usuarios internos (activar/desactivar invalida el JWT al instante), contenido público con imágenes por producto/sede, áreas de producción y **matriz de roles** (solo consulta) |
+| **Gestión de Personal** | Registro individual con foto, carga masiva CSV con reporte de errores, búsqueda con filtros, detalle/edición de empleado, permisos de acceso con **turnos y horarios por día**; historial de accesos, alertas y archivo para socio |
+| **Control de Acceso** | Validación en modo autoservicio, **ocupación en tiempo real** (quién está dentro), **cierre de emergencia por zona**, alertas de anomalías y panel de zonas en vivo vía **SSE** |
+| **Reportes / Auditoría** | Historial con filtros (incluye departamento), export **CSV / Excel / PDF**, reporte interno de validaciones y archivo periódico para socios en inglés con log detallado |
 
 **Roles del sistema**: `ADMIN`, `GESTOR_PERSONAL`, `SUPERVISOR_AUDITOR`.
 
-**Estado**: 214 tests verdes (`./mvnw test`).
+**Estado**: 223 tests verdes (`./mvnw test`).
 
 ## Índice
 
