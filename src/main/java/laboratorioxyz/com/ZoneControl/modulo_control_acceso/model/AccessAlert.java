@@ -44,6 +44,7 @@ public class AccessAlert {
      * empleado y queda en false.
      */
     @Column(name = "has_user", nullable = false)
+    @org.hibernate.annotations.ColumnDefault("false")
     @Builder.Default
     private boolean hasUser = false;
 
