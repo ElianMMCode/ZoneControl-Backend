@@ -48,4 +48,12 @@ public class ProductCatalog {
      */
     @Column
     private String imageUrl;
+
+    /**
+     * Categoría comercial del producto para agrupar secciones en el landing.
+     * Null si aún no fue clasificado.
+     */
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "category_id")
+    private ProductCategory category;
 }

@@ -1,11 +1,14 @@
 package laboratorioxyz.com.ZoneControl.modulo_administracion.service;
 
+import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.CategoryRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.OfficeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ProductRequest;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CategoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -16,6 +19,10 @@ public interface AdminContentService {
     Map<String, Object> createProduct(ProductRequest request);
     Map<String, Object> updateProduct(UUID id, ProductRequest request);
     Map<String, String> deleteProduct(UUID id);
+    List<CategoryResponse> getCategories();
+    CategoryResponse createCategory(CategoryRequest request);
+    CategoryResponse updateCategory(UUID id, CategoryRequest request);
+    Map<String, String> deleteCategory(UUID id);
     CatalogResponse uploadProductImage(UUID id, MultipartFile file);
     CatalogResponse deleteProductImage(UUID id);
     Map<String, Object> createOffice(OfficeRequest request);

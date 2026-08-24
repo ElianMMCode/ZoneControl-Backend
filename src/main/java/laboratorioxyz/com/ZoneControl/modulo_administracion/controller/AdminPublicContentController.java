@@ -1,9 +1,11 @@
 package laboratorioxyz.com.ZoneControl.modulo_administracion.controller;
 
 import jakarta.validation.Valid;
+import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.CategoryRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.OfficeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ProductRequest;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CategoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.service.AdminContentService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +13,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -20,6 +23,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
@@ -75,6 +79,29 @@ public class AdminPublicContentController {
     @DeleteMapping("/productos/{id}/imagen")
     public ResponseEntity<CatalogResponse> deleteProductImage(@PathVariable UUID id) {
         return ResponseEntity.ok(adminContentService.deleteProductImage(id));
+    }
+
+    @GetMapping("/categorias")
+    public ResponseEntity<List<CategoryResponse>> listCategories() {
+        return ResponseEntity.ok(adminContentService.getCategories());
+    }
+
+    @PostMapping("/categorias")
+    public ResponseEntity<CategoryResponse> createCategory(
+            @Valid @RequestBody CategoryRequest request) {
+        return ResponseEntity.status(HttpStatus.CREATED).body(adminContentService.createCategory(request));
+    }
+
+    @PutMapping("/categorias/{id}")
+    public ResponseEntity<CategoryResponse> updateCategory(
+            @PathVariable UUID id,
+            @Valid @RequestBody CategoryRequest request) {
+        return ResponseEntity.ok(adminContentService.updateCategory(id, request));
+    }
+
+    @DeleteMapping("/categorias/{id}")
+    public ResponseEntity<Map<String, String>> deleteCategory(@PathVariable UUID id) {
+        return ResponseEntity.ok(adminContentService.deleteCategory(id));
     }
 
     @PostMapping("/sedes")

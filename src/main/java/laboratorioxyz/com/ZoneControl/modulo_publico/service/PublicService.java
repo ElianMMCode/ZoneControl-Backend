@@ -1,6 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_publico.service;
 
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CategoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.ContactResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.InstitutionalResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
@@ -22,6 +23,7 @@ public interface PublicService {
     ContactResponse getContactInfo();
     List<OfficeResponse> getOffices();
     List<CatalogResponse> getCatalog();
+    List<CategoryResponse> getCategories();
     Resource getBrochure();
     /**
      * Imagen del producto. Retorna null si el producto no existe o no tiene imagen.

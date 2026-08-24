@@ -25,5 +25,7 @@ public class CatalogResponse {
     private String activeIngredient;
     private String presentation;
     private String productionArea;
+    private UUID categoryId;
+    private String categoryName;
     private String imageUrl;
 }

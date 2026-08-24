@@ -13,4 +13,6 @@ import java.util.UUID;
 public interface ProductCatalogRepository extends JpaRepository<ProductCatalog, UUID> {
 
     Optional<ProductCatalog> findByName(String name);
+
+    long countByCategory_Id(UUID categoryId);
 }

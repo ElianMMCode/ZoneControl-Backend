@@ -1,6 +1,7 @@
 package laboratorioxyz.com.ZoneControl.modulo_publico.controller;
 
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CategoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.ContactResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.InstitutionalResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
@@ -50,6 +51,11 @@ public class PublicController {
     @GetMapping("/catalogo")
     public ResponseEntity<List<CatalogResponse>> getCatalog() {
         return ResponseEntity.ok(publicService.getCatalog());
+    }
+
+    @GetMapping("/catalogo/categorias")
+    public ResponseEntity<List<CategoryResponse>> getCategories() {
+        return ResponseEntity.ok(publicService.getCategories());
     }
 
     @GetMapping("/zonas")

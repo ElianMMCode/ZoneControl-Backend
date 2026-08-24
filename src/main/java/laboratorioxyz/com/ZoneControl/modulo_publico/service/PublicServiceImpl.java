@@ -4,14 +4,17 @@ import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.ContentSection;
 import laboratorioxyz.com.ZoneControl.model.repository.ProductionAreaRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CategoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.ContactResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.InstitutionalResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.PublicZoneResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
+import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCategory;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCatalogRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCategoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.PublicContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -50,6 +53,7 @@ public class PublicServiceImpl implements PublicService {
     private final PublicContentRepository publicContentRepository;
     private final OfficeRepository officeRepository;
     private final ProductCatalogRepository productCatalogRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final ProductionAreaRepository productionAreaRepository;
 
     @Value("${app.brochure.path:uploads/folleto}")
@@ -112,8 +116,22 @@ public class PublicServiceImpl implements PublicService {
                         .activeIngredient(p.getActiveIngredient())
                         .presentation(p.getPresentation())
                         .productionArea(p.getProductionArea())
+                        .categoryId(p.getCategory() != null ? p.getCategory().getId() : null)
+                        .categoryName(p.getCategory() != null ? p.getCategory().getName() : null)
                         .imageUrl(p.getImageUrl() != null
                                 ? "/api/public/catalogo/" + p.getId() + "/imagen" : null)
+                        .build())
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    @Cacheable("categories")
+    public List<CategoryResponse> getCategories() {
+        return productCategoryRepository.findAllByOrderByNameAsc().stream()
+                .map(c -> CategoryResponse.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .description(c.getDescription())
                         .build())
                 .collect(Collectors.toList());
     }

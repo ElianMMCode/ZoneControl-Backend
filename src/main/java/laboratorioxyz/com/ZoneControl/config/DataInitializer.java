@@ -32,9 +32,11 @@ import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.Employe
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PermissionScheduleRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.PositionRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
+import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCategory;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCatalogRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCategoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.PublicContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -59,7 +61,8 @@ import java.util.List;
  * - 1 usuario gestor de personal por defecto (gestor@zonecontrol.com)
  * - Contenido público de ejemplo (misión, visión, contacto)
  * - 2 sedes físicas
- * - 2 productos del catálogo
+ * - 3 categorías del catálogo
+ * - 6 productos del catálogo (2 por categoría)
  * - Empleados de prueba con distintos estados y perfiles reales
  */
 @Component
@@ -74,6 +77,7 @@ public class DataInitializer implements CommandLineRunner {
     private final PublicContentRepository publicContentRepository;
     private final OfficeRepository officeRepository;
     private final ProductCatalogRepository productCatalogRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final AccessPermissionRepository accessPermissionRepository;
     private final AccessHistoryRepository accessHistoryRepository;
     private final AccessSessionRepository accessSessionRepository;
@@ -355,12 +359,28 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedProductCatalog() {
+        ProductCategory analgesicos = seedCategory("Analgésicos y Antiinflamatorios",
+                "Medicamentos para el alivio del dolor y la inflamación");
+        ProductCategory gastrointestinales = seedCategory("Gastrointestinales",
+                "Tratamientos para el aparato digestivo y acidez gástrica");
+        ProductCategory cardiovasculares = seedCategory("Cardiovasculares",
+                "Control de la presión arterial y salud cardiovascular");
+
         seedProduct(ProductCatalog.builder()
                 .name("Ácido Acetilsalicílico 500mg")
                 .description("Analgésico y antiinflamatorio no esteroideo")
                 .activeIngredient("Ácido Acetilsalicílico")
                 .presentation("Tabletas 500mg x 30")
                 .productionArea("Sala Blanca A")
+                .category(analgesicos)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Ibuprofeno 400mg")
+                .description("Antiinflamatorio no esteroideo de amplio espectro")
+                .activeIngredient("Ibuprofeno")
+                .presentation("Tabletas recubiertas 400mg x 20")
+                .productionArea("Sala Blanca A")
+                .category(analgesicos)
                 .build());
         seedProduct(ProductCatalog.builder()
                 .name("Omeprazol 20mg")
@@ -368,6 +388,15 @@ public class DataInitializer implements CommandLineRunner {
                 .activeIngredient("Omeprazol")
                 .presentation("Cápsulas 20mg x 14")
                 .productionArea("Sala Blanca B")
+                .category(gastrointestinales)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Famotidina 20mg")
+                .description("Antagonista H2 para reflujo gastroesofágico y úlcera péptica")
+                .activeIngredient("Famotidina")
+                .presentation("Tabletas 20mg x 14")
+                .productionArea("Sala Blanca B")
+                .category(gastrointestinales)
                 .build());
         seedProduct(ProductCatalog.builder()
                 .name("Losartán Potásico 50mg")
@@ -375,13 +404,43 @@ public class DataInitializer implements CommandLineRunner {
                 .activeIngredient("Losartán Potásico")
                 .presentation("Tabletas 50mg x 30")
                 .productionArea("Zona de Empaque")
+                .category(cardiovasculares)
                 .build());
-        log.info("Product catalog seed finished");
+        seedProduct(ProductCatalog.builder()
+                .name("Atorvastatina 20mg")
+                .description("Hipolipemiante para el control del colesterol")
+                .activeIngredient("Atorvastatina Cálcica")
+                .presentation("Tabletas recubiertas 20mg x 10")
+                .productionArea("Zona de Empaque")
+                .category(cardiovasculares)
+                .build());
+        log.info("Product catalog seed finished (3 categorias, 6 productos)");
     }
 
+    private ProductCategory seedCategory(String name, String description) {
+        ProductCategory existing = productCategoryRepository.findByName(name).orElse(null);
+        if (existing != null) {
+            return existing;
+        }
+        return productCategoryRepository.save(ProductCategory.builder()
+                .name(name)
+                .description(description)
+                .build());
+    }
+
+    /**
+     * Idempotente: crea el producto si no existe; si ya existía sin categoría
+     * (corridas previas), le asigna la categoría indicada.
+     */
     private void seedProduct(ProductCatalog product) {
-        productCatalogRepository.findByName(product.getName())
-                .orElseGet(() -> productCatalogRepository.save(product));
+        productCatalogRepository.findByName(product.getName()).ifPresentOrElse(
+                existing -> {
+                    if (existing.getCategory() == null && product.getCategory() != null) {
+                        existing.setCategory(product.getCategory());
+                        productCatalogRepository.save(existing);
+                    }
+                },
+                () -> productCatalogRepository.save(product));
     }
 
     /**

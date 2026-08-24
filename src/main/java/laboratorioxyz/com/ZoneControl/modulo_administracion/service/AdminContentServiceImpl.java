@@ -2,14 +2,18 @@ package laboratorioxyz.com.ZoneControl.modulo_administracion.service;
 
 import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.ContentSection;
+import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.CategoryRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.OfficeRequest;
 import laboratorioxyz.com.ZoneControl.modulo_administracion.dto.ProductRequest;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CategoryResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
+import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCategory;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCatalogRepository;
+import laboratorioxyz.com.ZoneControl.modulo_publico.repository.ProductCategoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.PublicContentRepository;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -56,6 +60,7 @@ public class AdminContentServiceImpl implements AdminContentService {
 
     private final PublicContentRepository publicContentRepository;
     private final ProductCatalogRepository productCatalogRepository;
+    private final ProductCategoryRepository productCategoryRepository;
     private final OfficeRepository officeRepository;
     private final CacheManager cacheManager;
 
@@ -140,6 +145,7 @@ public class AdminContentServiceImpl implements AdminContentService {
                 .activeIngredient(request.activeIngredient())
                 .presentation(request.presentation())
                 .productionArea(request.productionArea())
+                .category(resolveCategory(request.categoryId()))
                 .build());
         evictCache("catalog");
         return Map.of("id", product.getId(), "name", product.getName());
@@ -156,6 +162,7 @@ public class AdminContentServiceImpl implements AdminContentService {
         product.setActiveIngredient(request.activeIngredient());
         product.setPresentation(request.presentation());
         product.setProductionArea(request.productionArea());
+        product.setCategory(resolveCategory(request.categoryId()));
         productCatalogRepository.save(product);
         evictCache("catalog");
         return Map.of("id", product.getId(), "name", product.getName());
@@ -201,6 +208,15 @@ public class AdminContentServiceImpl implements AdminContentService {
                         "Producto no encontrado"));
     }
 
+    private ProductCategory resolveCategory(UUID categoryId) {
+        if (categoryId == null) {
+            return null;
+        }
+        return productCategoryRepository.findById(categoryId)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND,
+                        "Categoría no encontrada"));
+    }
+
     private CatalogResponse toCatalogResponse(ProductCatalog p) {
         return CatalogResponse.builder()
                 .id(p.getId())
@@ -209,8 +225,80 @@ public class AdminContentServiceImpl implements AdminContentService {
                 .activeIngredient(p.getActiveIngredient())
                 .presentation(p.getPresentation())
                 .productionArea(p.getProductionArea())
+                .categoryId(p.getCategory() != null ? p.getCategory().getId() : null)
+                .categoryName(p.getCategory() != null ? p.getCategory().getName() : null)
                 .imageUrl(p.getImageUrl() != null
                         ? "/api/public/catalogo/" + p.getId() + "/imagen" : null)
+                .build();
+    }
+
+    @Override
+    public List<CategoryResponse> getCategories() {
+        return productCategoryRepository.findAllByOrderByNameAsc().stream()
+                .map(c -> CategoryResponse.builder()
+                        .id(c.getId())
+                        .name(c.getName())
+                        .description(c.getDescription())
+                        .build())
+                .toList();
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse createCategory(CategoryRequest request) {
+        String name = request.name().trim();
+        productCategoryRepository.findByName(name).ifPresent(existing -> {
+            throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una categoría con ese nombre");
+        });
+        ProductCategory category = productCategoryRepository.save(ProductCategory.builder()
+                .name(name)
+                .description(request.description())
+                .build());
+        evictCache("categories");
+        evictCache("catalog");
+        return toCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public CategoryResponse updateCategory(UUID id, CategoryRequest request) {
+        ProductCategory category = productCategoryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+        String name = request.name().trim();
+        productCategoryRepository.findByName(name)
+                .filter(existing -> !existing.getId().equals(id))
+                .ifPresent(existing -> {
+                    throw new ResponseStatusException(HttpStatus.CONFLICT, "Ya existe una categoría con ese nombre");
+                });
+        category.setName(name);
+        category.setDescription(request.description());
+        productCategoryRepository.save(category);
+        evictCache("categories");
+        evictCache("catalog");
+        return toCategoryResponse(category);
+    }
+
+    @Override
+    @Transactional
+    public Map<String, String> deleteCategory(UUID id) {
+        ProductCategory category = productCategoryRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Categoría no encontrada"));
+        long count = productCatalogRepository.countByCategory_Id(id);
+        if (count > 0) {
+            throw new ResponseStatusException(HttpStatus.CONFLICT,
+                    "No se puede eliminar: hay " + count + " producto(s) asignados. Reasígnalos primero.");
+        }
+        productCategoryRepository.deleteById(id);
+        evictCache("categories");
+        evictCache("catalog");
+        return Map.of("message", "Categoría eliminada correctamente");
+    }
+
+    private CategoryResponse toCategoryResponse(ProductCategory c) {
+        return CategoryResponse.builder()
+                .id(c.getId())
+                .name(c.getName())
+                .description(c.getDescription())
                 .build();
     }
 
