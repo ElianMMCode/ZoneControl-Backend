@@ -19,4 +19,11 @@ public interface AccessAlertRepository extends JpaRepository<AccessAlert, UUID> 
     @Query(value = "DELETE FROM access_alerts WHERE tipo = 'ACCESO_NOCTURNO'", nativeQuery = true)
     @Transactional
     void deleteNocturnalAlerts();
+
+    /**
+     * Evita spam de alertas por zona: si ya existe una alerta del mismo tipo
+     * para el área dentro de la ventana reciente, no se crea otra.
+     */
+    boolean existsByTipoAndProductionAreaNameAndTimestampAfter(
+            AccessAlert.AlertType tipo, String productionAreaName, java.time.LocalDateTime since);
 }

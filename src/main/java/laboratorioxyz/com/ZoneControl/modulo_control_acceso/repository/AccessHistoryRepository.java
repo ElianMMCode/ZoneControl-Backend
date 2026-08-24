@@ -34,4 +34,14 @@ public interface AccessHistoryRepository extends JpaRepository<AccessHistory, UU
     long countByEmployeeAndResultSince(@Param("employeeId") UUID employeeId,
                                        @Param("result") AccessResult result,
                                        @Param("since") java.time.LocalDateTime since);
+
+    /**
+     * Intentos fallidos (cualquier código de empleado, incluidos no
+     * registrados) contra una misma área dentro de la ventana indicada.
+     */
+    @Query("SELECT COUNT(h) FROM AccessHistory h WHERE h.productionAreaName = :area "
+            + "AND h.result IN :results AND h.timestamp >= :since")
+    long countFailedAttemptsByAreaSince(@Param("area") String area,
+                                        @Param("results") java.util.Collection<AccessResult> results,
+                                        @Param("since") java.time.LocalDateTime since);
 }

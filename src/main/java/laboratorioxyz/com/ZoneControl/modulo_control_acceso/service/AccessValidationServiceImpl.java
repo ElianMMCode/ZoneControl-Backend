@@ -24,6 +24,7 @@ import org.springframework.web.server.ResponseStatusException;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
@@ -31,6 +32,12 @@ import java.util.Optional;
 @RequiredArgsConstructor
 @Slf4j
 public class AccessValidationServiceImpl implements AccessValidationService {
+
+    private static final int ZONE_ATTEMPTS_WINDOW_MINUTES = 10;
+    private static final long ZONE_ATTEMPTS_THRESHOLD = 5;
+    private static final long ZONE_ATTEMPTS_HIGH_THRESHOLD = 10;
+    private static final List<AccessResult> FAILED_ATTEMPTS = List.of(
+            AccessResult.DENIED, AccessResult.UNREGISTERED, AccessResult.SUSPENDED);
 
     private final EmployeeRepository employeeRepository;
     private final ProductionAreaRepository productionAreaRepository;
@@ -176,8 +183,44 @@ public class AccessValidationServiceImpl implements AccessValidationService {
                 .result(result)
                 .build();
         accessHistoryRepository.save(history);
+        if (isFailedAttempt(result)) {
+            maybeAlertRepeatedZoneAttempts(areaName);
+        }
         log.info("Access validation: employee={}, area={}, result={}",
                 employee != null ? employee.getEmployeeCode() : "UNKNOWN",
                 areaName, result);
+    }
+
+    private boolean isFailedAttempt(AccessResult result) {
+        return result == AccessResult.DENIED
+                || result == AccessResult.UNREGISTERED
+                || result == AccessResult.SUSPENDED;
+    }
+
+    /**
+     * Ventana y umbral de la alerta por intentos repetidos a una zona:
+     * >=5 intentos fallidos contra la misma área en 10 min, sin importar si
+     * el código de empleado cambia entre intentos. Se deduplica: mientras
+     * exista una alerta reciente del mismo tipo para el área no se crea otra.
+     */
+    private void maybeAlertRepeatedZoneAttempts(String areaName) {
+        LocalDateTime since = LocalDateTime.now().minusMinutes(ZONE_ATTEMPTS_WINDOW_MINUTES);
+        if (accessAlertRepository.existsByTipoAndProductionAreaNameAndTimestampAfter(
+                AccessAlert.AlertType.INTENTOS_REPETIDOS_ZONA, areaName, since)) {
+            return;
+        }
+        long attempts = accessHistoryRepository.countFailedAttemptsByAreaSince(
+                areaName, FAILED_ATTEMPTS, since);
+        if (attempts < ZONE_ATTEMPTS_THRESHOLD) {
+            return;
+        }
+        AccessAlert.AlertSeverity severity = attempts >= ZONE_ATTEMPTS_HIGH_THRESHOLD
+                ? AccessAlert.AlertSeverity.HIGH
+                : AccessAlert.AlertSeverity.MEDIUM;
+        createAlert(AccessAlert.AlertType.INTENTOS_REPETIDOS_ZONA,
+                severity, null, areaName,
+                "≥" + ZONE_ATTEMPTS_THRESHOLD + " intentos fallidos al área " + areaName
+                        + " en " + ZONE_ATTEMPTS_WINDOW_MINUTES + " min (cualquier código)",
+                false);
     }
 }
