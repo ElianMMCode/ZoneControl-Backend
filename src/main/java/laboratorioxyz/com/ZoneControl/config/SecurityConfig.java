@@ -38,6 +38,9 @@ public class SecurityConfig {
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/error").permitAll()
+                // Validación de acceso en modo autoservicio público (/validar):
+                // cualquiera puede registrar entrada/salida con su código.
+                .requestMatchers(HttpMethod.POST, "/api/access/validate", "/api/access/exit").permitAll()
                 .requestMatchers(HttpMethod.POST, "/api/auth/change-password").authenticated()
                 .requestMatchers(HttpMethod.PUT, "/api/auth/profile").authenticated()
                 .requestMatchers("/api/public/**", "/api/auth/**", "/api/setup-password/**",
@@ -47,7 +50,7 @@ public class SecurityConfig {
                 // Solo GET; los datos siguen protegidos bajo /api/**.
                 .requestMatchers(HttpMethod.GET, "/", "/index.html", "/assets/**",
                         "/favicon.ico", "/favicon.svg", "/vite.svg", "/*.svg",
-                        "/login", "/configurar-contrasena", "/ajustes", "/403",
+                        "/login", "/validar", "/configurar-contrasena", "/ajustes", "/403",
                         "/personal/**", "/permisos",
                         "/supervisor/**", "/admin/**").permitAll()
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")

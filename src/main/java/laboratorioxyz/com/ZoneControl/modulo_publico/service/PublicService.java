@@ -4,6 +4,7 @@ import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.ContactResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.InstitutionalResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.PublicZoneResponse;
 import org.springframework.core.io.Resource;
 
 import java.util.List;
@@ -30,4 +31,8 @@ public interface PublicService {
      * Imagen de la sede. Retorna null si la sede no existe o no tiene imagen.
      */
     Resource getOfficeImage(UUID id);
+    /**
+     * Zonas activas para el modo autoservicio público (/validar).
+     */
+    List<PublicZoneResponse> getZones();
 }

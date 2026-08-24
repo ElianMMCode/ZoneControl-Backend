@@ -4,6 +4,7 @@ import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.ContactResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.InstitutionalResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.PublicZoneResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.service.PublicService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.core.io.Resource;
@@ -49,6 +50,11 @@ public class PublicController {
     @GetMapping("/catalogo")
     public ResponseEntity<List<CatalogResponse>> getCatalog() {
         return ResponseEntity.ok(publicService.getCatalog());
+    }
+
+    @GetMapping("/zonas")
+    public ResponseEntity<List<PublicZoneResponse>> getZones() {
+        return ResponseEntity.ok(publicService.getZones());
     }
 
     @GetMapping("/folleto")

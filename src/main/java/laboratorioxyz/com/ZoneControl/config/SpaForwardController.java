@@ -15,6 +15,7 @@ public class SpaForwardController {
     @GetMapping(value = {
             "/",
             "/login",
+            "/validar",
             "/configurar-contrasena",
             "/ajustes",
             "/403",

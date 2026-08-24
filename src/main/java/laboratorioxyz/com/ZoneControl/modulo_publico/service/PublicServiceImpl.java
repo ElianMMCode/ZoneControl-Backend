@@ -7,6 +7,7 @@ import laboratorioxyz.com.ZoneControl.modulo_publico.dto.CatalogResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.ContactResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.InstitutionalResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.dto.OfficeResponse;
+import laboratorioxyz.com.ZoneControl.modulo_publico.dto.PublicZoneResponse;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.ProductCatalog;
 import laboratorioxyz.com.ZoneControl.modulo_publico.model.PublicContent;
 import laboratorioxyz.com.ZoneControl.modulo_publico.repository.OfficeRepository;
@@ -153,5 +154,12 @@ public class PublicServiceImpl implements PublicService {
             return null;
         }
         return new FileSystemResource(path);
+    }
+
+    @Override
+    public List<PublicZoneResponse> getZones() {
+        return productionAreaRepository.findAllByActive(true).stream()
+                .map(z -> new PublicZoneResponse(z.getName(), z.getDescription(), z.isEmergencyClosed()))
+                .toList();
     }
 }
