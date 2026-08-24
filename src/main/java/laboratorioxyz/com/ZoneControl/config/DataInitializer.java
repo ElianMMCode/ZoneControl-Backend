@@ -474,7 +474,7 @@ public class DataInitializer implements CommandLineRunner {
                 .name("Metoprolol 100mg")
                 .description("Betabloqueante para control de arritmias e hipertensión")
                 .activeIngredient("Metoprolol Succinato")
-                .presentation("Comprimidos de liberación prolongada 100mg x 28")
+                .presentation("Comprimidos LP 100mg x 28")
                 .productionArea("Zona de Empaque")
                 .category(cardiovasculares)
                 .build());

@@ -13,9 +13,9 @@ import org.springframework.context.annotation.Configuration;
  * porque el contenido público cambia con poca frecuencia y no
  * justifica una solución distribuida como Redis.
  *
- * Cada cache name ("institutional", "contact", "offices", "catalog")
- * se asigna a un método @Cacheable específico en PublicServiceImpl
- * para evitar colisiones de tipos entre respuestas.
+ * Cada cache name ("institutional", "contact", "offices", "catalog",
+ * "categories") se asigna a un método @Cacheable específico en
+ * PublicServiceImpl para evitar colisiones de tipos entre respuestas.
  */
 @Configuration
 @EnableCaching
@@ -23,6 +23,6 @@ public class CacheConfig {
 
     @Bean
     public CacheManager cacheManager() {
-        return new ConcurrentMapCacheManager("institutional", "contact", "offices", "catalog");
+        return new ConcurrentMapCacheManager("institutional", "contact", "offices", "catalog", "categories");
     }
 }
