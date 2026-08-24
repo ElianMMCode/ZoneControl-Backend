@@ -130,16 +130,18 @@ public class AccessValidationServiceImpl implements AccessValidationService {
         if (denials >= 3) {
             createAlert(AccessAlert.AlertType.DENEGACIONES_REPETIDAS,
                     AccessAlert.AlertSeverity.MEDIUM, employee.getEmployeeCode(), null,
-                    "≥3 intentos denegados del empleado " + employee.getEmployeeCode() + " en 15 min");
+                    "≥3 intentos denegados del empleado " + employee.getEmployeeCode() + " en 15 min",
+                    employee.getUser() != null);
         }
     }
 
     private void createAlert(AccessAlert.AlertType tipo, AccessAlert.AlertSeverity severidad,
-                             String employeeCode, String areaName, String message) {
+                             String employeeCode, String areaName, String message, boolean hasUser) {
         AccessAlert alert = AccessAlert.builder()
                 .tipo(tipo).severidad(severidad)
                 .employeeCode(employeeCode).productionAreaName(areaName)
                 .message(message).timestamp(LocalDateTime.now())
+                .hasUser(hasUser)
                 .build();
         accessAlertRepository.save(alert);
         realtimeEventPublisher.publish("alert.created", Map.of(

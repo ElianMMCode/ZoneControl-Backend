@@ -12,7 +12,7 @@ public interface HistoryService {
     Page<AccessHistoryResponse> search(LocalDate fechaInicio, LocalDate fechaFin,
                                         String employeeCode, String department,
                                         String productionAreaName, String resultado,
-                                        Pageable pageable);
+                                        Boolean conUsuario, Pageable pageable);
     byte[] export(ExportRequest request);
     SupervisorStatsResponse getStats();
 }

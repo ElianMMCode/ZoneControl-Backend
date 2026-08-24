@@ -38,6 +38,15 @@ public class AccessAlert {
     @Column(length = 20)
     private String employeeCode;
 
+    /**
+     * Snapshot de si el empleado involucrado tenía cuenta de sistema (User)
+     * al momento de generarse la alerta. ZONA_EMERGENCIA no involucra
+     * empleado y queda en false.
+     */
+    @Column(name = "has_user", nullable = false)
+    @Builder.Default
+    private boolean hasUser = false;
+
     @Column(length = 30)
     private String productionAreaName;
 

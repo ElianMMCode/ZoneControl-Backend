@@ -41,9 +41,11 @@ public class HistoryController {
             @RequestParam(required = false) String department,
             @RequestParam(required = false) String productionAreaName,
             @RequestParam(required = false) String resultado,
+            @RequestParam(required = false) Boolean conUsuario,
             @PageableDefault(size = 20, sort = "timestamp", direction = Sort.Direction.DESC) Pageable pageable) {
         Page<AccessHistoryResponse> result = historyService.search(
-                fechaInicio, fechaFin, employeeCode, department, productionAreaName, resultado, pageable);
+                fechaInicio, fechaFin, employeeCode, department, productionAreaName, resultado,
+                conUsuario, pageable);
         return ResponseEntity.ok(result);
     }
 

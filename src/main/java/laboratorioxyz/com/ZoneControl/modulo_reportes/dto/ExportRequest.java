@@ -20,4 +20,6 @@ public class ExportRequest {
     private String departamentoName;
     private String productionAreaName;
     private String resultado;
+    /** null = todos, true = empleados con usuario, false = sin usuario. */
+    private Boolean conUsuario;
 }

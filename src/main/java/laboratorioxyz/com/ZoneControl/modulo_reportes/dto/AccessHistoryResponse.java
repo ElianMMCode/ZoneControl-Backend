@@ -21,4 +21,6 @@ public class AccessHistoryResponse {
     private String productionAreaName;
     private LocalDateTime timestamp;
     private AccessResult result;
+    /** true si el empleado involucrado tiene cuenta de sistema (User). */
+    private boolean hasUser;
 }

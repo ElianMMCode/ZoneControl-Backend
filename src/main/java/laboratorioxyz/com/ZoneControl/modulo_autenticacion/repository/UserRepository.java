@@ -26,4 +26,9 @@ public interface UserRepository extends JpaRepository<User, UUID>, JpaSpecificat
     Optional<User> findBySetupToken(String setupToken);
     long countByStatus(UserStatus status);
     long countBySetupTokenIsNotNull();
+
+    @org.springframework.data.jpa.repository.Query(
+            "SELECT u.employee.id FROM User u WHERE u.employee.id IN :employeeIds")
+    java.util.List<UUID> findEmployeeIdsWithUser(
+            @org.springframework.data.repository.query.Param("employeeIds") java.util.Collection<UUID> employeeIds);
 }

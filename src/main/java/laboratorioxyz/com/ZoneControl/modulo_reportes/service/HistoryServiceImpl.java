@@ -1,8 +1,11 @@
 package laboratorioxyz.com.ZoneControl.modulo_reportes.service;
 
+import jakarta.persistence.criteria.Join;
+import jakarta.persistence.criteria.JoinType;
 import jakarta.persistence.criteria.Predicate;
 import laboratorioxyz.com.ZoneControl.model.enums.AccessResult;
 import laboratorioxyz.com.ZoneControl.model.enums.PermissionStatus;
+import laboratorioxyz.com.ZoneControl.modulo_autenticacion.repository.UserRepository;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
@@ -30,7 +33,10 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import com.itextpdf.text.BaseColor;
@@ -51,6 +57,7 @@ public class HistoryServiceImpl implements HistoryService {
 
     private final AccessHistoryRepository accessHistoryRepository;
     private final AccessPermissionRepository accessPermissionRepository;
+    private final UserRepository userRepository;
     private final PdfExporter pdfExporter;
 
     @Override
@@ -58,7 +65,7 @@ public class HistoryServiceImpl implements HistoryService {
     public Page<AccessHistoryResponse> search(LocalDate fechaInicio, LocalDate fechaFin,
                                                String employeeCode, String department,
                                                String productionAreaName, String resultado,
-                                               Pageable pageable) {
+                                               Boolean conUsuario, Pageable pageable) {
         if (fechaInicio.isAfter(fechaFin)) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST,
                     "Rango de fechas inválido");
@@ -86,10 +93,26 @@ public class HistoryServiceImpl implements HistoryService {
                 predicate = cb.and(predicate,
                         cb.equal(root.get("result"), AccessResult.valueOf(resultado)));
             }
+            if (conUsuario != null) {
+                // LEFT JOINs explícitos: conUsuario=true exige empleado+usuario,
+                // false acepta empleado sin usuario o intento no registrado.
+                Join<Object, Object> employeeJoin = root.join("employee", JoinType.LEFT);
+                Join<Object, Object> userJoin = employeeJoin.join("user", JoinType.LEFT);
+                if (conUsuario) {
+                    predicate = cb.and(predicate, cb.isNotNull(employeeJoin.get("id")));
+                    predicate = cb.and(predicate, cb.isNotNull(userJoin.get("id")));
+                } else {
+                    predicate = cb.and(predicate, cb.or(
+                            cb.isNull(employeeJoin.get("id")),
+                            cb.isNull(userJoin.get("id"))));
+                }
+            }
             return predicate;
         };
 
-        return accessHistoryRepository.findAll(spec, pageable).map(this::toResponse);
+        Page<AccessHistory> pageResult = accessHistoryRepository.findAll(spec, pageable);
+        Set<UUID> employeesWithUser = resolveEmployeesWithUser(pageResult.getContent());
+        return pageResult.map(h -> toResponse(h, employeesWithUser));
     }
 
     @Override
@@ -123,6 +146,18 @@ public class HistoryServiceImpl implements HistoryService {
             if (request.getResultado() != null && !request.getResultado().isBlank()) {
                 predicate = cb.and(predicate,
                         cb.equal(root.get("result"), AccessResult.valueOf(request.getResultado())));
+            }
+            if (request.getConUsuario() != null) {
+                Join<Object, Object> employeeJoin = root.join("employee", JoinType.LEFT);
+                Join<Object, Object> userJoin = employeeJoin.join("user", JoinType.LEFT);
+                if (request.getConUsuario()) {
+                    predicate = cb.and(predicate, cb.isNotNull(employeeJoin.get("id")));
+                    predicate = cb.and(predicate, cb.isNotNull(userJoin.get("id")));
+                } else {
+                    predicate = cb.and(predicate, cb.or(
+                            cb.isNull(employeeJoin.get("id")),
+                            cb.isNull(userJoin.get("id"))));
+                }
             }
             return predicate;
         };
@@ -231,7 +266,26 @@ accessPermissionRepository.countDistinctEmployeesWithActivePermissions()
         );
     }
 
-    private AccessHistoryResponse toResponse(AccessHistory h) {
+    /**
+     * Resuelve en una sola consulta qué empleados de la página tienen cuenta
+     * de sistema, evitando N+1 al mapear hasUser por registro.
+     */
+    private Set<UUID> resolveEmployeesWithUser(List<AccessHistory> records) {
+        List<UUID> employeeIds = records.stream()
+                .map(AccessHistory::getEmployee)
+                .filter(java.util.Objects::nonNull)
+                .map(e -> e.getId())
+                .distinct()
+                .toList();
+        if (employeeIds.isEmpty()) {
+            return Set.of();
+        }
+        return new HashSet<>(userRepository.findEmployeeIdsWithUser(employeeIds));
+    }
+
+    private AccessHistoryResponse toResponse(AccessHistory h, Set<UUID> employeesWithUser) {
+        boolean hasUser = h.getEmployee() != null
+                && employeesWithUser.contains(h.getEmployee().getId());
         return AccessHistoryResponse.builder()
                 .id(h.getId())
                 .employeeId(h.getEmployee() != null ? h.getEmployee().getId() : null)
@@ -243,6 +297,7 @@ accessPermissionRepository.countDistinctEmployeesWithActivePermissions()
                 .productionAreaName(h.getProductionAreaName())
                 .timestamp(h.getTimestamp())
                 .result(h.getResult())
+                .hasUser(hasUser)
                 .build();
     }
 }
