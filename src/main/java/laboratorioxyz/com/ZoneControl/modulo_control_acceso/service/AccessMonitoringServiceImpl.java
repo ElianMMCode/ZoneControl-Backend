@@ -86,6 +86,7 @@ public class AccessMonitoringServiceImpl implements AccessMonitoringService {
 
         log.info("Access exit: employee={}, area={}", employeeCode, productionAreaName);
         realtimeEventPublisher.publish("access.validated", Map.of(
+                "employeeId", employee.getId(),
                 "employeeCode", employee.getEmployeeCode(),
                 "employeeName", employee.getFirstName() + " " + employee.getLastName(),
                 "area", area.getName(),

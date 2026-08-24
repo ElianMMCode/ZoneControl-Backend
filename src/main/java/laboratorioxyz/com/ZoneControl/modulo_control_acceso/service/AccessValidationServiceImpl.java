@@ -149,6 +149,7 @@ public class AccessValidationServiceImpl implements AccessValidationService {
     private void publishValidated(Employee employee, String areaName, AccessResult result, String message) {
         // HashMap permite valores null (employeeName es null si el empleado no se resuelve).
         java.util.Map<String, Object> payload = new java.util.LinkedHashMap<>();
+        payload.put("employeeId", employee != null ? employee.getId() : null);
         payload.put("employeeCode", employee != null ? employee.getEmployeeCode() : "UNKNOWN");
         payload.put("employeeName", employee != null
                 ? employee.getFirstName() + " " + employee.getLastName() : null);
