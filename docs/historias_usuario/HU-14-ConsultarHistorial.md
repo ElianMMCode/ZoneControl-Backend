@@ -7,13 +7,13 @@
 | **Complejidad** | Alta |
 | **HU Relacionada** | HU-03, HU-17 |
 | **Módulo** | Módulo de Reportes y Auditoría |
-| **Rol** | Supervisor o auditor |
+| **Rol** | Supervisor o auditor, Gestor de Personal (solo consulta) |
 
 ## Descripción
 
-**Yo como** supervisor o auditor
+**Yo como** supervisor, auditor o gestor de personal
 **Requiero** consultar el historial de accesos a las áreas restringidas por un rango de fechas, con filtros opcionales por empleado, departamento, área o resultado
-**Para** monitorear y auditar quién ha entrado a las áreas restringidas de producción y con qué resultado
+**Para** monitorear y auditar quién ha entrado a las áreas restringidas de producción y con qué resultado; el gestor lo utiliza además para controlar los accesos habilitados por los permisos que otorga
 
 ## Requerimiento
 
@@ -91,9 +91,10 @@ Entonces: puede exportar el historial con los mismos filtros a un documento (HU-
 | 1.1 | 2026-08-04 | | | Criterio nuevo: filtro por departamento (gap 1.3 §9) | |
 | 1.2 | 2026-08-05 | | | Filtro de departamento como dropdown (`useDepartments`) y columna Código en la tabla de historial | |
 | 1.3 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados (filtro por área y resultado de salida) | |
+| 1.4 | 2026-08-23 | | | El gestor de personal obtiene acceso de consulta al historial (vista /personal/historial); se retira del panel del supervisor, que conserva el archivo periódico | |
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `GET /api/historial` (fechaInicio/fechaFin obligatorias + `employeeCode`, `department`, `productionAreaName`, `resultado` opcionales, paginado y ordenado descendente). Tests en `HistoryControllerTest`.
-- **Frontend**: ✓ — `ReportsView` (`/supervisor/reportes`, mockup 37) con filtros de fecha/empleado/departamento/área/resultado, tabla paginada (incluye la columna Código) y exportación CSV/Excel/PDF.
-- **Notas**: los filtros de departamento y área son menús desplegables reales (`useDepartments` y áreas desde `GET /api/permisos/areas`); el export aplica los mismos filtros.
+- **Backend**: ✓ — `GET /api/historial` (fechaInicio/fechaFin obligatorias + `employeeCode`, `department`, `productionAreaName`, `resultado` opcionales, paginado y ordenado descendente). Acceso para ADMIN, GESTOR_PERSONAL y SUPERVISOR_AUDITOR (`SecurityConfig`). Tests en `HistoryControllerTest`.
+- **Frontend**: ✓ — vista dedicada `AccessHistoryView` en `/personal/historial` (ADMIN y GESTOR_PERSONAL) con KPIs, filtros de fecha/empleado/departamento/área/resultado, tabla paginada y exportación CSV/Excel/PDF; incluye el panel de alertas de seguridad.
+- **Notas**: los filtros de departamento y área son menús desplegables reales (`useDepartments` y áreas desde `GET /api/permisos/areas`); el export aplica los mismos filtros. La vista anterior dentro de `ReportsView` del supervisor fue retirada; la operación de puertas (validar/salida/emergencia) sigue siendo exclusiva del supervisor.

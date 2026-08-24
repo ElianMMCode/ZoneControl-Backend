@@ -7,7 +7,7 @@
 | **Complejidad** | Media |
 | **HU Relacionada** | HU-17, HU-21 |
 | **Módulo** | Módulo de Control de Acceso |
-| **Rol** | Administrador, Supervisor/Auditor |
+| **Rol** | Administrador, Supervisor/Auditor, Gestor de Personal (consulta y marcado de lectura) |
 
 ## Descripción
 
@@ -80,8 +80,9 @@ Entonces: no se generan alertas para esas situaciones, porque el sistema solo co
 | Versión | Fecha | Autor | Revisión | Descripción | Aprobador |
 |---|---|---|---|---|---|
 | 1.0 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados | |
+| 1.1 | 2026-08-23 | | | El gestor de personal accede a consulta y marcado de alertas; nuevas vistas /personal/historial y /personal/eventos con stream en vivo | |
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — detección on-write en `POST /api/access/validate` (≥3 denegaciones en 15 min) y en el toggle de emergencia; `GET /api/access/alerts`, `PATCH /api/access/alerts/{id}/leido`, emisión SSE `alert.created` (2.4 §9). Solo tipos `DENEGACIONES_REPETIDAS` y `ZONA_EMERGENCIA`; `ACCESO_NOCTURNO` eliminado (decisión 2026-08-05). Tests en `AccessMonitoringControllerTest`.
-- **Frontend**: ✓ — panel de alertas en `/supervisor/zones` y `SecurityAlertsPanel` en el dashboard del admin (`/admin/dashboard`).
+- **Backend**: ✓ — detección on-write en `POST /api/access/validate` (≥3 denegaciones en 15 min) y en el toggle de emergencia; `GET /api/access/alerts`, `PATCH /api/access/alerts/{id}/leido`, emisión SSE `alert.created` (2.4 §9). Acceso a consulta/marcado de alertas para ADMIN, GESTOR_PERSONAL y SUPERVISOR_AUDITOR (`SecurityConfig`). Solo tipos `DENEGACIONES_REPETIDAS` y `ZONA_EMERGENCIA`; `ACCESO_NOCTURNO` eliminado (decisión 2026-08-05). Tests en `AccessMonitoringControllerTest`.
+- **Frontend**: ✓ — panel de alertas en `/supervisor/zones`, `SecurityAlertsPanel` en el dashboard del admin (`/admin/dashboard`), en el listado del gestor (`/personal`) y en las nuevas vistas del gestor `/personal/historial` y `/personal/eventos` (esta última con stream SSE en vivo, movimientos recientes y ocupación por área).
