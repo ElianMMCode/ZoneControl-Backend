@@ -13,6 +13,7 @@ import java.util.UUID;
 @Builder
 public class AccessHistoryResponse {
     private UUID id;
+    private UUID employeeId;
     private String employeeCode;
     private String employeeName;
     private String position;

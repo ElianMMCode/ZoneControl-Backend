@@ -234,6 +234,7 @@ accessPermissionRepository.countDistinctEmployeesWithActivePermissions()
     private AccessHistoryResponse toResponse(AccessHistory h) {
         return AccessHistoryResponse.builder()
                 .id(h.getId())
+                .employeeId(h.getEmployee() != null ? h.getEmployee().getId() : null)
                 .employeeCode(h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : null)
                 .employeeName(h.getEmployee() != null
                         ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : null)
