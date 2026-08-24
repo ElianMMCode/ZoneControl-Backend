@@ -7,17 +7,17 @@
 | **Complejidad** | Alta |
 | **HU Relacionada** | HU-08, HU-10 |
 | **Módulo** | Módulo de Control de Acceso Físico |
-| **Rol** | Supervisor o auditor |
+| **Rol** | Público (modo autoservicio, sin inicio de sesión) |
 
 ## Descripción
 
-**Yo como** supervisor o auditor
-**Requiero** validar el ingreso de una persona a un área restringida usando su código de empleado
-**Para** determinar si la entrada es autorizada, denegada, si la persona no está registrada o si su permiso está suspendido
+**Yo como** persona que llega a una zona restringida
+**Requiero** validar mi ingreso usando mi código de empleado desde una vista pública de autoservicio
+**Para** registrar mi entrada o salida y conocer de inmediato si estoy autorizado, denegado, si no estoy registrado o si mi permiso está suspendido
 
 ## Requerimiento
 
-El sistema debe permitir al supervisor o auditor validar el ingreso a un área restringida. Se ingresa el código del empleado y se indica el área. La pantalla tiene dos pestañas: "Entrada" y "Salida" (la validación de salida corresponde a la HU-25).
+El sistema debe permitir a cualquier persona validar su ingreso a un área restringida desde la vista pública `/validar`, sin iniciar sesión. La pantalla muestra todas las zonas como tarjetas; al seleccionar una, se habilita el formulario con el código del empleado y las pestañas "Entrada" y "Salida".
 
 Al validar una entrada, el sistema revisa en orden: si el área está en emergencia (de ser así, el ingreso se deniega por emergencia); si el empleado existe (si no existe, el resultado es "no registrado"); si el empleado está activo (si no lo está, se deniega); y si tiene un permiso vigente para esa área, dentro del horario y del día correspondiente (si no, el resultado es "suspendido"). Si todo está correcto, el acceso se autoriza y se abre la sesión del empleado en el área.
 
@@ -101,9 +101,10 @@ Entonces: el campo del código queda vacío y listo para el siguiente intento, e
 | 1.1 | 2026-07-29 | | | Renombre: simulación → validación, actor cambia a supervisor/auditor | |
 | 1.2 | 2026-08-05 | | | Zonas dinámicas: el selector de áreas deja de usar una lista fija y refleja las áreas reales | |
 | 1.3 | 2026-08-06 | | | Revisión de lenguaje y criterios detallados (emergencia, horario/día, limpieza del campo) | |
+| 1.4 | 2026-08-23 | | | Modo autoservicio público: vista /validar sin login con tarjetas por zona (GET /api/public/zonas); se retira /supervisor/validar; el supervisor deja de operar la validación directamente y recibe reportes internos en Reportes | |
 
 ## Estado de Implementación
 
-- **Backend**: ✓ — `POST /api/access/validate` (AUTHORIZED / DENIED / UNREGISTERED / SUSPENDED) con apertura de sesión (`AccessSession`), registro en `AccessHistory`, zona en emergencia (`emergencyClosed`), horario/día (`PermissionSchedule`) y resultado `EXIT` vía `POST /api/access/exit` (HU-25). Tests verdes.
-- **Frontend**: ✓ — `AccessValidationView` (`/supervisor/validar`, mockup 44) con pestañas **Entrada**/**Salida**, selector de área dinámico (`GET /api/permisos/areas` con `useAreas`), datos del empleado en la respuesta y alerta de color por resultado. El campo de código se limpia tras cada validación.
-- **Notas**: `SecurityConfig` permite a `SUPERVISOR_AUDITOR` listar las áreas (`GET /api/permisos/areas`), de modo que las zonas reflejan el catálogo real en vez de una lista estática. Test: `supervisor_canListProductionAreas`.
+- **Backend**: ✓ — `POST /api/access/validate` (AUTHORIZED / DENIED / UNREGISTERED / SUSPENDED) con apertura de sesión (`AccessSession`), registro en `AccessHistory`, zona en emergencia (`emergencyClosed`), horario/día (`PermissionSchedule`) y resultado `EXIT` vía `POST /api/access/exit`. Ambos endpoints abiertos a `permitAll()` para el modo autoservicio. `GET /api/public/zonas` lista las zonas activas sin autenticación. Tests verdes.
+- **Frontend**: ✓ — vista pública `ValidateAccessView` en `/validar` (sin login, enlazada desde el navbar del landing): tarjetas por zona con indicador de emergencia, pestañas **Entrada**/**Salida**, resultado visual por color con datos del empleado y limpieza del código tras cada intento. Se retiró la ruta interna `/supervisor/validar`; el supervisor conserva la auditoría mediante el "Reporte interno de validaciones de acceso" en `/supervisor/reportes`.
+- **Notas**: el supervisor ya no opera la validación directamente; cualquier persona registra su entrada/salida en modo autoservicio y cada intento queda auditado en el historial.
