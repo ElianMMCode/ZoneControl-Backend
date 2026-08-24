@@ -62,7 +62,7 @@ class EmployeeSearchControllerTest {
                 .employeeCode("EMP-TEST-01")
                 .documentType(DocumentType.CC)
                 .documentNumber("1111111111")
-                .firstName("Carlos")
+                .firstName("Carlomagno")
                 .lastName("Mendoza")
                 .position("Técnico")
                 .department(department)
@@ -73,12 +73,12 @@ class EmployeeSearchControllerTest {
     @Test
     void searchEmployees_withFilters_returnsPaginatedResults() throws Exception {
         mockMvc.perform(get("/api/personal")
-                        .param("firstName", "Carlos")
+                        .param("firstName", "Carlomagno")
                         .param("page", "0")
                         .param("size", "10"))
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.content").isArray())
-                .andExpect(jsonPath("$.content[0].firstName").value("Carlos"))
+                .andExpect(jsonPath("$.content[0].firstName").value("Carlomagno"))
                 .andExpect(jsonPath("$.content[0].lastName").value("Mendoza"))
                 .andExpect(jsonPath("$.totalElements").value(1));
     }
@@ -197,7 +197,7 @@ class EmployeeSearchControllerTest {
     void getEmployeeById_exists_returns200() throws Exception {
         mockMvc.perform(get("/api/personal/{id}", seedEmployee.getId()))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.firstName").value("Carlos"))
+                .andExpect(jsonPath("$.firstName").value("Carlomagno"))
                 .andExpect(jsonPath("$.lastName").value("Mendoza"))
                 .andExpect(jsonPath("$.employeeCode").value("EMP-TEST-01"));
     }

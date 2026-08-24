@@ -144,8 +144,7 @@ para probar cada rol:
 |---|---|---|
 | ADMIN | `admin@zonecontrol.com` | `Admin123!` |
 | GESTOR_PERSONAL | `gestor@zonecontrol.com` | `Gestor123!` |
-| GESTOR_PERSONAL | `sandra.ruiz@laboratorioxzy.com.co` | `Demo1234!` |
-| SUPERVISOR_AUDITOR | `javier.soto@laboratorioxzy.com.co` | `Demo1234!` |
+| SUPERVISOR_AUDITOR | `supervisor@zonecontrol.com` | `Supervisor123!` |
 
 > También se siembran `ana.martinez@...` (ADMIN) y `ricardo.diaz@...`
 > (GESTOR_PERSONAL), pero tienen **setup token pendiente**: su contraseña

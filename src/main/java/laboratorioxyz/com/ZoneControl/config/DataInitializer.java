@@ -95,6 +95,7 @@ public class DataInitializer implements CommandLineRunner {
         seedOffices();
         seedProductCatalog();
         seedGestorUser();
+        seedSupervisorUser();
         seedExtraEmployees();
         seedExtraUsers();
         seedAccessPermissions();
@@ -244,6 +245,59 @@ public class DataInitializer implements CommandLineRunner {
         log.info("Seeded gestor user: gestor@zonecontrol.com");
     }
 
+    /**
+     * Crea un empleado y usuario de tipo SUPERVISOR_AUDITOR dedicado al
+     * panel del supervisor. Credenciales: supervisor@zonecontrol.com /
+     * Supervisor123!. Es idempotente.
+     */
+    private void seedSupervisorUser() {
+        var existing = userRepository.findByEmail("supervisor@zonecontrol.com");
+        if (existing.isPresent()) {
+            User supervisor = existing.get();
+            if (supervisor.getPassword() == null) {
+                supervisor.setPassword(passwordEncoder.encode("Supervisor123!"));
+                supervisor.setSetupToken(null);
+                supervisor.setSetupTokenExpiry(null);
+                supervisor.setRequirePasswordChange(false);
+                userRepository.save(supervisor);
+                log.info("Supervisor user password restored to default (was null)");
+            } else {
+                log.info("Supervisor user already exists — skipping");
+            }
+            return;
+        }
+        Department produccion = departmentRepository.findByName("Producción Sólidos")
+                .orElseGet(() -> departmentRepository.findByName("Producción Sólidos").orElseThrow());
+
+        Employee supervisorEmployee = employeeRepository.findByEmployeeCode("EMP-000060")
+                .orElseGet(() -> employeeRepository.save(Employee.builder()
+                        .employeeCode("EMP-000060")
+                        .documentType(DocumentType.CC)
+                        .documentNumber("0000000060")
+                        .firstName("Andrés")
+                        .lastName("Rojas")                        .position("Supervisor de Turno")
+                        .email("supervisor@zonecontrol.com")
+                        .department(produccion)
+                        .status(EmployeeStatus.ACTIVO)
+                        .contractType(ContractType.TIEMPO_COMPLETO)
+                        .workShift(WorkShift.DIURNO)
+                        .hireDate(LocalDate.now().minusYears(3))
+                        .build()));
+
+        User supervisor = User.builder()
+                .firstName("Andrés")
+                .lastName("Rojas")
+                .email("supervisor@zonecontrol.com")
+                .password(passwordEncoder.encode("Supervisor123!"))
+                .role(Role.SUPERVISOR_AUDITOR)
+                .status(UserStatus.ACTIVO)
+                .requirePasswordChange(false)
+                .employee(supervisorEmployee)
+                .build();
+        userRepository.save(supervisor);
+        log.info("Seeded supervisor user: supervisor@zonecontrol.com");
+    }
+
     private void seedPublicContent() {
         if (publicContentRepository.count() > 0) {
             log.info("Public content already exists — skipping");
@@ -355,25 +409,9 @@ public class DataInitializer implements CommandLineRunner {
     }
 
     private void seedExtraUsers() {
-        if (userRepository.findByEmail("sandra.ruiz@laboratorioxzy.com.co").isPresent()) {
+        if (userRepository.findByEmail("ricardo.diaz@laboratorioxzy.com.co").isPresent()) {
             log.info("Extra users already exist — skipping");
             return;
-        }
-        Employee sandra = employeeRepository.findByEmployeeCode("EMP-000040").orElse(null);
-        if (sandra == null) {
-            sandra = saveEmployee("EMP-000040", "100000040", "Sandra", "Ruiz",
-                    "Coordinadora de Administración",
-                    "sandra.ruiz@laboratorioxzy.com.co",
-                    departmentRepository.findByName("Control de Calidad").orElseThrow(),
-                    EmployeeStatus.ACTIVO, null);
-        }
-        Employee javier = employeeRepository.findByEmployeeCode("EMP-000041").orElse(null);
-        if (javier == null) {
-            javier = saveEmployee("EMP-000041", "100000041", "Javier", "Soto",
-                    "Supervisor de Turno",
-                    "javier.soto@laboratorioxzy.com.co",
-                    departmentRepository.findByName("Producción Sólidos").orElseThrow(),
-                    EmployeeStatus.ACTIVO, null);
         }
         Employee miguel = employeeRepository.findByEmployeeCode("EMP-000042").orElse(null);
         if (miguel == null) {
@@ -400,15 +438,13 @@ public class DataInitializer implements CommandLineRunner {
                     EmployeeStatus.ACTIVO, null);
         }
 
-        createUser(sandra, "Sandra", "Ruiz", sandra.getEmail(), Role.GESTOR_PERSONAL, UserStatus.ACTIVO, null, null);
-        createUser(javier, "Javier", "Soto", javier.getEmail(), Role.SUPERVISOR_AUDITOR, UserStatus.ACTIVO, null, null);
         createUser(miguel, "Miguel", "Ángel", miguel.getEmail(), Role.GESTOR_PERSONAL, UserStatus.INACTIVO, null, null);
         createUser(ricardo, "Ricardo", "Díaz", ricardo.getEmail(), Role.GESTOR_PERSONAL, UserStatus.ACTIVO,
                 "pending-ricardo-hash", LocalDateTime.now().plusHours(24));
         createUser(ana, "Ana", "Martínez", ana.getEmail(), Role.ADMIN, UserStatus.ACTIVO,
                 "pending-ana-hash", LocalDateTime.now().plusHours(24));
 
-        log.info("Seeded 5 extra users (Sandra, Javier, Miguel, Ricardo, Ana)");
+        log.info("Seeded 3 extra users (Miguel, Ricardo, Ana)");
     }
 
     private void createUser(Employee employee, String firstName, String lastName, String email,
