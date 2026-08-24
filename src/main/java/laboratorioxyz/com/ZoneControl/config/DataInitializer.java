@@ -62,7 +62,7 @@ import java.util.List;
  * - Contenido público de ejemplo (misión, visión, contacto)
  * - 2 sedes físicas
  * - 3 categorías del catálogo
- * - 6 productos del catálogo (2 por categoría)
+ * - 15 productos del catálogo (5 por categoría)
  * - Empleados de prueba con distintos estados y perfiles reales
  */
 @Component
@@ -383,6 +383,30 @@ public class DataInitializer implements CommandLineRunner {
                 .category(analgesicos)
                 .build());
         seedProduct(ProductCatalog.builder()
+                .name("Paracetamol 500mg")
+                .description("Analgésico y antipirético de uso común")
+                .activeIngredient("Paracetamol")
+                .presentation("Tabletas 500mg x 24")
+                .productionArea("Sala Blanca A")
+                .category(analgesicos)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Naproxeno 250mg")
+                .description("Antiinflamatorio no esteroideo de acción prolongada")
+                .activeIngredient("Naproxeno Sódico")
+                .presentation("Tabletas 250mg x 30")
+                .productionArea("Sala Blanca A")
+                .category(analgesicos)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Diclofenaco 75mg")
+                .description("Antiinflamatorio para dolor musculoesquelético moderado a severo")
+                .activeIngredient("Diclofenaco Sódico")
+                .presentation("Tabletas gastrorresistentes 75mg x 20")
+                .productionArea("Sala Blanca A")
+                .category(analgesicos)
+                .build());
+        seedProduct(ProductCatalog.builder()
                 .name("Omeprazol 20mg")
                 .description("Inhibidor de la bomba de protones para tratamiento de acidez gástrica")
                 .activeIngredient("Omeprazol")
@@ -395,6 +419,30 @@ public class DataInitializer implements CommandLineRunner {
                 .description("Antagonista H2 para reflujo gastroesofágico y úlcera péptica")
                 .activeIngredient("Famotidina")
                 .presentation("Tabletas 20mg x 14")
+                .productionArea("Sala Blanca B")
+                .category(gastrointestinales)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Lansoprazol 30mg")
+                .description("Inhibidor de la bomba de protones para gastritis erosiva")
+                .activeIngredient("Lansoprazol")
+                .presentation("Cápsulas gastrorresistentes 30mg x 14")
+                .productionArea("Sala Blanca B")
+                .category(gastrointestinales)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Metoclopramida 10mg")
+                .description("Antiemético para náuseas y vómito")
+                .activeIngredient("Metoclopramida Clorhidrato")
+                .presentation("Tabletas 10mg x 20")
+                .productionArea("Sala Blanca B")
+                .category(gastrointestinales)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Antiácido Aluminio y Magnesio")
+                .description("Suspensión antiácida de acción inmediata para la acidez estomacal")
+                .activeIngredient("Hidróxido de Aluminio y Magnesio")
+                .presentation("Suspensión oral 225ml")
                 .productionArea("Sala Blanca B")
                 .category(gastrointestinales)
                 .build());
@@ -414,7 +462,31 @@ public class DataInitializer implements CommandLineRunner {
                 .productionArea("Zona de Empaque")
                 .category(cardiovasculares)
                 .build());
-        log.info("Product catalog seed finished (3 categorias, 6 productos)");
+        seedProduct(ProductCatalog.builder()
+                .name("Enalapril 20mg")
+                .description("IECA para hipertensión arterial e insuficiencia cardíaca")
+                .activeIngredient("Enalapril Maleato")
+                .presentation("Tabletas 20mg x 30")
+                .productionArea("Zona de Empaque")
+                .category(cardiovasculares)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Metoprolol 100mg")
+                .description("Betabloqueante para control de arritmias e hipertensión")
+                .activeIngredient("Metoprolol Succinato")
+                .presentation("Comprimidos de liberación prolongada 100mg x 28")
+                .productionArea("Zona de Empaque")
+                .category(cardiovasculares)
+                .build());
+        seedProduct(ProductCatalog.builder()
+                .name("Furosemida 40mg")
+                .description("Diurético de asa para edema asociado a insuficiencia cardíaca")
+                .activeIngredient("Furosemida")
+                .presentation("Tabletas 40mg x 20")
+                .productionArea("Zona de Empaque")
+                .category(cardiovasculares)
+                .build());
+        log.info("Product catalog seed finished (3 categorias, 15 productos)");
     }
 
     private ProductCategory seedCategory(String name, String description) {
