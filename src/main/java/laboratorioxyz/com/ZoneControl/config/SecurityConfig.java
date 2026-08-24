@@ -62,9 +62,21 @@ public class SecurityConfig {
                     .hasRole("ADMIN")
                 .requestMatchers("/api/personal/**", "/api/permisos/**")
                     .hasAnyRole("ADMIN", "GESTOR_PERSONAL")
+                // El gestor consulta el registro de entradas/salidas y los
+                // eventos/alertas para controlar los permisos que otorga.
+                .requestMatchers("/api/historial/**")
+                    .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
+                .requestMatchers(HttpMethod.GET, "/api/access/alerts")
+                    .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
+                .requestMatchers(HttpMethod.PATCH, "/api/access/alerts/*/leido")
+                    .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
+                .requestMatchers(HttpMethod.GET, "/api/access/stream")
+                    .hasAnyRole("ADMIN", "GESTOR_PERSONAL", "SUPERVISOR_AUDITOR")
+                // Operación de puertas (validar, salida, ocupancia, emergencia)
+                // queda reservada al supervisor/auditor y admin.
                 .requestMatchers("/api/access/**")
                     .hasAnyRole("ADMIN", "SUPERVISOR_AUDITOR")
-                .requestMatchers("/api/historial/**", "/api/reportes/**")
+                .requestMatchers("/api/reportes/**")
                     .hasAnyRole("ADMIN", "SUPERVISOR_AUDITOR")
                 .anyRequest().authenticated()
             )
