@@ -78,8 +78,9 @@ public class HistoryServiceImpl implements HistoryService {
             predicate = cb.and(predicate,
                     cb.lessThanOrEqualTo(root.get("timestamp"), fechaFin.atTime(LocalTime.MAX)));
             if (employeeCode != null && !employeeCode.isBlank()) {
-                predicate = cb.and(predicate,
-                        cb.equal(root.get("employee").get("employeeCode"), employeeCode));
+                predicate = cb.and(predicate, cb.like(
+                        cb.lower(root.get("employee").get("employeeCode")),
+                        "%" + employeeCode.trim().toLowerCase() + "%"));
             }
             if (department != null && !department.isBlank()) {
                 predicate = cb.and(predicate,
@@ -132,8 +133,9 @@ public class HistoryServiceImpl implements HistoryService {
             predicate = cb.and(predicate,
                     cb.lessThanOrEqualTo(root.get("timestamp"), fechaFin.atTime(LocalTime.MAX)));
             if (request.getEmployeeCode() != null && !request.getEmployeeCode().isBlank()) {
-                predicate = cb.and(predicate,
-                        cb.equal(root.get("employee").get("employeeCode"), request.getEmployeeCode()));
+                predicate = cb.and(predicate, cb.like(
+                        cb.lower(root.get("employee").get("employeeCode")),
+                        "%" + request.getEmployeeCode().trim().toLowerCase() + "%"));
             }
             if (request.getDepartamentoName() != null && !request.getDepartamentoName().isBlank()) {
                 predicate = cb.and(predicate,
