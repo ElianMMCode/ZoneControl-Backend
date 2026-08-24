@@ -3,7 +3,6 @@ package laboratorioxyz.com.ZoneControl.modulo_gestion_personal.controller;
 import jakarta.validation.Valid;
 import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
-import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.*;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.service.EmployeeService;
 import lombok.RequiredArgsConstructor;
@@ -107,7 +106,7 @@ public class EmployeeController {
     }
 
     @GetMapping("/{id}/accesos")
-    public ResponseEntity<List<AccessHistory>> getAccessHistory(
+    public ResponseEntity<List<EmployeeAccessRecordResponse>> getAccessHistory(
             @PathVariable UUID id,
             @RequestParam(required = false, defaultValue = "20") int limit) {
         return ResponseEntity.ok(employeeService.findAccessHistoryByEmployee(id, limit));

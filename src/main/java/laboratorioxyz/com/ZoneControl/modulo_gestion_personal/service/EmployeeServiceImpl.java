@@ -10,8 +10,7 @@ import laboratorioxyz.com.ZoneControl.model.repository.DepartmentRepository;
 import laboratorioxyz.com.ZoneControl.modulo_autenticacion.service.UserService;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.repository.AccessHistoryRepository;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.*;
-import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.*;import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.AccessPermission;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Employee;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.model.Position;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.repository.AccessPermissionRepository;
@@ -539,14 +538,24 @@ public class EmployeeServiceImpl implements EmployeeService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<AccessHistory> findAccessHistoryByEmployee(UUID employeeId, int limit) {
+    public List<EmployeeAccessRecordResponse> findAccessHistoryByEmployee(UUID employeeId, int limit) {
         if (!employeeRepository.existsById(employeeId)) {
             throw new ResponseStatusException(HttpStatus.NOT_FOUND, "Empleado no encontrado");
         }
         int safeLimit = Math.max(1, Math.min(limit, 200));
         Page<AccessHistory> page = accessHistoryRepository
                 .findByEmployee_IdOrderByTimestampDesc(employeeId, PageRequest.of(0, safeLimit));
-        return page.getContent();
+        return page.getContent().stream()
+                .map(h -> new EmployeeAccessRecordResponse(
+                        h.getId(),
+                        h.getEmployee() != null ? h.getEmployee().getEmployeeCode() : null,
+                        h.getEmployee() != null
+                                ? h.getEmployee().getFirstName() + " " + h.getEmployee().getLastName() : null,
+                        h.getDepartment(),
+                        h.getProductionAreaName(),
+                        h.getTimestamp(),
+                        h.getResult()))
+                .toList();
     }
 
     private Department resolveDepartment(String name) {

@@ -4,6 +4,7 @@ import laboratorioxyz.com.ZoneControl.model.entity.Office;
 import laboratorioxyz.com.ZoneControl.model.enums.EmployeeStatus;
 import laboratorioxyz.com.ZoneControl.modulo_control_acceso.model.AccessHistory;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.BulkUploadResult;
+import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeAccessRecordResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.EmployeeSearchResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.PermissionResponse;
 import laboratorioxyz.com.ZoneControl.modulo_gestion_personal.dto.RegisterEmployeeRequest;
@@ -28,7 +29,7 @@ public interface EmployeeService {
     List<String> listDepartmentNames();
     List<Office> listOffices();
     List<PermissionResponse> findPermissionsByEmployee(UUID employeeId);
-    List<AccessHistory> findAccessHistoryByEmployee(UUID employeeId, int limit);
+    List<EmployeeAccessRecordResponse> findAccessHistoryByEmployee(UUID employeeId, int limit);
     EmployeeSearchResponse uploadPhoto(UUID id, MultipartFile file);
     byte[] loadPhoto(UUID id);
     EmployeeSearchResponse deletePhoto(UUID id);
